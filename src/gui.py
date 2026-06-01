@@ -25,7 +25,11 @@ THEME = {
     "fg_muted":    "#7F91AC",
     "accent":      "#35D0FF",
     "accent_hov":  "#7CE7FF",
+    "accent_dim":  "rgba(53,208,255,0.13)",
+    "secondary":   "#8B7CFF",
+    "secondary_dim": "rgba(139,124,255,0.13)",
     "border":      "#26364F",
+    "border_soft": "#1A2940",
     "success":     "#2DD4BF",
     "info":        "#F6C177", 
 }
