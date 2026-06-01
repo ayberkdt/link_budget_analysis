@@ -40,7 +40,7 @@ GS2 = {
     "site_name": "GS2 Ankara",
     "latitude_deg": 39.9334,
     "longitude_deg": 32.8597,
-    "altitude_km": 0.0,
+    "altitude_km": 0.94,
     "terminal_name": "GS2 receiver",
     "antenna_name": "GS2 Ku-band receive dish",
     "antenna_diameter_m": 0.9,
@@ -70,7 +70,7 @@ SATELLITE_UPLINK_RECEIVER = {
 
 SATELLITE_DOWNLINK_TRANSMITTER = {
     "terminal_name": "Satellite transmitter",
-    "eirp_dbw_override": 50.0,
+    "eirp_dbw_override": 46.0,
     "notes": "Example downlink EIRP; replace with selected satellite footprint value.",
 }
 

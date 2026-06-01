@@ -52,59 +52,75 @@ from modcod import DVB_S2_MODCODS
 # ========================================================================
 # 1.                       CENTRALIZED PLOT STYLE
 # ========================================================================
-FIGURE_DPI = 300          # Export resolution for raster figures.
+FIGURE_DPI = 600          # Export resolution for high-quality publication raster figures.
 EXPORT_PDF = True         # Also save a vector PDF with the same basename.
 
-# Typography (points).
-TITLE_FONTSIZE = 13
-LABEL_FONTSIZE = 11
-TICK_FONTSIZE = 9.5
-LEGEND_FONTSIZE = 9
-ANNOTATION_FONTSIZE = 8.5
-CONTOUR_LABEL_SIZE = 7.5
-COLORBAR_LABEL_SIZE = 10.5
+# Typography (points) - Optimized for IEEE/Academic papers
+TITLE_FONTSIZE = 14
+LABEL_FONTSIZE = 12
+TICK_FONTSIZE = 10.5
+LEGEND_FONTSIZE = 10.5
+ANNOTATION_FONTSIZE = 9.5
+CONTOUR_LABEL_SIZE = 9
+COLORBAR_LABEL_SIZE = 12
 
 # Lines and markers.
-LINE_WIDTH = 1.9
-THIN_LINE_WIDTH = 1.3
-MARKER_SIZE = 4.5
-GRID_ALPHA = 0.30
+LINE_WIDTH = 2.0
+THIN_LINE_WIDTH = 1.2
+MARKER_SIZE = 5.0
+GRID_ALPHA = 0.60
 
-# Default figure sizes (inches).
-FIGSIZE_CONTOUR = (8.6, 6.2)
-FIGSIZE_LINE = (8.8, 4.9)
-FIGSIZE_BAR = (7.8, 5.0)
-FIGSIZE_SQUARE = (6.6, 6.2)
-FIGSIZE_WIDE = (9.0, 3.0)
+# Default figure sizes (inches) - Golden ratio inspired where applicable.
+FIGSIZE_CONTOUR = (8.5, 6.0)
+FIGSIZE_LINE = (8.0, 5.0)
+FIGSIZE_BAR = (8.0, 5.0)
+FIGSIZE_SQUARE = (6.0, 6.0)
+FIGSIZE_WIDE = (9.0, 3.5)
 
 # Colormaps and key colors.
-SEQUENTIAL_CMAP = "viridis"     # Perceptually uniform, for scalar fields.
-DIVERGING_CMAP = "coolwarm"     # For signed margin fields centered on 0 dB.
-BASELINE_COLOR = "#d62728"      # Baseline operating-point marker.
-THRESHOLD_COLOR = "#222222"     # Threshold / closure lines.
-WARNING_COLOR = "#ff7f0e"       # Low-elevation / objective contours.
+SEQUENTIAL_CMAP = "magma"       # Premium perceptually uniform map.
+DIVERGING_CMAP = "RdBu_r"       # Classic academic diverging.
+BASELINE_COLOR = "#c0392b"      # Premium deeper red for operating point.
+THRESHOLD_COLOR = "#2c3e50"     # Dark slate for thresholds.
+WARNING_COLOR = "#e67e22"       # Elegant orange for limits.
 
 _RC_PARAMS = {
     "figure.facecolor": "white",
-    "axes.facecolor": "white",
+    "axes.facecolor": "#fdfdfd",
     "savefig.facecolor": "white",
     "savefig.bbox": "tight",
-    "font.family": "sans-serif",
+    "savefig.pad_inches": 0.05,
+    "font.family": "serif",
+    "font.serif": ["Times New Roman", "DejaVu Serif", "serif"],
+    "mathtext.fontset": "stix",
     "font.size": TICK_FONTSIZE,
     "axes.titlesize": TITLE_FONTSIZE,
     "axes.titleweight": "bold",
+    "axes.titlepad": 12,
     "axes.labelsize": LABEL_FONTSIZE,
-    "axes.edgecolor": "#444444",
-    "axes.linewidth": 0.9,
+    "axes.labelpad": 8,
+    "axes.edgecolor": "#333333",
+    "axes.linewidth": 1.2,
     "axes.axisbelow": True,
     "xtick.labelsize": TICK_FONTSIZE,
     "ytick.labelsize": TICK_FONTSIZE,
+    "xtick.major.size": 5,
+    "ytick.major.size": 5,
+    "xtick.minor.size": 3,
+    "ytick.minor.size": 3,
+    "xtick.direction": "in",
+    "ytick.direction": "in",
+    "xtick.top": True,
+    "ytick.right": True,
     "legend.fontsize": LEGEND_FONTSIZE,
-    "legend.framealpha": 0.88,
-    "legend.edgecolor": "#bbbbbb",
+    "legend.framealpha": 0.95,
+    "legend.edgecolor": "#dddddd",
+    "legend.fancybox": False,
     "lines.linewidth": LINE_WIDTH,
     "grid.alpha": GRID_ALPHA,
-    "grid.linewidth": 0.4,
+    "grid.linewidth": 0.7,
+    "grid.linestyle": ":",
+    "grid.color": "#b0b0b0",
 }
 
 
@@ -137,12 +153,16 @@ def _save_figure(fig: plt.Figure, png_path: Path) -> Path:
     return png_path
 
 
-def _mark_baseline(ax: plt.Axes, x: float, y: float, label: str = "baseline operating point") -> Line2D:
-    """Add the consistent baseline operating-point marker and return its handle."""
+def _mark_baseline(ax: plt.Axes, x: float, y: float, label: str = "Operating point") -> Line2D:
+    """Add the consistent baseline operating-point marker, crosshairs, and return its handle."""
+
+    # Add crosshairs extending to the axes
+    ax.axvline(x, color="white", linestyle="--", linewidth=1.2, alpha=0.9, zorder=5)
+    ax.axhline(y, color="white", linestyle="--", linewidth=1.2, alpha=0.9, zorder=5)
 
     return ax.scatter(
         [x], [y], marker="X", s=120, c=BASELINE_COLOR,
-        edgecolors="white", linewidths=1.1, zorder=6, label=label,
+        edgecolors="white", linewidths=1.2, zorder=6, label=label,
     )
 
 
@@ -157,7 +177,8 @@ def _filled_contour(
     path: Path,
     *,
     baseline: tuple[float, float] | None = None,
-    baseline_label: str = "baseline operating point",
+    baseline_label: str = "Operating point",
+    baseline_annotation: str | None = None,
     diverging_zero: bool = False,
     threshold_levels: list[float] | None = None,
     threshold_label: str | None = None,
@@ -194,7 +215,7 @@ def _filled_contour(
             if threshold_label:
                 legend_handles.append(Line2D([0], [0], color=threshold_color, lw=1.6, ls="--", label=threshold_label))
 
-    cbar = fig.colorbar(filled, ax=ax)
+    cbar = fig.colorbar(filled, ax=ax, fraction=0.046, pad=0.04)
     cbar.set_label(cbar_label, fontsize=COLORBAR_LABEL_SIZE)
     ax.set_title(title)
     ax.set_xlabel(xlabel)
@@ -203,8 +224,20 @@ def _filled_contour(
 
     if baseline is not None:
         legend_handles.append(_mark_baseline(ax, baseline[0], baseline[1], baseline_label))
+        if baseline_annotation:
+            ax.annotate(
+                baseline_annotation,
+                xy=(baseline[0], baseline[1]),
+                xytext=(25, 20),
+                textcoords="offset points",
+                bbox=dict(boxstyle="round,pad=0.4", fc="#fdfdfd", ec="black", lw=0.8, alpha=0.95),
+                arrowprops=dict(arrowstyle="->", color="black", lw=1.2),
+                fontsize=ANNOTATION_FONTSIZE,
+                zorder=7,
+            )
+
     if legend_handles:
-        ax.legend(handles=legend_handles, loc="best")
+        ax.legend(handles=legend_handles, loc="lower right")
 
     return _save_figure(fig, path)
 
@@ -272,6 +305,10 @@ def plot_downlink_cn0_vs_dish_and_frequency(scenario: ScenarioConfig, output_dir
 
     baseline_dish = scenario.downlink.receiver.antenna.diameter_m or 0.0
     baseline_freq = scenario.downlink.frequency_hz / GHZ
+    base_res = calculate_scenario(scenario)
+    baseline_z = base_res.downlink.cn0_dbhz
+    ann = f"Dish = {baseline_dish:.1f} m, Freq = {baseline_freq:.2f} GHz\nC/N0 = {baseline_z:.2f} dB-Hz"
+
     return _filled_contour(
         dish_values,
         freq_values_ghz,
@@ -282,6 +319,7 @@ def plot_downlink_cn0_vs_dish_and_frequency(scenario: ScenarioConfig, output_dir
         "Downlink C/N0 [dB-Hz]",
         output_dir / "01_downlink_cn0_dish_vs_frequency.png",
         baseline=(baseline_dish, baseline_freq),
+        baseline_annotation=ann,
     )
 
 
@@ -306,6 +344,10 @@ def plot_downlink_margin_vs_eirp_and_tsys(scenario: ScenarioConfig, output_dir: 
     )
     baseline_eirp = scenario.downlink.transmitter.eirp_dbw_override or 0.0
     baseline_tsys = scenario.downlink.receiver.system_noise_temperature_k or 0.0
+    base_res = calculate_scenario(scenario)
+    baseline_z = base_res.combined_margin_ni_db
+    ann = f"EIRP = {baseline_eirp:.1f} dBW, Tsys = {baseline_tsys:.1f} K\nMargin = {baseline_z:.2f} dB"
+
     return _filled_contour(
         eirp_values,
         tsys_values,
@@ -316,6 +358,7 @@ def plot_downlink_margin_vs_eirp_and_tsys(scenario: ScenarioConfig, output_dir: 
         cbar,
         output_dir / "02_downlink_margin_eirp_vs_tsys.png",
         baseline=(baseline_eirp, baseline_tsys),
+        baseline_annotation=ann,
         diverging_zero=True,
     )
 
@@ -337,6 +380,10 @@ def plot_uplink_cn_vs_power_and_dish(scenario: ScenarioConfig, output_dir: Path)
 
     baseline_power_w = 10 ** ((scenario.uplink.transmitter.tx_power_dbw or 0.0) / 10.0)
     baseline_dish = scenario.uplink.transmitter.antenna.diameter_m or 0.0
+    base_res = calculate_scenario(scenario)
+    baseline_z = base_res.uplink.cn_db
+    ann = f"Pt = {baseline_power_w:.1f} W, Dt = {baseline_dish:.1f} m\nC/N = {baseline_z:.2f} dB"
+
     return _filled_contour(
         power_w_values,
         dish_values,
@@ -347,6 +394,7 @@ def plot_uplink_cn_vs_power_and_dish(scenario: ScenarioConfig, output_dir: Path)
         "Uplink C/N [dB]",
         output_dir / "03_uplink_cn_power_vs_dish.png",
         baseline=(baseline_power_w, baseline_dish),
+        baseline_annotation=ann,
     )
 
 
@@ -370,6 +418,10 @@ def plot_combined_ebn0_vs_bitrate_and_bandwidth(scenario: ScenarioConfig, output
     required = scenario.uplink.required_ebn0_db
     baseline_rb = scenario.uplink.bit_rate_bps / 1.0e6
     baseline_bw = scenario.uplink.bandwidth_hz / MHZ
+    base_res = calculate_scenario(scenario)
+    baseline_z = base_res.combined_ebn0_ni_db
+    ann = f"Rb = {baseline_rb:.1f} Mbps, BW = {baseline_bw:.1f} MHz\nEb/(N0+I0) = {baseline_z:.2f} dB"
+
     return _filled_contour(
         bitrate_mbps,
         bandwidth_mhz,
@@ -380,6 +432,7 @@ def plot_combined_ebn0_vs_bitrate_and_bandwidth(scenario: ScenarioConfig, output
         cbar,
         output_dir / "04_total_ebn0_bitrate_vs_bandwidth.png",
         baseline=(baseline_rb, baseline_bw),
+        baseline_annotation=ann,
         threshold_levels=[required],
         threshold_label=f"required Eb/N0 = {required:g} dB",
     )
@@ -401,6 +454,10 @@ def plot_gs2_elevation_by_latitude_longitude(scenario: ScenarioConfig, output_di
             z[i, j] = result.downlink.elevation_deg
 
     baseline_loc = scenario.downlink.receiver.location
+    base_res = calculate_scenario(scenario)
+    baseline_z = base_res.downlink.elevation_deg
+    ann = f"Lon = {baseline_loc.longitude_deg:.1f}°, Lat = {baseline_loc.latitude_deg:.1f}°\nElevation = {baseline_z:.1f}°"
+
     return _filled_contour(
         lon_values,
         lat_values,
@@ -411,6 +468,7 @@ def plot_gs2_elevation_by_latitude_longitude(scenario: ScenarioConfig, output_di
         "Elevation angle [deg]",
         output_dir / "05_gs2_elevation_latitude_vs_longitude.png",
         baseline=(baseline_loc.longitude_deg, baseline_loc.latitude_deg),
+        baseline_annotation=ann,
         threshold_levels=[5.0, 10.0],
         threshold_label="low-elevation limit [deg]",
     )
@@ -430,6 +488,8 @@ def plot_downlink_asi_ci_vs_spacing_and_dish(scenario: ScenarioConfig, output_di
     baseline_spacing = abs(
         scenario.interference.adjacent_satellite_longitudes_deg[0] - scenario.satellite.longitude_deg
     )
+    ann = f"Dish = {baseline_dish:.1f} m\nSpacing = {baseline_spacing:.1f}°"
+
     return _filled_contour(
         dish_values,
         spacing_values,
@@ -440,6 +500,7 @@ def plot_downlink_asi_ci_vs_spacing_and_dish(scenario: ScenarioConfig, output_di
         "Downlink ASI C/I [dB]",
         output_dir / "06_downlink_asi_ci_spacing_vs_dish.png",
         baseline=(baseline_dish, baseline_spacing),
+        baseline_annotation=ann,
         threshold_levels=[20.0],
         threshold_label="20 dB C/I (illustrative objective)",
     )

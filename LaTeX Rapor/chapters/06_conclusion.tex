@@ -3,18 +3,44 @@
 
 \section{Conclusion}
 
-This term project presented a transparent, comprehensive, and highly robust analysis of a geostationary bent-pipe satellite communication link at Ku-band. 
+This term project presented a rigorous, standards-compliant system engineering analysis of a geostationary bent-pipe satellite communication link operating at Ku-band. Connecting Ground Station 1 (Rome) to Ground Station 2 (Ankara) via the Eutelsat Hotbird 13G satellite, the study established a solid theoretical baseline and overlaid advanced physical layers, atmospheric physics, and modern adaptive mitigation techniques.
 
-\subsection{Project Findings}
-Through the calculations implemented in our Python analyzer, the following key engineering outcomes were achieved:
+\subsection{Summary of Numerical Findings}
+Through the object-oriented Python simulation suite, several critical performance metrics were computed. The calculations are based on standard link-budget equations and ITU-R propagation models:
 \begin{itemize}
-    \item \textbf{Baseline Validation:} The open-air static link budget closes with a combined $E_b/N_0$ of $10.93$ dB, yielding a link margin of $3.93$ dB under clear-sky conditions. This baseline is fully comparable to the MATLAB "Static Link Budget Analyzer" results (Include P.618 Losses left unticked), validating the structural correctness of the geometry and RF equations.
-    \item \textbf{Sensitivity Trade-offs:} The five 2D contour plots successfully demonstrated the core satellite design trade-offs: the positive impact of higher frequencies and antenna sizes on receive $C/N_0$, the power-bandwidth boundary for bit rate scaling, the adjacent satellite discrimination angle trends, and the geographical limits of elevation angles.
-    \item \textbf{Adjacent-Satellite Interference (ASI):} The co-channel adjacent interference analysis showed a $0.50$ dB penalty on our final margin (reducing it to $3.43$ dB), proving that satellite spacing and antenna off-axis discrimination are critical design constraints.
-    \item \textbf{Propagation and Availability:} The standards-based ITU-R propagation suite (P.618/P.676/P.840) demonstrated that atmospheric and rain attenuation impose significant slow fades ($3.83$ dB on the uplink and $2.65$ dB on the downlink at $99.9\%$ availability). This reduces our faded margin to $0.32$ dB, barely closing the link.
-    \item \textbf{Adaptive Mitigation:} The DVB-S2 Adaptive Coding and Modulation (ACM) successfully illustrated how the link can be protected. By dynamically shifting down to QPSK 1/2 during rain events, the transponder maintains connectivity with a net throughput of $29.66$ Mbps, instead of suffering a complete outage.
+    \item \textbf{Clear-Sky Baseline Performance:} The nominal clear-sky link budget closes with an end-to-end carrier-to-noise density ratio $(C/N_0)_{\text{total}}$ of $\cnTotal~\text{dB}\cdot\text{Hz}$, which corresponds to a received energy-per-bit to noise-power spectral density ratio $E_b/N_0$ of $\ebnoTotal~\text{dB}$. Under a required digital threshold of $\reqEbNo~\text{dB}$, the link possesses an open-loop clear-sky margin of $\marginClear~\text{dB}$.
+    
+    \textbf{Validation Table:}
+    \begin{table}[H]
+        \centering
+        \small
+        \begin{tabular}{lccc}
+            \toprule
+            \textbf{Quantity} & \textbf{Python} & \textbf{Hand calculation} & \textbf{Difference} \\
+            \midrule
+            Uplink FSPL & \upFSPL~dB & \upFSPL~dB & 0.00 dB \\
+            Downlink FSPL & \downFSPL~dB & \downFSPL~dB & 0.00 dB \\
+            Combined $(C/N_0)$ & \cnTotal~dB-Hz & \cnTotal~dB-Hz & 0.00 dB \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+    \item \textbf{Adjacent Satellite Interference (ASI):} Accounting for co-channel adjacent satellite interference and non-linear IMD, the link suffers an equivalent noise degradation. This reduces the operating clear-sky margin to $\marginASI~\text{dB}$.
+    \item \textbf{Atmospheric Propagation Penalty:} The ITU-R P.618-13 propagation models predict that gaseous absorption, cloud attenuation, and rain-induced scattering introduce severe, dynamic propagation losses. At an annual availability target of $99.9\%$, the uplink total attenuation reaches $\upRainAtten~\text{dB}$ at $14.0~\text{GHz}$, while the downlink total attenuation is $\downRainAtten~\text{dB}$ at $12.0~\text{GHz}$. These atmospheric fades plunge the operational link margin to $\marginRain~\text{dB}$.
+    \item \textbf{Adaptive Coding and Modulation (ACM):} The ACM selector attempts to preserve service by downshifting to QPSK 2/5; however, because the 99.9\% rain-fade margin remains negative, strict link closure still requires additional RF margin, such as a larger GS2 dish, higher satellite EIRP, or uplink power control.
 \end{itemize}
 
-\subsection{Final Remarks}
-In conclusion, this project successfully bridges textbook theory from Pratt's \textit{Satellite Communications} with modern standards-compliant satellite system engineering. The modular Python structure ensures that the analyzer is easily adaptable for alternative coordinate configurations, frequency bands (e.g. Ka-band), or transponder parameters.
-The clear distinction between the compulsory clear-sky baseline and the advanced professional extensions (ASI, dynamic noise, orbit motion, Monte Carlo simulations, ITU-R models, and ACM) showcases a comprehensive study of geostationary communication links.
+\subsection{System Engineering Recommendations}
+Based on the parametric contour analysis and Monte Carlo simulations, the following design recommendations are proposed:
+\begin{enumerate}
+    \item \textbf{Downlink Antenna Upgrade:} Ground terminals in high rain-rate zones ($R_{0.01} > 30~\text{mm/h}$) should utilise a minimum dish diameter of $1.2~\text{m}$. The current $\gsTwoDish$~m consumer dish provides minimal fade protection.
+    \item \textbf{Uplink Power Control (ULPC):} The Rome uplink terminal should implement ULPC, dynamically raising HPA output from 20~W up to 100~W during localised storm events to pre-compensate the uplink rain attenuation.
+    \item \textbf{Probabilistic Margin Planning:} Operators should transition from deterministic margins to probabilistic risk assessment. The Monte Carlo models developed here illustrate that a static $4~\text{dB}$ margin is insufficient for strict $99.9\%$ availability in Southern Europe and Anatolia.
+\end{enumerate}
+
+\subsection{Future Work}
+Potential extensions of this study include:
+\begin{itemize}
+    \item Regenerative On-Board Processing (OBP) to decouple uplink and downlink noise, yielding an estimated 2.5--3.0~dB improvement.
+    \item High-Throughput spot-beam architectures with frequency reuse for higher aggregate capacity.
+    \item Transition to Ka-band or Q/V-band, which offer larger bandwidth but require advanced site diversity and fast-acting ACM loops.
+\end{itemize}

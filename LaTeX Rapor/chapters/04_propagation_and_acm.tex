@@ -1,76 +1,152 @@
 % 04_propagation_and_acm.tex
 % Chapter 4: Atmospheric Propagation and ACM [EXTRA]
 
-\section[Atmospheric Propagation and ACM]{Atmospheric Propagation and ACM\textsuperscript{*}\footnote{Chapters and sections marked with \textsuperscript{*} represent advanced, optional extensions developed beyond the core UZB451E term project specifications to model real-world satellite communication dynamics.}}
+\section[Atmospheric Propagation and ACM]{Atmospheric Propagation and ACM\textsuperscript{*}}
+
+\noindent\textit{\small * Chapters and sections marked with * represent advanced, optional extensions developed beyond the core UZB451E term project specifications to model real-world satellite communication dynamics.}
+
+\vspace{0.3cm}
 
 This chapter presents the standards-based atmospheric attenuation models and Adaptive Coding and Modulation (ACM) mechanisms implemented in this project. \textbf{These models are optional professional extensions representing an advanced study of link availability.}
 
 \subsection[ITU-R Slant-Path Attenuation Suite]{ITU-R Slant-Path Attenuation Suite\textsuperscript{*}}
-The standards-based availability study implements the slant-path propagation recommendations of the International Telecommunication Union (ITU-R). The total atmospheric attenuation $A_{total}(p)$ in dB exceeded for a time percentage $p$ ($0.001\% \le p \le 5\%$) is combined as recommended in \textit{ITU-R P.618-13 Section 2.5}~\cite{itu618}:
+
+\subsubsection{The Engineering Problem}
+Electromagnetic waves propagating along a slant path between a terrestrial ground station and a geostationary satellite traverse the Earth's troposphere, where they suffer from absorption and scattering. These impairments are caused by atmospheric gases (oxygen and water vapour), suspended water droplets in clouds, tropospheric turbulence, and liquid rain. At Ku-band frequencies, the physical wavelength of the signal is comparable to the size of falling raindrops, triggering severe Mie scattering and thermal absorption that can completely disrupt the communication link.
+
+\subsubsection{Design Motivation and Rationale}
+To design a reliable satellite communication system, engineers must accurately predict these atmospheric fades to calculate the required system margins. The International Telecommunication Union (ITU) publishes the ITU-R propagation recommendations---empirically validated mathematical suites that allow engineers to predict slant-path attenuation at any geographic coordinate on Earth. Analyzing these atmospheric effects is a mandatory step in high-frequency RF engineering.
+
+\subsubsection{Mathematical Formulation}
+The total atmospheric attenuation $A_{\text{total}}(p)$ in dB exceeded for an annual time percentage $p$ ($0.001\% \le p \le 5\%$) is calculated by combining gaseous absorption ($A_{\text{gaseous}}$), cloud attenuation ($A_{\text{cloud}}$), tropospheric scintillation ($A_{\text{scintillation}}$), and rain attenuation ($A_{\text{rain}}$) according to \textit{ITU-R P.618-13} \cite{itu618}:
 \begin{equation}
-    A_{total}(p) = A_{gaseous} + \sqrt{ \left( A_{rain}(p) + A_{cloud} \right)^2 + A_{scintillation}(p)^2 }
+    A_{\text{total}}(p) = A_{\text{gaseous}} + \sqrt{ \left( A_{\text{rain}}(p) + A_{\text{cloud}} \right)^2 + A_{\text{scintillation}}(p)^2 }
 \end{equation}
 
-\subsubsection{Yağış Sönümlemesi (ITU-R P.618, P.838, P.839)}
-The rain attenuation $A_{rain}(p)$ is calculated by determining the rain height $h_R$ and slant-path length $L_s$ under the rain layer. The specific attenuation $\gamma_R$ in dB/km is computed using the horizontal and vertical power-law coefficients $k$ and $\alpha$ from \textit{ITU-R P.838-3}~\cite{itu838}:
+For rain attenuation, we retrieve the local point rainfall rate $R_{0.01}$ from the \textit{ITU-R P.837} database \cite{itu838}. The specific attenuation $\gamma_{\text{R}}$ in dB/km is computed using power-law coefficients $k$ and $\alpha$ from \textit{ITU-R P.838-3} \cite{itu838}:
 \begin{equation}
-    \gamma_R = k R_{0.01}^\alpha
+    \gamma_{\text{R}} = k R_{0.01}^\alpha
 \end{equation}
-where $R_{0.01}$ is the local point rainfall rate exceeded for $0.01\%$ of an average year in mm/h. The horizontal projection $L_G$ and reduction factor $r_{0.01}$ are computed to account for the finite spatial cell-size of rain cells. The vertical adjustment factor $v_{0.01}$ accounts for the slant path profile, yielding the effective path length $L_{eff} = L_R v_{0.01}$. The sönümleme $A_{0.01}$ is:
+The effective path length through the rain cell accounts for spatial localisation:
 \begin{equation}
-    A_{0.01} = \gamma_R L_{eff}
+    L_{\text{eff}} = L_{\text{s}} \cdot r_{0.01} \cdot v_{0.01}
 \end{equation}
-For other percentages $p$, $A_p$ is scaled exponentially using a latitude- and elevation-dependent scaling factor:
+where $r_{0.01}$ is the horizontal path reduction factor and $v_{0.01}$ is the vertical adjustment factor. The attenuation exceeded for $0.01\%$ of the year is $A_{0.01} = \gamma_{\text{R}} L_{\text{eff}}$. For other time percentages $p$:
 \begin{equation}
     A_p = A_{0.01} \left( \frac{p}{0.01} \right)^{-\left[0.655 + 0.033\ln p - 0.045\ln A_{0.01} - \beta(1-p)\sin\theta\right]}
 \end{equation}
 
-\subsubsection[Atmosferik Gaz Emilimi (ITU-R P.676-12 Annex 2)]{Atmosferik Gaz Emilimi (ITU-R P.676-12 Annex 2)\textsuperscript{*}}
-The gaseous attenuation $A_{gaseous}$ accounts for dry air (oxygen) and water vapour absorption. Using surface pressure, temperature, and absolute humidity, specific zenith attenuations $\gamma_o$ and $\gamma_w$ are computed alongside their equivalent height limits $h_o$ and $h_w$ according to \textit{ITU-R P.676-12}~\cite{itu676}:
+Gaseous attenuation uses dry air and water vapor specific zenith attenuations scaled by the slant-path elevation angle (\textit{ITU-R P.676-12} \cite{itu676}):
 \begin{equation}
-    A_{gaseous} = \frac{\gamma_o h_o + \gamma_w h_w}{\sin\theta}
+    A_{\text{gaseous}} = \frac{\gamma_{\text{o}} h_{\text{o}} + \gamma_{\text{w}} h_{\text{w}}}{\sin\theta}
 \end{equation}
 
-\subsubsection[Bulut Sıvı Su Sönümlemesi (ITU-R P.840-8)]{Bulut Sıvı Su Sönümlemesi (ITU-R P.840-8)\textsuperscript{*}}
-Attenuation due to cloud liquid water $A_{cloud}$ uses Rayleigh scattering with a double-Debye model for water dielectric permittivity, yielding a specific attenuation coefficient $K_l$ in $(\text{dB/km})/(\text{g/m}^3)$ scaled by the columnar liquid water $M$ in kg/m$^2$ according to \textit{ITU-R P.840-8}~\cite{itu840}:
+Cloud liquid water attenuation uses columnar liquid water $M$ and specific attenuation $K_{\text{l}}$ (\textit{ITU-R P.840-8} \cite{itu840}):
 \begin{equation}
-    A_{cloud} = \frac{M \cdot K_l}{\sin\theta}
+    A_{\text{cloud}} = \frac{M \cdot K_{\text{l}}}{\sin\theta}
 \end{equation}
 
-\subsubsection[Troposferik Sintilasyon Sönümlemesi (ITU-R P.618-13 Sec. 2.4.1)]{Troposferik Sintilasyon Sönümlemesi (ITU-R P.618-13 Sec. 2.4.1)\textsuperscript{*}}
-Tropospheric scintillation $A_{scintillation}(p)$ represents fast signal standard-deviation variations $\sigma$ caused by local atmospheric turbulence, scaled by the aperture-averaging factor $g(x)$ of the receive dish antenna:
+Scintillation fade depth is scaled by the antenna aperture-averaging factor (\textit{ITU-R P.618-13} \cite{itu618}):
 \begin{equation}
-    A_{scintillation}(p) = a(p) \sigma
+    A_{\text{scintillation}}(p) = a(p) \sigma
 \end{equation}
-where $a(p)$ is a time-percentage factor.
 
-\subsection[Monte-Carlo Yağış Outage Simülasyonu]{Monte-Carlo Yağış Outage Simülasyonu\textsuperscript{*}}
-While the ITU-R recommendations provide deterministic, standards-based bounds for system availability, understanding the true statistical distribution of link outages requires stochastic modeling. To evaluate the link margin under dynamic weather events, an advanced Monte Carlo simulation engine was developed. 
+\subsubsection{Operational Impact and Results}
+This ITU-R suite provides the estimated fade depths that the RF link must tolerate. For our Rome-to-Ankara Ku-band link, at the 99.9\% availability design point, the model predicts \upRainAtten~dB uplink attenuation at 14 GHz and \downRainAtten~dB downlink attenuation at 12 GHz. When these fades are combined with interference and dynamic receiver noise, the end-to-end margin falls to \marginRain~dB.
 
-The simulation executes $N = 8760$ discrete trials, representing hourly atmospheric states over an entire meteorological year. At each time step $t_i$, the atmospheric state $S(t_i)$ is sampled from an empirical probability mass function representing local climatology:
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{23_itu_attenuation_vs_availability.png}
+        \caption{Slant-path attenuation vs. annual link availability.}
+        \label{fig:itu_attenuation_curve}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{25_itu_attenuation_breakdown_bar.png}
+        \caption{Attenuation breakdown at $99.9\%$ availability.}
+        \label{fig:itu_breakdown_bar}
+    \end{subfigure}
+    \caption{ITU-R P.618 slant-path propagation impairments and specific contribution analysis for the Rome-Ankara link.}
+    \label{fig:itu_propagation_metrics}
+\end{figure}
+
+\subsection[Monte-Carlo Rain Outage Simulation]{Monte-Carlo Rain Outage Simulation\textsuperscript{*}}
+
+\subsubsection{The Engineering Problem}
+The ITU-R recommendations provide static, deterministic bounds for link availability at specific annual time percentages. However, they do not simulate the chronological, time-varying behaviour of weather---the transitions between clear-sky and storm states---nor do they provide a probability distribution of the active link margin over a continuous meteorological time series.
+
+\subsubsection{Design Motivation and Rationale}
+Running a Monte Carlo simulation allows system engineers to generate thousands of random meteorological states based on an illustrative weather-state probability model. This educational stochastic simulation models the statistical variance of atmospheric fades, enabling computation of the estimated probability distribution of active link margins and the estimated annual availability.
+
+\subsubsection{Mathematical Formulation}
+The simulation engine executes $N = 8760$ discrete trials, representing each hour of a complete year. At each time step $t_i$, the atmospheric weather state $S(t_i)$ is sampled from a probability mass function:
 \begin{itemize}
-    \item \textbf{Clear-Sky ($S_0$):} Represents standard operating conditions ($0$~dB excess attenuation). Occurs with high probability (e.g., $90\%$).
-    \item \textbf{Light and Moderate Rain ($S_1, S_2$):} Introduces small to medium fade depths, drawn from a uniformly distributed attenuation profile.
-    \item \textbf{Heavy Storms ($S_3$):} Rare events ($p < 0.5\%$) triggering severe attenuation (up to $15$~dB in Ku-band), modeled as a heavy-tailed stochastic variable.
+    \item \textbf{Clear-Sky ($S_0$):} Standard operating conditions ($0$~dB excess attenuation).
+    \item \textbf{Light and Moderate Rain ($S_1, S_2$):} Small to medium fade depths drawn from a uniform attenuation profile.
+    \item \textbf{Heavy Storms ($S_3$):} Rare events ($p < 0.5\%$) triggering severe attenuation (up to $15$~dB in Ku-band).
 \end{itemize}
-
-For each generated weather state, the exact signal-to-noise ratio and link margin are instantaneously recalculated:
+For each generated hourly weather state, the computed active Carrier-to-Noise ratio and link margin are recalculated:
 \begin{equation}
     Margin(t_i) = E_b/N_0(t_i) - \text{Required } E_b/N_0
 \end{equation}
-By aggregating the results across all $N$ trials, the system generates a massive statistical dataset. This dataset is then sorted to produce a Cumulative Distribution Function (CDF) of the link margin. An \textit{outage event} is mathematically defined as any trial where $Margin(t_i) < 0$. The overall system availability is directly computed as:
+An \textit{outage event} is any hour where $Margin(t_i) < 0$. The overall system availability is:
 \begin{equation}
     \text{Availability (\%)} = 100 \times \left( 1 - \frac{\sum \mathbf{1}(Margin(t_i) < 0)}{N} \right)
 \end{equation}
-This Monte Carlo framework provides a highly intuitive, distribution-based contrast to the rigid analytical curves of the ITU-R models, enabling robust risk assessment for satellite operators.
+
+\subsubsection{Operational Impact and Results}
+The Monte Carlo simulation outputs a Cumulative Distribution Function (CDF) of the link margin, showing the estimated risk profile over the year. This allows the designer to evaluate whether the selected static margin is sufficient under stochastic weather variations.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{16_availability_margin_histogram.png}
+    \caption{Probability density distribution of the dynamic link margin over $8{,}760$ simulated hours of the meteorological year (Monte Carlo stochastic analysis).}
+    \label{fig:mc_availability_histogram}
+\end{figure}
 
 \subsection[DVB-S2 ACM (Adaptive Coding \& Modulation)]{DVB-S2 ACM (Adaptive Coding \& Modulation)\textsuperscript{*}}
-In faded downlink channels, a fixed transmission format (MODCOD) either causes link outage or wastes capacity. The DVB-S2 ACM module models a receiver that monitors the measured $Es/N0$ and dynamically selects the highest spectral efficiency $\eta$ from the DVB-S2 MODCOD ladder that closes the link:
+
+\subsubsection{The Engineering Problem}
+Traditionally, satellite links are designed for the worst-case rain fade scenario using a fixed MODCOD. Because severe storms occur for less than $1\%$ of the year, this approach means that for over $99\%$ of the year the link operates with a large excess margin, wasting potential channel capacity.
+
+\subsubsection{Design Motivation and Rationale}
+Designing with a fixed MODCOD forces a severe compromise: either accept high outages during rain or accept extremely low data rates. Adaptive Coding and Modulation (ACM) solves this by dynamically monitoring the active $E_s/N_0$ at the receiver and changing the modulation order and FEC code rate in real-time. This maximises throughput during clear-sky conditions while mitigating outage risk during heavy storms by switching to highly robust MODCODs.
+
+\subsubsection{Mathematical Formulation}
+The receiver continuously monitors $(E_s/N_0)_{\text{available}}$ and dynamically selects the highest spectral efficiency $\eta$ (in bits/symbol) from the DVB-S2 \cite{dvbs2} MODCOD ladder that satisfies:
 \begin{equation}
-    Es/N0_{available} \ge Required\ Es/N0_{MODCOD} + Margin_{impl}
+    (E_s/N_0)_{\text{available}} \ge \text{Required } (E_s/N_0)_{\text{MODCOD}} + Margin_{\text{impl}}
 \end{equation}
-The usable symbol rate is $R_s = B / (1 + \alpha_{rolloff})$, yielding a dynamic net throughput:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{28_dvbs2_modcod_ladder.png}
+    \caption{DVB-S2 MODCOD ladder: trade-off between spectral efficiency and required signal-to-noise ratio.}
+    \label{fig:dvbs2_modcod_ladder}
+\end{figure}
+
+Using the usable symbol rate $R_{\text{s}} = B / (1 + \alpha_{\text{rolloff}})$, the active net throughput is:
 \begin{equation}
-    Throughput(Mbps) = \eta \cdot R_s
+    Throughput(\text{Mbps}) = \eta \cdot R_{\text{s}}
 \end{equation}
-which optimizes the channel capacity under time-varying atmospheric fades according to the DVB-S2 standard~\cite{dvbs2}.
+
+\subsubsection{Operational Impact and Results}
+Under clear sky the link dynamically shifts to high-order modulations (e.g., 8PSK or 16APSK depending on available $E_s/N_0$), providing maximum data rates, and gracefully degrades to robust QPSK during a storm, attempting to preserve service at reduced throughput.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{29_dvbs2_acm_vs_availability.png}
+    \caption{DVB-S2 ACM dynamic throughput and MODCOD selection over the link availability spectrum.}
+    \label{fig:dvbs2_acm_availability}
+\end{figure}
+
+\subsection[Uplink Power Control (ULPC)]{Uplink Power Control (ULPC)\textsuperscript{*}}
+
+ULPC is discussed as a possible mitigation option, not as a fully implemented closed-loop control model. When heavy rain attenuates the uplink carrier, the satellite transponder input power drops below its optimal operating region. ULPC addresses this by dynamically increasing the ground station HPA transmit power:
+\begin{equation}
+    P_{\text{tx,dynamic}}(\text{dBW}) = P_{\text{tx,nominal}}(\text{dBW}) + A_{\text{rain,up}}(\text{dB})
+\end{equation}
+subject to $P_{\text{tx,dynamic}} \le P_{\text{tx,max}}$. This may provide several dB of fade compensation, depending on HPA headroom and regulatory EIRP limits, and can help stabilise the satellite input power during uplink rain events.

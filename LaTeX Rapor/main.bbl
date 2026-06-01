@@ -21,6 +21,14 @@
 \providecommand{\BIBdecl}{\relax}
 \BIBdecl
 
+\bibitem{antenna}
+{Prodelin / General Dynamics}, ``1.2m and 2.4m vsat ku-band antenna systems
+  datasheet,'' Commercial Datasheet, 2020.
+
+\bibitem{eutelsat}
+{Eutelsat Communications}, ``Hotbird 13g satellite footprint and technical
+  specifications,'' Eutelsat Official Datasheet, 2023.
+
 \bibitem{pratt}
 T.~Pratt, C.~W. Bostian, and J.~E. Allnutt, \emph{Satellite Communications},
   2nd~ed.\hskip 1em plus 0.5em minus 0.4em\relax New York: John Wiley \& Sons,
