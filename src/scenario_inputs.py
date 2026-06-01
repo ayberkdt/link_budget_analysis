@@ -12,16 +12,16 @@ V5 adds two new input blocks at the bottom:
 * ``MODCOD`` configures the DVB-S2 adaptive coding-and-modulation layer.
 """
 
-SCENARIO_NAME = "Advanced GEO bent-pipe Ku-band example (V5)"
+SCENARIO_NAME = "Rome to Ankara Link via Hotbird 13G (V5)"
 
 
 # ========================================================================
 # 1.                          GROUND STATION 1 
 # ========================================================================
 GS1 = {
-    "site_name": "GS1 Istanbul",
-    "latitude_deg": 41.0082,
-    "longitude_deg": 28.9784,
+    "site_name": "GS1 Rome",
+    "latitude_deg": 41.9028,
+    "longitude_deg": 12.4964,
     "altitude_km": 0.0,
     "terminal_name": "GS1 transmitter",
     "antenna_name": "GS1 Ku-band uplink dish",
@@ -30,7 +30,7 @@ GS1 = {
     "antenna_gain_dbi": None,  # Use this instead of diameter if you have a datasheet gain.
     "tx_power_w": 20.0,
     "tx_feeder_loss_db": 1.0,
-    "notes": "Example value; replace with HPA/BUC datasheet value.",
+    "notes": "Rome broadcasting earth station.",
 }
 
 
@@ -49,7 +49,7 @@ GS2 = {
     "antenna_gain_dbi": None,  # Use this instead of diameter if you have a datasheet gain.
     "system_noise_temperature_k": 150.0,
     "rx_feeder_loss_db": 0.5,
-    "notes": "Example receive terminal; replace Tsys and antenna with datasheet values.",
+    "notes": "Ankara receive terminal.",
 }
 
 
@@ -57,8 +57,8 @@ GS2 = {
 # 3.                 Satellite State and Transponder
 # ========================================================================
 SATELLITE = {
-    "name": "Example GEO satellite at 42E",
-    "longitude_deg": 42.0,
+    "name": "Eutelsat Hotbird 13G at 13E",
+    "longitude_deg": 13.0,
     "latitude_deg": 0.0,
     "orbit_radius_km": None,
 }
@@ -124,7 +124,7 @@ APPARENT_MOTION = {
 
 INTERFERENCE = {
     "enabled": True,
-    "adjacent_satellite_longitudes_deg": (40.0, 44.0),
+    "adjacent_satellite_longitudes_deg": (11.0, 15.0),
     "adjacent_activity_factor_db": -3.0,
     "imd_c_i_db": 30.0,
 }

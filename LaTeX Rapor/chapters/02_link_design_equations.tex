@@ -8,7 +8,7 @@ This chapter details the fundamental RF engineering equations and geometric tran
 \subsection{Slant-Path Geometry and Coordinate Transformations}
 Calculating the pointing parameters (slant range, elevation angle, and azimuth angle) between the ground station and the geostationary satellite requires transformations between spherical coordinates and the Earth-Centered, Earth-Fixed (ECEF) Cartesian coordinate system. 
 
-Let the Earth's equatorial radius be $R_e = \SI{6378.137}{\km}$, and the nominal radius of the geostationary orbit be $r_{sat} = \SI{42164.0}{\km}$. For a ground station located at latitude $\phi$, longitude $\lambda$, and altitude $h$ above mean sea level, the ECEF position vector $\vec{R}_{ground}$ is given by:
+Let the Earth's equatorial radius be $R_e = 6378.137$~km, and the nominal radius of the geostationary orbit be $r_{sat} = 42164.0$~km. For a ground station located at latitude $\phi$, longitude $\lambda$, and altitude $h$ above mean sea level, the ECEF position vector $\vec{R}_{ground}$ is given by:
 \begin{equation}
     \vec{R}_{ground} = \begin{bmatrix} (R_e + h)\cos\phi\cos\lambda \\ (R_e + h)\cos\phi\sin\lambda \\ (R_e + h)\sin\phi \end{bmatrix}
 \end{equation}
@@ -51,11 +51,11 @@ For a circular parabolic dish antenna of diameter $D$ operating at carrier frequ
 \begin{equation}
     \lambda_w = \frac{c}{f}
 \end{equation}
-where $c \approx \SI{2.99792458e8}{\m/\s}$ is the speed of light in vacuum. The peak boresight gain $G$ in dBi is calculated as:
+where $c \approx 2.99792458 \times 10^8$~m/s is the speed of light in vacuum. The peak boresight gain $G$ in dBi is calculated as:
 \begin{equation}
     G(dBi) = 10\log_{10}\left( \eta \left( \frac{\pi D}{\lambda_w} \right)^2 \right)
 \end{equation}
-where $\eta$ is the aperture efficiency (set to $0.62$, representing standard engineering efficiency). The half-power beamwidth ($\theta_{HPBW}$), which determines the angular separation at which the antenna gain drops by \SI{3}{\dB}, is approximated by:
+where $\eta$ is the aperture efficiency (set to $0.62$, representing standard engineering efficiency). The half-power beamwidth ($\theta_{HPBW}$), which determines the angular separation at which the antenna gain drops by 3~dB, is approximated by:
 \begin{equation}
     \theta_{HPBW} \approx 70^\circ \frac{\lambda_w}{D}
 \end{equation}
@@ -77,12 +77,12 @@ The receiver figure of merit (quality factor) $G/T$ is:
 \begin{equation}
     G/T(dB/K) = G_{rx}(dBi) - L_{rx\_feeder}(dB) - 10\log_{10}(T_{sys})
 \end{equation}
-where $G_{rx}$ is the receive antenna gain, $L_{rx\_feeder}$ is the receive feeder loss, and $T_{sys}$ is the system noise temperature in Kelvin.
+where $G_{rx}$ is the receive antenna gain, $L_{rx\_feeder}$ is the receive feeder loss, and $T_{sys}$ is the system noise temperature in Kelvin (set to 150.0~K for the static downlink receiver).
 The carrier-to-noise density ratio $C/N_0$ at the receiver demodulator input is:
 \begin{equation}
     C/N_0(dB\text{-}Hz) = EIRP(dBW) + G/T(dB/K) - L_{total}(dB) - 10\log_{10}(k)
 \end{equation}
-where $L_{total}$ is the sum of path loss, pointing misalignments, polarization losses, and atmospheric clear-sky absorption. The term $-10\log_{10}(k) \approx \SI{228.6}{\dB(W/(Hz\cdot K))}$ represents Boltzmann's constant in decibels.
+where $L_{total}$ is the sum of path loss, pointing misalignments, polarization losses, and atmospheric clear-sky absorption. The term $-10\log_{10}(k) \approx 228.6$~dB represents Boltzmann's constant in decibels.
 The carrier-to-noise ratio $C/N$ over the transponder bandwidth $B$ is:
 \begin{equation}
     C/N(dB) = C/N_0(dB\text{-}Hz) - 10\log_{10}(B)
