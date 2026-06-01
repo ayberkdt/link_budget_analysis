@@ -483,7 +483,14 @@ class MainWindow(QMainWindow):
                     
                     if "help" in param:
                         h_lbl = QLabel(param["help"])
-                        h_lbl.setStyleSheet(f"font-size: 12px; color: {THEME['fg_muted']}; border: none; background: transparent;")
+                        h_lbl.setStyleSheet(f"""
+                            font-size: 12px; 
+                            color: {THEME['fg_muted']}; 
+                            background: transparent;
+                            border-left: 2px solid {THEME['border']};
+                            padding-left: 6px;
+                            margin-top: 2px;
+                        """)
                         lbl_box.addWidget(h_lbl)
                         
                     row.addLayout(lbl_box)
@@ -568,13 +575,11 @@ class MainWindow(QMainWindow):
                 self.metrics_result_lbl = QLabel("")
                 self.metrics_result_lbl.setStyleSheet(f"""
                     QLabel {{
-                        background: {THEME['bg_card']};
+                        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 {THEME['bg_card']}, stop:1 {THEME['bg_entry']});
                         border: 1px solid {THEME['border']};
+                        border-left: 4px solid {THEME['accent']};
                         border-radius: 8px;
-                        padding: 15px;
-                        font-size: 14px; 
-                        color: {THEME['fg_main']}; 
-                        line-height: 1.5;
+                        padding: 10px;
                     }}
                 """)
                 self.metrics_result_lbl.hide()
@@ -640,8 +645,22 @@ class MainWindow(QMainWindow):
             s1, e1 = calc_slant(lat1, lon1, sat_lon)
             s2, e2 = calc_slant(lat2, lon2, sat_lon)
             
-            self.metrics_result_lbl.setText(f"<b>GS1 (Uplink)</b> &nbsp;&nbsp;&nbsp; Slant Range: {s1:.2f} km &nbsp;|&nbsp; Elevation: {e1:.2f}°<br>"
-                                            f"<b>GS2 (Downlink)</b> &nbsp; Slant Range: {s2:.2f} km &nbsp;|&nbsp; Elevation: {e2:.2f}°")
+            html = f"""
+            <table width="100%" cellspacing="0" cellpadding="6">
+                <tr>
+                    <td style="color: {THEME['accent']}; font-weight: bold; font-size: 15px;">GS1 (Uplink)</td>
+                    <td style="color: {THEME['fg_muted']};">Slant Range:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{s1:.2f} km</b></td>
+                    <td style="color: {THEME['fg_muted']};">Elevation:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{e1:.2f}&deg;</b></td>
+                </tr>
+                <tr><td colspan="3"><hr style="background-color:{THEME['border']}; border: none; height: 1px;"></td></tr>
+                <tr>
+                    <td style="color: {THEME['accent']}; font-weight: bold; font-size: 15px;">GS2 (Downlink)</td>
+                    <td style="color: {THEME['fg_muted']};">Slant Range:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{s2:.2f} km</b></td>
+                    <td style="color: {THEME['fg_muted']};">Elevation:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{e2:.2f}&deg;</b></td>
+                </tr>
+            </table>
+            """
+            self.metrics_result_lbl.setText(html)
             self.metrics_result_lbl.show()
             
         except Exception as e:
