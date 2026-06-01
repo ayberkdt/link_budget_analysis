@@ -427,25 +427,22 @@ class MainWindow(QMainWindow):
             vbox.addWidget(p_desc)
             
             if page["title"] == "Network Topology":
-                # Rome - Ankara reference panel
                 ref_frame = QFrame()
                 ref_frame.setStyleSheet(f"""
                     QFrame {{
-                        background: {THEME['secondary_dim']};
-                        border: 1px solid {THEME['secondary']};
-                        border-radius: 8px;
+                        background: {THEME['bg_entry']};
+                        border-left: 4px solid {THEME['info']};
+                        border-radius: 4px;
                     }}
                     QLabel {{
-                        color: {THEME['fg_main']};
-                        font-size: 14px;
+                        color: {THEME['fg_soft']};
+                        font-size: 13px;
                     }}
                 """)
                 ref_layout = QVBoxLayout(ref_frame)
-                ref_layout.setContentsMargins(15, 15, 15, 15)
-                ref_lbl = QLabel("<b>Önerilen Referans Koordinatlar (Recommended Values)</b><br>"
-                                 "Rome (GS1): 41.9028° N, 12.4964° E<br>"
-                                 "Ankara (GS2): 39.9334° N, 32.8597° E<br>"
-                                 "Eutelsat Hotbird 13G: 13.0° E")
+                ref_layout.setContentsMargins(15, 10, 15, 10)
+                ref_lbl = QLabel(f"<b style='color: {THEME['info']};'>Recommended Reference Coordinates</b><br>"
+                                 "Rome (GS1): 41.9028° N, 12.4964° E &nbsp;|&nbsp; Ankara (GS2): 39.9334° N, 32.8597° E &nbsp;|&nbsp; Eutelsat Hotbird 13G: 13.0° E")
                 ref_layout.addWidget(ref_lbl)
                 vbox.addWidget(ref_frame)
 
@@ -487,8 +484,8 @@ class MainWindow(QMainWindow):
                             font-size: 12px; 
                             color: {THEME['fg_muted']}; 
                             background: transparent;
-                            border-left: 2px solid {THEME['border']};
-                            padding-left: 6px;
+                            border: none;
+                            font-style: italic;
                             margin-top: 2px;
                         """)
                         lbl_box.addWidget(h_lbl)
@@ -645,18 +642,21 @@ class MainWindow(QMainWindow):
             s1, e1 = calc_slant(lat1, lon1, sat_lon)
             s2, e2 = calc_slant(lat2, lon2, sat_lon)
             
+            site1 = self.widget_map["GS1['site_name']"].text()
+            site2 = self.widget_map["GS2['site_name']"].text()
+            
             html = f"""
             <table width="100%" cellspacing="0" cellpadding="6">
                 <tr>
-                    <td style="color: {THEME['accent']}; font-weight: bold; font-size: 15px;">GS1 (Uplink)</td>
-                    <td style="color: {THEME['fg_muted']};">Slant Range:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{s1:.2f} km</b></td>
-                    <td style="color: {THEME['fg_muted']};">Elevation:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{e1:.2f}&deg;</b></td>
+                    <td style="color: {THEME['accent']}; font-weight: bold; font-size: 15px;">GS1 (Uplink) - {site1}</td>
+                    <td style="color: {THEME['fg_muted']};">Slant Range:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{{s1:.2f}} km</b></td>
+                    <td style="color: {THEME['fg_muted']};">Elevation:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{{e1:.2f}}&deg;</b></td>
                 </tr>
                 <tr><td colspan="3"><hr style="background-color:{THEME['border']}; border: none; height: 1px;"></td></tr>
                 <tr>
-                    <td style="color: {THEME['accent']}; font-weight: bold; font-size: 15px;">GS2 (Downlink)</td>
-                    <td style="color: {THEME['fg_muted']};">Slant Range:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{s2:.2f} km</b></td>
-                    <td style="color: {THEME['fg_muted']};">Elevation:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{e2:.2f}&deg;</b></td>
+                    <td style="color: {THEME['accent']}; font-weight: bold; font-size: 15px;">GS2 (Downlink) - {site2}</td>
+                    <td style="color: {THEME['fg_muted']};">Slant Range:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{{s2:.2f}} km</b></td>
+                    <td style="color: {THEME['fg_muted']};">Elevation:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{{e2:.2f}}&deg;</b></td>
                 </tr>
             </table>
             """
