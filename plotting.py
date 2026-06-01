@@ -1,0 +1,1100 @@
+# plotting.py
+"""Report-quality figure generation for the V5 UZB451 GEO link-budget analyzer.
+
+This module renders the figures used in the project report. It defines a single
+centralized style (typography, line/marker sizing, grid, colormaps, and figure
+sizes) so every figure shares one clean visual identity suitable for direct
+insertion into a PDF report.
+
+Conventions used throughout
+---------------------------
+* Sequential scalar fields use a perceptually uniform colormap (viridis).
+* Signed margin fields use a diverging colormap centered on the 0 dB closure
+  line, with that line drawn in bold.
+* The baseline operating point is marked with a consistent ``X`` symbol.
+* Every figure is saved as both PNG (quick viewing) and PDF (report insertion)
+  with the same basename.
+
+The figure-generation entry points respect the scenario ``enabled`` flags and
+never draw a figure from placeholder data: disabled analyses produce no figure.
+"""
+
+# ========================================================================
+# 0.                             IMPORTS
+# ========================================================================
+from __future__ import annotations
+
+from dataclasses import replace
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.colors import TwoSlopeNorm
+from matplotlib.lines import Line2D
+
+import itu_propagation as itu
+from calculations import (
+    calculate_asi_ci_grid,
+    calculate_dynamic_system_noise_temperature_k,
+    calculate_geo_link_geometry,
+    calculate_scenario,
+    calculate_scenario_with_itu,
+    modulation_bits_per_symbol,
+    shannon_capacity_bps,
+    theoretical_ber_awgn,
+    watts_to_dbw,
+)
+from constants import GHZ, MHZ
+from entities import ITUPropagationResult, ScenarioConfig, TimeVaryingSample
+from modcod import DVB_S2_MODCODS
+
+
+# ========================================================================
+# 1.                       CENTRALIZED PLOT STYLE
+# ========================================================================
+FIGURE_DPI = 300          # Export resolution for raster figures.
+EXPORT_PDF = True         # Also save a vector PDF with the same basename.
+
+# Typography (points).
+TITLE_FONTSIZE = 13
+LABEL_FONTSIZE = 11
+TICK_FONTSIZE = 9.5
+LEGEND_FONTSIZE = 9
+ANNOTATION_FONTSIZE = 8.5
+CONTOUR_LABEL_SIZE = 7.5
+COLORBAR_LABEL_SIZE = 10.5
+
+# Lines and markers.
+LINE_WIDTH = 1.9
+THIN_LINE_WIDTH = 1.3
+MARKER_SIZE = 4.5
+GRID_ALPHA = 0.30
+
+# Default figure sizes (inches).
+FIGSIZE_CONTOUR = (8.6, 6.2)
+FIGSIZE_LINE = (8.8, 4.9)
+FIGSIZE_BAR = (7.8, 5.0)
+FIGSIZE_SQUARE = (6.6, 6.2)
+FIGSIZE_WIDE = (9.0, 3.0)
+
+# Colormaps and key colors.
+SEQUENTIAL_CMAP = "viridis"     # Perceptually uniform, for scalar fields.
+DIVERGING_CMAP = "coolwarm"     # For signed margin fields centered on 0 dB.
+BASELINE_COLOR = "#d62728"      # Baseline operating-point marker.
+THRESHOLD_COLOR = "#222222"     # Threshold / closure lines.
+WARNING_COLOR = "#ff7f0e"       # Low-elevation / objective contours.
+
+_RC_PARAMS = {
+    "figure.facecolor": "white",
+    "axes.facecolor": "white",
+    "savefig.facecolor": "white",
+    "savefig.bbox": "tight",
+    "font.family": "sans-serif",
+    "font.size": TICK_FONTSIZE,
+    "axes.titlesize": TITLE_FONTSIZE,
+    "axes.titleweight": "bold",
+    "axes.labelsize": LABEL_FONTSIZE,
+    "axes.edgecolor": "#444444",
+    "axes.linewidth": 0.9,
+    "axes.axisbelow": True,
+    "xtick.labelsize": TICK_FONTSIZE,
+    "ytick.labelsize": TICK_FONTSIZE,
+    "legend.fontsize": LEGEND_FONTSIZE,
+    "legend.framealpha": 0.88,
+    "legend.edgecolor": "#bbbbbb",
+    "lines.linewidth": LINE_WIDTH,
+    "grid.alpha": GRID_ALPHA,
+    "grid.linewidth": 0.4,
+}
+
+
+def _apply_style() -> None:
+    """Apply the centralized Matplotlib style to all subsequent figures."""
+
+    plt.rcParams.update(_RC_PARAMS)
+
+
+_apply_style()
+
+
+# ========================================================================
+# 2.                       SHARED FIGURE HELPERS
+# ========================================================================
+def _prepare_output_dir(output_dir: Path) -> None:
+    """Create the output directory when it does not already exist."""
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+
+def _save_figure(fig: plt.Figure, png_path: Path) -> Path:
+    """Finalize, save (PNG + optional PDF), and close a figure; return the PNG path."""
+
+    fig.tight_layout()
+    fig.savefig(png_path, dpi=FIGURE_DPI)
+    if EXPORT_PDF:
+        fig.savefig(png_path.with_suffix(".pdf"))
+    plt.close(fig)
+    return png_path
+
+
+def _mark_baseline(ax: plt.Axes, x: float, y: float, label: str = "baseline operating point") -> Line2D:
+    """Add the consistent baseline operating-point marker and return its handle."""
+
+    return ax.scatter(
+        [x], [y], marker="X", s=120, c=BASELINE_COLOR,
+        edgecolors="white", linewidths=1.1, zorder=6, label=label,
+    )
+
+
+def _filled_contour(
+    x: np.ndarray,
+    y: np.ndarray,
+    z: np.ndarray,
+    title: str,
+    xlabel: str,
+    ylabel: str,
+    cbar_label: str,
+    path: Path,
+    *,
+    baseline: tuple[float, float] | None = None,
+    baseline_label: str = "baseline operating point",
+    diverging_zero: bool = False,
+    threshold_levels: list[float] | None = None,
+    threshold_label: str | None = None,
+    threshold_color: str = WARNING_COLOR,
+) -> Path:
+    """Render a filled contour map with labelled lines, baseline, and thresholds.
+
+    When ``diverging_zero`` is True and the data straddle 0, a diverging colormap
+    centered on 0 is used and the 0-level (link-closure) contour is drawn in bold.
+    ``threshold_levels`` adds extra dashed iso-lines (e.g. an elevation limit),
+    automatically clipped to the data range so empty contours are never drawn.
+    """
+
+    fig, ax = plt.subplots(figsize=FIGSIZE_CONTOUR)
+    z_min, z_max = float(np.nanmin(z)), float(np.nanmax(z))
+    legend_handles: list = []
+
+    if diverging_zero and z_min < 0.0 < z_max:
+        norm = TwoSlopeNorm(vmin=z_min, vcenter=0.0, vmax=z_max)
+        filled = ax.contourf(x, y, z, levels=np.linspace(z_min, z_max, 26), cmap=DIVERGING_CMAP, norm=norm)
+        zero = ax.contour(x, y, z, levels=[0.0], colors=THRESHOLD_COLOR, linewidths=2.2)
+        ax.clabel(zero, inline=True, fontsize=CONTOUR_LABEL_SIZE, fmt="0 dB")
+        legend_handles.append(Line2D([0], [0], color=THRESHOLD_COLOR, lw=2.2, label="0 dB closure"))
+    else:
+        filled = ax.contourf(x, y, z, levels=24, cmap=SEQUENTIAL_CMAP)
+        lines = ax.contour(x, y, z, levels=np.linspace(z_min, z_max, 8), colors="white", linewidths=0.5, alpha=0.85)
+        ax.clabel(lines, inline=True, fontsize=CONTOUR_LABEL_SIZE, fmt="%.1f")
+
+    if threshold_levels:
+        usable = [lv for lv in threshold_levels if z_min < lv < z_max]
+        if usable:
+            extra = ax.contour(x, y, z, levels=usable, colors=threshold_color, linewidths=1.6, linestyles="--")
+            ax.clabel(extra, inline=True, fontsize=CONTOUR_LABEL_SIZE, fmt="%.0f")
+            if threshold_label:
+                legend_handles.append(Line2D([0], [0], color=threshold_color, lw=1.6, ls="--", label=threshold_label))
+
+    cbar = fig.colorbar(filled, ax=ax)
+    cbar.set_label(cbar_label, fontsize=COLORBAR_LABEL_SIZE)
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.grid(True, alpha=GRID_ALPHA)
+
+    if baseline is not None:
+        legend_handles.append(_mark_baseline(ax, baseline[0], baseline[1], baseline_label))
+    if legend_handles:
+        ax.legend(handles=legend_handles, loc="best")
+
+    return _save_figure(fig, path)
+
+
+def _line_plot(
+    x: np.ndarray,
+    series: list[tuple[np.ndarray, str]],
+    title: str,
+    xlabel: str,
+    ylabel: str,
+    path: Path,
+    *,
+    hline: float | None = None,
+    hline_label: str = "0 dB",
+    logy: bool = False,
+    markers: bool = False,
+) -> Path:
+    """Render a clean multi-series line plot and save it (PNG + PDF)."""
+
+    fig, ax = plt.subplots(figsize=FIGSIZE_LINE)
+    plot = ax.semilogy if logy else ax.plot
+    for y, label in series:
+        kwargs = {"linewidth": LINE_WIDTH, "label": label}
+        if markers:
+            kwargs.update(marker="o", markersize=MARKER_SIZE)
+        plot(x, y, **kwargs)
+    if hline is not None:
+        ax.axhline(hline, linestyle="--", linewidth=THIN_LINE_WIDTH, color=THRESHOLD_COLOR, alpha=0.9, label=hline_label)
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.grid(True, which="both" if logy else "major", alpha=GRID_ALPHA)
+    if len(series) > 1 or hline is not None:
+        ax.legend(loc="best")
+    return _save_figure(fig, path)
+
+
+def _annotate_value(ax: plt.Axes, x: float, y: float, text: str, *, color: str = THRESHOLD_COLOR) -> None:
+    """Place a small offset annotation marker with a label."""
+
+    ax.scatter([x], [y], marker="o", s=30, color=color, zorder=6)
+    ax.annotate(
+        text, (x, y), textcoords="offset points", xytext=(8, 8),
+        fontsize=ANNOTATION_FONTSIZE, color=color,
+    )
+
+
+# ========================================================================
+# 3.        CLEAR-SKY STATIC-BASELINE CONTOUR PLOTS (01-06)
+# ========================================================================
+def plot_downlink_cn0_vs_dish_and_frequency(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Map downlink C/N0 against receiver dish diameter and downlink frequency."""
+
+    dish_values = np.linspace(0.45, 2.4, 70)
+    freq_values_ghz = np.linspace(10.7, 12.75, 70)
+    z = np.zeros((len(freq_values_ghz), len(dish_values)))
+
+    for i, f_ghz in enumerate(freq_values_ghz):
+        for j, dish in enumerate(dish_values):
+            rx_ant = replace(scenario.downlink.receiver.antenna, diameter_m=float(dish), gain_dbi=None)
+            rx = replace(scenario.downlink.receiver, antenna=rx_ant)
+            downlink = replace(scenario.downlink, receiver=rx, frequency_hz=float(f_ghz) * GHZ)
+            result = calculate_scenario(replace(scenario, downlink=downlink))
+            z[i, j] = result.downlink.cn0_dbhz
+
+    baseline_dish = scenario.downlink.receiver.antenna.diameter_m or 0.0
+    baseline_freq = scenario.downlink.frequency_hz / GHZ
+    return _filled_contour(
+        dish_values,
+        freq_values_ghz,
+        z,
+        "Downlink C/N0 Map: Receiver Dish and Frequency",
+        "GS2 receiver dish diameter [m]",
+        "Downlink frequency [GHz]",
+        "Downlink C/N0 [dB-Hz]",
+        output_dir / "01_downlink_cn0_dish_vs_frequency.png",
+        baseline=(baseline_dish, baseline_freq),
+    )
+
+
+def plot_downlink_margin_vs_eirp_and_tsys(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Map the end-to-end downlink margin against satellite EIRP and GS2 Tsys."""
+
+    eirp_values = np.linspace(42.0, 58.0, 70)
+    tsys_values = np.linspace(90.0, 330.0, 70)
+    z = np.zeros((len(tsys_values), len(eirp_values)))
+
+    for i, tsys in enumerate(tsys_values):
+        for j, eirp in enumerate(eirp_values):
+            sat_tx = replace(scenario.downlink.transmitter, eirp_dbw_override=float(eirp))
+            gs2_rx = replace(scenario.downlink.receiver, system_noise_temperature_k=float(tsys))
+            downlink = replace(scenario.downlink, transmitter=sat_tx, receiver=gs2_rx)
+            result = calculate_scenario(replace(scenario, downlink=downlink))
+            z[i, j] = result.combined_margin_ni_db
+
+    cbar = (
+        "Combined Eb/(N0+I0) margin [dB]" if scenario.interference.enabled
+        else "Combined Eb/N0 margin [dB]"
+    )
+    baseline_eirp = scenario.downlink.transmitter.eirp_dbw_override or 0.0
+    baseline_tsys = scenario.downlink.receiver.system_noise_temperature_k or 0.0
+    return _filled_contour(
+        eirp_values,
+        tsys_values,
+        z,
+        "Downlink Design Sensitivity: EIRP and Receiver Noise Temperature",
+        "Satellite downlink EIRP [dBW]",
+        "GS2 system noise temperature [K]",
+        cbar,
+        output_dir / "02_downlink_margin_eirp_vs_tsys.png",
+        baseline=(baseline_eirp, baseline_tsys),
+        diverging_zero=True,
+    )
+
+
+def plot_uplink_cn_vs_power_and_dish(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Map uplink C/N against GS1 HPA output power and transmit dish diameter."""
+
+    power_w_values = np.linspace(2.0, 80.0, 70)
+    dish_values = np.linspace(0.8, 4.5, 70)
+    z = np.zeros((len(dish_values), len(power_w_values)))
+
+    for i, dish in enumerate(dish_values):
+        for j, power_w in enumerate(power_w_values):
+            tx_ant = replace(scenario.uplink.transmitter.antenna, diameter_m=float(dish), gain_dbi=None)
+            tx = replace(scenario.uplink.transmitter, antenna=tx_ant, tx_power_dbw=watts_to_dbw(float(power_w)))
+            uplink = replace(scenario.uplink, transmitter=tx)
+            result = calculate_scenario(replace(scenario, uplink=uplink))
+            z[i, j] = result.uplink.cn_db
+
+    baseline_power_w = 10 ** ((scenario.uplink.transmitter.tx_power_dbw or 0.0) / 10.0)
+    baseline_dish = scenario.uplink.transmitter.antenna.diameter_m or 0.0
+    return _filled_contour(
+        power_w_values,
+        dish_values,
+        z,
+        "Uplink C/N Map: HPA Power and Transmit Dish",
+        "GS1 RF output power [W]",
+        "GS1 transmit dish diameter [m]",
+        "Uplink C/N [dB]",
+        output_dir / "03_uplink_cn_power_vs_dish.png",
+        baseline=(baseline_power_w, baseline_dish),
+    )
+
+
+def plot_combined_ebn0_vs_bitrate_and_bandwidth(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Map end-to-end Eb/N0 against bit rate and bandwidth, with closure threshold."""
+
+    bitrate_mbps = np.linspace(2.0, 60.0, 70)
+    bandwidth_mhz = np.linspace(6.0, 72.0, 70)
+    z = np.zeros((len(bandwidth_mhz), len(bitrate_mbps)))
+
+    for i, bw_mhz in enumerate(bandwidth_mhz):
+        for j, rb_mbps in enumerate(bitrate_mbps):
+            uplink = replace(scenario.uplink, bandwidth_hz=float(bw_mhz) * MHZ, bit_rate_bps=float(rb_mbps) * 1.0e6)
+            downlink = replace(scenario.downlink, bandwidth_hz=float(bw_mhz) * MHZ, bit_rate_bps=float(rb_mbps) * 1.0e6)
+            result = calculate_scenario(replace(scenario, uplink=uplink, downlink=downlink))
+            z[i, j] = result.combined_ebn0_ni_db
+
+    cbar = (
+        "Combined Eb/(N0+I0) [dB]" if scenario.interference.enabled else "Combined Eb/N0 [dB]"
+    )
+    required = scenario.uplink.required_ebn0_db
+    baseline_rb = scenario.uplink.bit_rate_bps / 1.0e6
+    baseline_bw = scenario.uplink.bandwidth_hz / MHZ
+    return _filled_contour(
+        bitrate_mbps,
+        bandwidth_mhz,
+        z,
+        "End-to-End Link Closure Map: Bit Rate and Bandwidth",
+        "Bit rate [Mbit/s]",
+        "Noise bandwidth [MHz]",
+        cbar,
+        output_dir / "04_total_ebn0_bitrate_vs_bandwidth.png",
+        baseline=(baseline_rb, baseline_bw),
+        threshold_levels=[required],
+        threshold_label=f"required Eb/N0 = {required:g} dB",
+    )
+
+
+def plot_gs2_elevation_by_latitude_longitude(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Map GS2 elevation angle over latitude/longitude, with low-elevation limits."""
+
+    lat_values = np.linspace(30.0, 48.0, 80)
+    lon_values = np.linspace(20.0, 45.0, 80)
+    z = np.zeros((len(lat_values), len(lon_values)))
+
+    for i, lat in enumerate(lat_values):
+        for j, lon in enumerate(lon_values):
+            loc = replace(scenario.downlink.receiver.location, latitude_deg=float(lat), longitude_deg=float(lon))
+            rx = replace(scenario.downlink.receiver, location=loc)
+            downlink = replace(scenario.downlink, receiver=rx)
+            result = calculate_scenario(replace(scenario, downlink=downlink))
+            z[i, j] = result.downlink.elevation_deg
+
+    baseline_loc = scenario.downlink.receiver.location
+    return _filled_contour(
+        lon_values,
+        lat_values,
+        z,
+        "GS2 Elevation Angle Map",
+        "GS2 longitude [deg East]",
+        "GS2 latitude [deg North]",
+        "Elevation angle [deg]",
+        output_dir / "05_gs2_elevation_latitude_vs_longitude.png",
+        baseline=(baseline_loc.longitude_deg, baseline_loc.latitude_deg),
+        threshold_levels=[5.0, 10.0],
+        threshold_label="low-elevation limit [deg]",
+    )
+
+
+def plot_downlink_asi_ci_vs_spacing_and_dish(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Map downlink adjacent-satellite C/I against GEO spacing and dish diameter.
+
+    This is an engineering trend model (off-axis discrimination), not regulatory
+    coordination; a representative 20 dB C/I objective line is shown for context.
+    """
+
+    dish_values = np.linspace(0.45, 3.0, 80)
+    spacing_values = np.linspace(0.8, 4.0, 80)
+    z = calculate_asi_ci_grid(scenario, dish_values, spacing_values, link="downlink")
+    baseline_dish = scenario.downlink.receiver.antenna.diameter_m or 0.0
+    baseline_spacing = abs(
+        scenario.interference.adjacent_satellite_longitudes_deg[0] - scenario.satellite.longitude_deg
+    )
+    return _filled_contour(
+        dish_values,
+        spacing_values,
+        z,
+        "Adjacent-Satellite C/I Map (Engineering Trend Model)",
+        "GS2 receiver dish diameter [m]",
+        "Adjacent satellite spacing [deg]",
+        "Downlink ASI C/I [dB]",
+        output_dir / "06_downlink_asi_ci_spacing_vs_dish.png",
+        baseline=(baseline_dish, baseline_spacing),
+        threshold_levels=[20.0],
+        threshold_label="20 dB C/I (illustrative objective)",
+    )
+
+
+def generate_contour_plots(scenario: ScenarioConfig, output_dir: Path) -> list[Path]:
+    """Generate the clear-sky static-baseline contour plots used in the report.
+
+    The adjacent-satellite C/I contour is only produced when interference is
+    enabled, because it has no meaning without the interference model.
+    """
+
+    _prepare_output_dir(output_dir)
+    paths = [
+        plot_downlink_cn0_vs_dish_and_frequency(scenario, output_dir),
+        plot_downlink_margin_vs_eirp_and_tsys(scenario, output_dir),
+        plot_uplink_cn_vs_power_and_dish(scenario, output_dir),
+        plot_combined_ebn0_vs_bitrate_and_bandwidth(scenario, output_dir),
+        plot_gs2_elevation_by_latitude_longitude(scenario, output_dir),
+    ]
+    if scenario.interference.enabled:
+        paths.append(plot_downlink_asi_ci_vs_spacing_and_dish(scenario, output_dir))
+    return paths
+
+
+# ========================================================================
+# 4.        APPARENT-MOTION TIME-VARYING PLOTS (07-11)
+# ========================================================================
+def generate_time_varying_plots(samples: list[TimeVaryingSample], output_dir: Path) -> list[Path]:
+    """Generate plots for the deterministic apparent GEO station-keeping motion."""
+
+    _prepare_output_dir(output_dir)
+    t = np.array([s.time_hours for s in samples], dtype=float)
+    margin_noise = np.array([s.result.combined_margin_db for s in samples], dtype=float)
+    margin_ni = np.array([s.result.combined_margin_ni_db for s in samples], dtype=float)
+    el_up = np.array([s.result.uplink.elevation_deg for s in samples], dtype=float)
+    el_down = np.array([s.result.downlink.elevation_deg for s in samples], dtype=float)
+    range_up = np.array([s.result.uplink.range_km for s in samples], dtype=float)
+    range_down = np.array([s.result.downlink.range_km for s in samples], dtype=float)
+    fspl_down = np.array([s.result.downlink.free_space_loss_db for s in samples], dtype=float)
+    lon = np.array([s.satellite.longitude_deg for s in samples], dtype=float)
+    lat = np.array([s.satellite.latitude_deg for s in samples], dtype=float)
+
+    paths: list[Path] = []
+
+    # 07 - combined margin over time, with mean line and worst-case annotation.
+    fig, ax = plt.subplots(figsize=FIGSIZE_LINE)
+    ax.plot(t, margin_noise, linewidth=THIN_LINE_WIDTH, label="noise-only")
+    ax.plot(t, margin_ni, linewidth=LINE_WIDTH, label="with ASI + IMD")
+    ax.axhline(0.0, linestyle="--", linewidth=THIN_LINE_WIDTH, color=THRESHOLD_COLOR, alpha=0.9, label="0 dB outage threshold")
+    mean_ni = float(np.mean(margin_ni))
+    ax.axhline(mean_ni, linestyle=":", linewidth=THIN_LINE_WIDTH, color="#1f77b4", alpha=0.9, label=f"mean = {mean_ni:.2f} dB")
+    i_min = int(np.argmin(margin_ni))
+    _annotate_value(ax, t[i_min], margin_ni[i_min], f"min {margin_ni[i_min]:.2f} dB", color=BASELINE_COLOR)
+    ax.set_title("Time-Varying Link Margin Under Apparent GEO Motion")
+    ax.set_xlabel("Time [h]")
+    ax.set_ylabel("Combined Eb/N0 margin [dB]")
+    ax.grid(True, alpha=GRID_ALPHA)
+    ax.legend(loc="best")
+    paths.append(_save_figure(fig, output_dir / "07_time_varying_combined_margin.png"))
+
+    # 08 - elevation angles.
+    paths.append(
+        _line_plot(
+            t,
+            [(el_up, "GS1 uplink elevation"), (el_down, "GS2 downlink elevation")],
+            "Elevation Angle Variation From Apparent GEO Motion",
+            "Time [h]",
+            "Elevation angle [deg]",
+            output_dir / "08_time_varying_elevation_angles.png",
+        )
+    )
+
+    # 09 - slant-range delta.
+    paths.append(
+        _line_plot(
+            t,
+            [(range_up - range_up[0], "uplink"), (range_down - range_down[0], "downlink")],
+            "Slant-Range Variation Relative to First Sample",
+            "Time [h]",
+            "Slant-range change [km]",
+            output_dir / "09_time_varying_slant_range_delta.png",
+        )
+    )
+
+    # 10 - downlink FSPL delta.
+    paths.append(
+        _line_plot(
+            t,
+            [(fspl_down - fspl_down[0], "downlink FSPL change")],
+            "Downlink Free-Space Loss Variation",
+            "Time [h]",
+            "FSPL change [dB]",
+            output_dir / "10_time_varying_fspl_delta.png",
+        )
+    )
+
+    # 11 - sub-satellite track.
+    fig, ax = plt.subplots(figsize=FIGSIZE_SQUARE)
+    ax.plot(lon, lat, marker="o", markersize=2.6, linewidth=1.2, color="#1f77b4")
+    _mark_baseline(ax, lon[0], lat[0], "start")
+    ax.set_title("Sub-Satellite Apparent Motion (Station-Keeping Box)")
+    ax.set_xlabel("Sub-satellite longitude [deg East]")
+    ax.set_ylabel("Sub-satellite latitude [deg North]")
+    ax.grid(True, alpha=GRID_ALPHA)
+    ax.legend(loc="best")
+    paths.append(_save_figure(fig, output_dir / "11_subsatellite_apparent_motion.png"))
+
+    return paths
+
+
+# ========================================================================
+# 5.        DYNAMIC Tsys AND INTERFERENCE PLOTS (12-13)
+# ========================================================================
+def plot_dynamic_tsys_by_elevation(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Plot the dynamic receive system noise temperature against elevation angle."""
+
+    elevations = np.linspace(5.0, 90.0, 200)
+    clear = np.array([calculate_dynamic_system_noise_temperature_k(el, 0.0, scenario.dynamic_noise) for el in elevations])
+    rain_3db = np.array([calculate_dynamic_system_noise_temperature_k(el, 3.0, scenario.dynamic_noise) for el in elevations])
+    rain_8db = np.array([calculate_dynamic_system_noise_temperature_k(el, 8.0, scenario.dynamic_noise) for el in elevations])
+
+    return _line_plot(
+        elevations,
+        [(clear, "clear sky"), (rain_3db, "rain, A = 3 dB"), (rain_8db, "heavy rain, A = 8 dB")],
+        "Receive System Noise Temperature vs Elevation",
+        "Elevation angle [deg]",
+        "GS2 system noise temperature [K]",
+        output_dir / "12_dynamic_tsys_vs_elevation.png",
+    )
+
+
+def plot_interference_comparison(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Bar comparison of noise-only vs interference-included end-to-end Eb/N0."""
+
+    result = calculate_scenario(scenario, use_dynamic_downlink_tsys=True)
+    labels = ["Noise only\nEb/N0", "With ASI + IMD\nEb/(N0+I0)"]
+    values = [result.combined_ebn0_db, result.combined_ebn0_ni_db]
+
+    fig, ax = plt.subplots(figsize=(7.0, 5.0))
+    bars = ax.bar(labels, values, color=["#4c9f70", "#1f77b4"], width=0.55, edgecolor="white")
+    ax.axhline(result.uplink.required_ebn0_db, linestyle="--", color=THRESHOLD_COLOR,
+               linewidth=THIN_LINE_WIDTH, label=f"required Eb/N0 = {result.uplink.required_ebn0_db:g} dB")
+    for bar, value in zip(bars, values):
+        ax.text(bar.get_x() + bar.get_width() / 2.0, value + 0.15, f"{value:.2f} dB", ha="center", va="bottom",
+                fontsize=ANNOTATION_FONTSIZE)
+    ax.set_title("Effect of Adjacent-Satellite and IMD Interference")
+    ax.set_ylabel("End-to-end energy ratio [dB]")
+    ax.grid(True, axis="y", alpha=GRID_ALPHA)
+    ax.legend(loc="best")
+    return _save_figure(fig, output_dir / "13_noise_only_vs_interference_bar.png")
+
+
+# ========================================================================
+# 6.        MONTE-CARLO RAIN-OUTAGE PLOTS (14-17, educational)
+# ========================================================================
+def generate_availability_plots(samples: list[TimeVaryingSample], output_dir: Path) -> list[Path]:
+    """Generate figures for the educational Monte-Carlo rain-outage simulation."""
+
+    _prepare_output_dir(output_dir)
+    t = np.array([s.time_hours for s in samples], dtype=float)
+    margin = np.array([s.result.combined_margin_ni_db for s in samples], dtype=float)
+    rain = np.array([s.downlink_rain_attenuation_db for s in samples], dtype=float)
+    tsys = np.array([s.result.downlink.system_noise_temperature_k or np.nan for s in samples], dtype=float)
+
+    paths: list[Path] = []
+    n_window = min(len(samples), 240)  # First 240 h keeps the dynamics readable.
+
+    # 14 - rain double-hit time series.
+    paths.append(
+        _line_plot(
+            t[:n_window],
+            [(margin[:n_window], "combined margin"), (rain[:n_window], "downlink rain attenuation")],
+            "Rain Double-Hit Example: Attenuation and Margin (Educational MC)",
+            "Time [h]",
+            "Level [dB]",
+            output_dir / "14_rain_double_hit_margin_timeseries.png",
+            hline=0.0,
+            hline_label="0 dB outage threshold",
+        )
+    )
+
+    # 15 - dynamic Tsys time series.
+    paths.append(
+        _line_plot(
+            t[:n_window],
+            [(tsys[:n_window], "dynamic GS2 Tsys")],
+            "Rain Emission Effect on Receive Noise Temperature (Educational MC)",
+            "Time [h]",
+            "GS2 system noise temperature [K]",
+            output_dir / "15_dynamic_tsys_weather_timeseries.png",
+        )
+    )
+
+    # 16 - annual margin distribution.
+    fig, ax = plt.subplots(figsize=FIGSIZE_LINE)
+    ax.hist(margin, bins=55, color="#1f77b4", alpha=0.85, edgecolor="white", linewidth=0.3)
+    ax.axvline(0.0, linestyle="--", color=THRESHOLD_COLOR, linewidth=THIN_LINE_WIDTH, label="0 dB outage threshold")
+    availability = 100.0 * float(np.mean(margin >= 0.0))
+    ax.set_title("Annual Margin Distribution (Educational Monte-Carlo)")
+    ax.set_xlabel("Combined Eb/N0 margin [dB]")
+    ax.set_ylabel("Number of hourly samples")
+    ax.text(0.02, 0.95, f"availability = {availability:.3f}%", transform=ax.transAxes,
+            fontsize=ANNOTATION_FONTSIZE, va="top",
+            bbox={"boxstyle": "round", "facecolor": "white", "edgecolor": "#bbbbbb", "alpha": 0.9})
+    ax.grid(True, axis="y", alpha=GRID_ALPHA)
+    ax.legend(loc="best")
+    paths.append(_save_figure(fig, output_dir / "16_availability_margin_histogram.png"))
+
+    # 17 - outage timeline.
+    outage = margin < 0.0
+    fig, ax = plt.subplots(figsize=FIGSIZE_WIDE)
+    ax.fill_between(t, 0.0, outage.astype(float), step="post", color=BASELINE_COLOR, alpha=0.7)
+    ax.set_ylim(-0.1, 1.1)
+    ax.set_yticks([0, 1])
+    ax.set_yticklabels(["available", "outage"])
+    ax.set_title("Estimated Outage Timeline (Educational Monte-Carlo)")
+    ax.set_xlabel("Time [h] over one simulated year")
+    ax.grid(True, axis="x", alpha=GRID_ALPHA)
+    paths.append(_save_figure(fig, output_dir / "17_availability_outage_timeline.png"))
+
+    return paths
+
+
+# ========================================================================
+# 7.        DIGITAL BER / FEC / SHANNON PLOTS (18-22)
+# ========================================================================
+def plot_ber_curves_vs_ebn0(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Plot uncoded and coding-gain-shifted BER vs Eb/N0, with the operating point."""
+
+    cfg = scenario.digital
+    result = calculate_scenario(scenario, use_dynamic_downlink_tsys=True)
+    ebn0_grid = np.linspace(0.0, 15.0, 240)
+    uncoded = np.array([max(theoretical_ber_awgn(float(x), cfg.modulation), 1.0e-300) for x in ebn0_grid])
+    coded = np.array([max(theoretical_ber_awgn(float(x + cfg.coding_gain_db), cfg.modulation), 1.0e-300) for x in ebn0_grid])
+
+    fig, ax = plt.subplots(figsize=(8.4, 5.3))
+    ax.semilogy(ebn0_grid, uncoded, linewidth=LINE_WIDTH, label=f"{cfg.modulation} uncoded AWGN")
+    ax.semilogy(ebn0_grid, coded, linewidth=LINE_WIDTH, label=f"{cfg.modulation} + {cfg.coding_gain_db:.1f} dB coding gain")
+    ax.axhline(cfg.target_ber, linestyle="--", linewidth=THIN_LINE_WIDTH, color=THRESHOLD_COLOR, label=f"target BER = {cfg.target_ber:g}")
+    ax.axvline(result.combined_ebn0_ni_db, linestyle=":", linewidth=1.6, color=BASELINE_COLOR,
+               label=f"operating Eb/N0 = {result.combined_ebn0_ni_db:.2f} dB")
+    ax.set_title("Digital Performance: Theoretical BER vs Eb/N0")
+    ax.set_xlabel("Eb/N0 [dB]")
+    ax.set_ylabel("Bit error rate")
+    ax.set_ylim(1.0e-12, 1.0)
+    ax.grid(True, which="both", alpha=GRID_ALPHA)
+    ax.legend(loc="best")
+    return _save_figure(fig, output_dir / "18_ber_vs_ebn0_with_fec.png")
+
+
+def plot_time_varying_ber(samples: list[TimeVaryingSample], output_dir: Path) -> Path:
+    """Plot time-varying BER for the apparent-motion case (log scale)."""
+
+    t = np.array([s.time_hours for s in samples], dtype=float)
+    ber_uncoded = np.array([
+        max(s.result.digital.interference_ber_uncoded if s.result.digital is not None else np.nan, 1.0e-300)
+        for s in samples
+    ])
+    ber_coded = np.array([
+        max(s.result.digital.interference_ber_with_coding_gain if s.result.digital is not None else np.nan, 1.0e-300)
+        for s in samples
+    ])
+
+    return _line_plot(
+        t,
+        [(ber_uncoded, "uncoded, with ASI + IMD"), (ber_coded, "FEC coding-gain approximation")],
+        "Time-Varying BER Under Apparent GEO Motion",
+        "Time [h]",
+        "Bit error rate",
+        output_dir / "19_time_varying_ber.png",
+        logy=True,
+    )
+
+
+def plot_shannon_capacity_vs_cn(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Plot Shannon-Hartley capacity vs C/N, with the operating point marked."""
+
+    bandwidth = scenario.uplink.bandwidth_hz
+    bit_rate = scenario.uplink.bit_rate_bps
+    cn_grid = np.linspace(-6.0, 20.0, 240)
+    capacity_mbps = np.array([shannon_capacity_bps(bandwidth, float(cn)) / 1.0e6 for cn in cn_grid])
+    result = calculate_scenario(scenario, use_dynamic_downlink_tsys=True)
+
+    fig, ax = plt.subplots(figsize=(8.4, 5.3))
+    ax.plot(cn_grid, capacity_mbps, linewidth=LINE_WIDTH, label="Shannon capacity")
+    ax.axhline(bit_rate / 1.0e6, linestyle="--", linewidth=THIN_LINE_WIDTH, color=THRESHOLD_COLOR,
+               label=f"information rate = {bit_rate / 1.0e6:g} Mbit/s")
+    ax.axvline(result.combined_cni_db, linestyle=":", linewidth=1.6, color=BASELINE_COLOR,
+               label=f"operating C/(N+I) = {result.combined_cni_db:.2f} dB")
+    ax.set_title("Shannon-Hartley Capacity for the Allocated Bandwidth")
+    ax.set_xlabel("C/N or C/(N+I) over bandwidth [dB]")
+    ax.set_ylabel("Capacity [Mbit/s]")
+    ax.grid(True, alpha=GRID_ALPHA)
+    ax.legend(loc="best")
+    return _save_figure(fig, output_dir / "20_shannon_capacity_vs_cn.png")
+
+
+def plot_capacity_comparison(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Bar comparison of information rate vs Shannon capacity estimates."""
+
+    result = calculate_scenario(scenario, use_dynamic_downlink_tsys=True)
+    if result.digital is None:
+        raise ValueError("Digital metrics are disabled.")
+
+    labels = ["Information\nbit rate", "Capacity\nnoise only", "Capacity\nwith ASI + IMD"]
+    values = [
+        result.digital.information_bit_rate_bps / 1.0e6,
+        result.digital.shannon_capacity_noise_only_bps / 1.0e6,
+        result.digital.shannon_capacity_with_interference_bps / 1.0e6,
+    ]
+
+    fig, ax = plt.subplots(figsize=(7.4, 5.0))
+    bars = ax.bar(labels, values, color=["#d62728", "#4c9f70", "#1f77b4"], width=0.6, edgecolor="white")
+    for bar, value in zip(bars, values):
+        ax.text(bar.get_x() + bar.get_width() / 2.0, value + 0.5, f"{value:.1f}", ha="center", va="bottom",
+                fontsize=ANNOTATION_FONTSIZE)
+    ax.set_title("Information Rate vs Shannon Capacity")
+    ax.set_ylabel("Rate [Mbit/s]")
+    ax.grid(True, axis="y", alpha=GRID_ALPHA)
+    return _save_figure(fig, output_dir / "21_capacity_margin_bar.png")
+
+
+def plot_occupied_bandwidth_vs_code_rate(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Plot the FEC tradeoff between code rate and required occupied bandwidth."""
+
+    cfg = scenario.digital
+    bits_per_symbol = modulation_bits_per_symbol(cfg.modulation)
+    rates = np.linspace(0.45, 1.0, 160)
+    occupied_mhz = (scenario.uplink.bit_rate_bps / rates / bits_per_symbol) * (1.0 + cfg.rolloff_factor) / 1.0e6
+    baseline_bw = (scenario.uplink.bit_rate_bps / cfg.code_rate / bits_per_symbol) * (1.0 + cfg.rolloff_factor) / 1.0e6
+
+    fig, ax = plt.subplots(figsize=(8.4, 5.0))
+    ax.plot(rates, occupied_mhz, linewidth=LINE_WIDTH, color="#1f77b4")
+    ax.axhline(scenario.uplink.bandwidth_hz / 1.0e6, linestyle="--", linewidth=THIN_LINE_WIDTH, color=THRESHOLD_COLOR,
+               label=f"allocated bandwidth = {scenario.uplink.bandwidth_hz / 1.0e6:g} MHz")
+    _mark_baseline(ax, cfg.code_rate, baseline_bw, "baseline code rate")
+    ax.set_title("FEC Tradeoff: Code Rate vs Occupied Bandwidth")
+    ax.set_xlabel("FEC code rate [-]")
+    ax.set_ylabel("Estimated occupied bandwidth [MHz]")
+    ax.grid(True, alpha=GRID_ALPHA)
+    ax.legend(loc="best")
+    return _save_figure(fig, output_dir / "22_occupied_bandwidth_vs_code_rate.png")
+
+
+def generate_digital_plots(
+    scenario: ScenarioConfig,
+    time_samples: list[TimeVaryingSample],
+    output_dir: Path,
+) -> list[Path]:
+    """Generate BER, FEC, and Shannon-capacity figures (only when DIGITAL enabled).
+
+    The time-varying BER figure is only produced when apparent-motion time
+    samples are available; the other figures depend only on the static budget.
+    """
+
+    if not scenario.digital.enabled:
+        return []
+    paths = [plot_ber_curves_vs_ebn0(scenario, output_dir)]
+    if time_samples:
+        paths.append(plot_time_varying_ber(time_samples, output_dir))
+    paths.append(plot_shannon_capacity_vs_cn(scenario, output_dir))
+    paths.append(plot_capacity_comparison(scenario, output_dir))
+    paths.append(plot_occupied_bandwidth_vs_code_rate(scenario, output_dir))
+    return paths
+
+
+def generate_advanced_plots(
+    scenario: ScenarioConfig,
+    time_samples: list[TimeVaryingSample],
+    monte_carlo_samples: list[TimeVaryingSample],
+    output_dir: Path,
+) -> list[Path]:
+    """Generate the advanced plot bundle, skipping every disabled section.
+
+    Each block is gated by its own enabled flag (and by the presence of the
+    data it needs), so no figure is ever drawn from placeholder data.
+    """
+
+    _prepare_output_dir(output_dir)
+    paths: list[Path] = []
+    if scenario.apparent_motion.enabled and time_samples:
+        paths += generate_time_varying_plots(time_samples, output_dir)
+    if scenario.dynamic_noise.enabled:
+        paths.append(plot_dynamic_tsys_by_elevation(scenario, output_dir))
+    if scenario.interference.enabled:
+        paths.append(plot_interference_comparison(scenario, output_dir))
+    if scenario.rain_outage.enabled and monte_carlo_samples:
+        paths += generate_availability_plots(monte_carlo_samples, output_dir)
+    paths += generate_digital_plots(scenario, time_samples, output_dir)
+    return paths
+
+
+# ========================================================================
+# 8.        ITU-R PROPAGATION AND DVB-S2 ACM PLOTS (23-29)
+# ========================================================================
+def plot_itu_attenuation_vs_availability(
+    itu_curve: list[ITUPropagationResult],
+    output_dir: Path,
+    design_exceedance_percent: float | None = None,
+) -> Path:
+    """Plot ITU-R downlink attenuation against the unavailability percentage p.
+
+    The x-axis is the percentage of an average year the attenuation is exceeded
+    (unavailability p); it is plotted on a log scale and inverted so that higher
+    availability (smaller p) is to the right. The optional design point is marked.
+    """
+
+    p = np.array([r.design_exceedance_percent for r in itu_curve], dtype=float)
+    rain = np.array([r.downlink_breakdown.rain_db for r in itu_curve], dtype=float)
+    gas = np.array([r.downlink_breakdown.gaseous_db for r in itu_curve], dtype=float)
+    cloud = np.array([r.downlink_breakdown.cloud_db for r in itu_curve], dtype=float)
+    scint = np.array([r.downlink_breakdown.scintillation_db for r in itu_curve], dtype=float)
+    total = np.array([r.downlink_breakdown.total_db for r in itu_curve], dtype=float)
+
+    fig, ax = plt.subplots(figsize=(8.6, 5.4))
+    ax.semilogx(p, total, linewidth=2.2, marker="o", markersize=MARKER_SIZE, color="#222222", label="total (P.618 Sec. 2.5)")
+    ax.semilogx(p, rain, linewidth=LINE_WIDTH, label="rain (P.618 / P.838)")
+    ax.semilogx(p, gas, linewidth=LINE_WIDTH, label="gaseous (P.676)")
+    ax.semilogx(p, cloud, linewidth=LINE_WIDTH, label="cloud (P.840)")
+    ax.semilogx(p, scint, linewidth=LINE_WIDTH, label="scintillation (P.618)")
+    ax.invert_xaxis()
+    if design_exceedance_percent is not None:
+        ax.axvline(design_exceedance_percent, linestyle="--", linewidth=THIN_LINE_WIDTH, color=BASELINE_COLOR,
+                   label=f"design point p = {design_exceedance_percent:g}%")
+    ax.set_title("ITU-R Downlink Slant-Path Attenuation vs Unavailability")
+    ax.set_xlabel("Unavailability p [% of average year]  (right = higher availability)")
+    ax.set_ylabel("Attenuation [dB]")
+    ax.grid(True, which="both", alpha=GRID_ALPHA)
+    ax.legend(loc="best")
+    return _save_figure(fig, output_dir / "23_itu_attenuation_vs_availability.png")
+
+
+def plot_itu_margin_vs_availability(
+    itu_curve: list[ITUPropagationResult],
+    output_dir: Path,
+    design_availability_percent: float | None = None,
+) -> Path:
+    """Plot the faded combined link margin against the target availability."""
+
+    availability = np.array([r.design_availability_percent for r in itu_curve], dtype=float)
+    margin_ni = np.array([r.faded_result.combined_margin_ni_db for r in itu_curve], dtype=float)
+    margin_noise = np.array([r.faded_result.combined_margin_db for r in itu_curve], dtype=float)
+
+    fig, ax = plt.subplots(figsize=FIGSIZE_LINE)
+    ax.plot(availability, margin_noise, linewidth=THIN_LINE_WIDTH, marker="s", markersize=MARKER_SIZE, label="noise-only")
+    ax.plot(availability, margin_ni, linewidth=LINE_WIDTH, marker="o", markersize=MARKER_SIZE, label="with ASI + IMD")
+    ax.axhline(0.0, linestyle="--", linewidth=THIN_LINE_WIDTH, color=THRESHOLD_COLOR, label="0 dB closure")
+    if design_availability_percent is not None:
+        design = [r for r in itu_curve if abs(r.design_availability_percent - design_availability_percent) < 1e-9]
+        ax.axvline(design_availability_percent, linestyle=":", linewidth=1.6, color=BASELINE_COLOR,
+                   label=f"design = {design_availability_percent:g}%")
+        if design:
+            _annotate_value(ax, design_availability_percent, design[0].faded_result.combined_margin_ni_db,
+                            f"{design[0].faded_result.combined_margin_ni_db:.2f} dB", color=BASELINE_COLOR)
+    ax.set_title("Faded Link Margin vs Target Availability (ITU-R Fades Applied)")
+    ax.set_xlabel("Availability [%]")
+    ax.set_ylabel("Combined Eb/N0 margin [dB]")
+    ax.grid(True, alpha=GRID_ALPHA)
+    ax.legend(loc="best")
+    return _save_figure(fig, output_dir / "24_itu_margin_vs_availability.png")
+
+
+def plot_itu_attenuation_breakdown_bar(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Grouped bar chart of per-mechanism attenuation at the design availability."""
+
+    design = calculate_scenario_with_itu(scenario)
+    mechanisms = ["rain", "gaseous", "cloud", "scintillation", "total"]
+    up = [design.uplink_breakdown.rain_db, design.uplink_breakdown.gaseous_db, design.uplink_breakdown.cloud_db,
+          design.uplink_breakdown.scintillation_db, design.uplink_breakdown.total_db]
+    down = [design.downlink_breakdown.rain_db, design.downlink_breakdown.gaseous_db, design.downlink_breakdown.cloud_db,
+            design.downlink_breakdown.scintillation_db, design.downlink_breakdown.total_db]
+
+    x = np.arange(len(mechanisms))
+    width = 0.38
+    fig, ax = plt.subplots(figsize=FIGSIZE_BAR)
+    bars_up = ax.bar(x - width / 2, up, width, color="#4c9f70", edgecolor="white",
+                     label=f"uplink {scenario.uplink.frequency_hz / GHZ:.1f} GHz")
+    bars_down = ax.bar(x + width / 2, down, width, color="#1f77b4", edgecolor="white",
+                       label=f"downlink {scenario.downlink.frequency_hz / GHZ:.1f} GHz")
+    for bars in (bars_up, bars_down):
+        for bar in bars:
+            ax.text(bar.get_x() + bar.get_width() / 2.0, bar.get_height() + 0.03, f"{bar.get_height():.2f}",
+                    ha="center", va="bottom", fontsize=7)
+    ax.set_xticks(x)
+    ax.set_xticklabels(mechanisms)
+    ax.set_title(f"ITU-R Attenuation Breakdown at {design.design_availability_percent:g}% Availability")
+    ax.set_ylabel("Attenuation [dB]")
+    ax.grid(True, axis="y", alpha=GRID_ALPHA)
+    ax.legend(loc="best")
+    return _save_figure(fig, output_dir / "25_itu_attenuation_breakdown_bar.png")
+
+
+def plot_rain_attenuation_vs_frequency(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Plot rain attenuation A_0.01 vs frequency for the downlink geometry."""
+
+    cfg = scenario.itu_propagation
+    gs2 = scenario.downlink.receiver.location
+    geom = calculate_geo_link_geometry(gs2, scenario.satellite)
+    freqs = np.linspace(4.0, 50.0, 140)
+    a001 = np.array([
+        itu.rain_attenuation_001_db(
+            float(f), geom.elevation_deg, gs2.latitude_deg, gs2.altitude_km,
+            cfg.rain_rate_001_mm_per_h, cfg.polarization_tilt_deg, cfg.rain_height_h0_override_km,
+        )
+        for f in freqs
+    ])
+    design_freq = scenario.downlink.frequency_hz / GHZ
+    design_a001 = itu.rain_attenuation_001_db(
+        design_freq, geom.elevation_deg, gs2.latitude_deg, gs2.altitude_km,
+        cfg.rain_rate_001_mm_per_h, cfg.polarization_tilt_deg, cfg.rain_height_h0_override_km,
+    )
+
+    fig, ax = plt.subplots(figsize=(8.6, 5.0))
+    ax.plot(freqs, a001, linewidth=LINE_WIDTH, color="#1f77b4")
+    for band, f0 in (("C", 4.0), ("X", 8.0), ("Ku", 12.0), ("Ka", 20.0)):
+        ax.axvline(f0, linestyle=":", linewidth=0.9, color="#999999", alpha=0.7)
+        ax.text(f0, ax.get_ylim()[1] * 0.93, band, fontsize=ANNOTATION_FONTSIZE, ha="center", color="#666666")
+    _mark_baseline(ax, design_freq, design_a001, "downlink design frequency")
+    ax.set_title(f"ITU-R P.618 Rain Attenuation A(0.01%) vs Frequency  (R0.01 = {cfg.rain_rate_001_mm_per_h:g} mm/h)")
+    ax.set_xlabel("Frequency [GHz]")
+    ax.set_ylabel("Rain attenuation exceeded 0.01% of year [dB]")
+    ax.grid(True, alpha=GRID_ALPHA)
+    ax.legend(loc="best")
+    return _save_figure(fig, output_dir / "26_itu_rain_attenuation_vs_frequency.png")
+
+
+def plot_specific_rain_attenuation(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Plot ITU-R P.838 specific rain attenuation gamma_R vs rain rate."""
+
+    cfg = scenario.itu_propagation
+    gs2 = scenario.downlink.receiver.location
+    geom = calculate_geo_link_geometry(gs2, scenario.satellite)
+    rates = np.linspace(1.0, 100.0, 160)
+
+    fig, ax = plt.subplots(figsize=(8.6, 5.0))
+    for label, f_hz in (
+        (f"uplink {scenario.uplink.frequency_hz / GHZ:.1f} GHz", scenario.uplink.frequency_hz),
+        (f"downlink {scenario.downlink.frequency_hz / GHZ:.1f} GHz", scenario.downlink.frequency_hz),
+    ):
+        k, alpha = itu.rain_coefficients_p838(f_hz / GHZ, geom.elevation_deg, cfg.polarization_tilt_deg)
+        gamma = np.array([itu.rain_specific_attenuation_db_per_km(float(r), k, alpha) for r in rates])
+        ax.plot(rates, gamma, linewidth=LINE_WIDTH, label=f"{label}  (k = {k:.4f}, alpha = {alpha:.3f})")
+    ax.axvline(cfg.rain_rate_001_mm_per_h, linestyle="--", linewidth=THIN_LINE_WIDTH, color=THRESHOLD_COLOR,
+               label=f"R0.01 = {cfg.rain_rate_001_mm_per_h:g} mm/h")
+    ax.set_title("ITU-R P.838 Specific Rain Attenuation vs Rain Rate")
+    ax.set_xlabel("Rain rate R [mm/h]")
+    ax.set_ylabel("Specific attenuation gamma_R [dB/km]")
+    ax.grid(True, alpha=GRID_ALPHA)
+    ax.legend(loc="best")
+    return _save_figure(fig, output_dir / "27_itu_specific_rain_attenuation.png")
+
+
+def plot_dvbs2_modcod_ladder(scenario: ScenarioConfig, output_dir: Path) -> Path:
+    """Plot the DVB-S2 MODCOD ladder and mark the selected ACM operating point."""
+
+    design = calculate_scenario_with_itu(scenario)
+    esn0 = np.array([m.required_esn0_db for m in DVB_S2_MODCODS], dtype=float)
+    eff = np.array([m.spectral_efficiency_bps_hz for m in DVB_S2_MODCODS], dtype=float)
+
+    fig, ax = plt.subplots(figsize=(8.8, 5.4))
+    ax.step(esn0, eff, where="post", linewidth=1.6, color="#1f77b4", alpha=0.85)
+    ax.scatter(esn0, eff, s=22, color="#1f77b4", label="DVB-S2 MODCODs")
+
+    sel = design.downlink_modcod
+    if sel is not None and sel.selected is not None:
+        ax.axvline(sel.available_esn0_db, linestyle="--", linewidth=THIN_LINE_WIDTH, color="#4c9f70",
+                   label=f"available Es/N0 = {sel.available_esn0_db:.2f} dB")
+        ax.scatter([sel.selected.required_esn0_db], [sel.spectral_efficiency_bps_hz], marker="*", s=260,
+                   color=BASELINE_COLOR, edgecolors="white", linewidths=0.6, zorder=6,
+                   label=f"selected {sel.selected.name} ({sel.spectral_efficiency_bps_hz:.2f} bit/s/Hz)")
+    ax.set_title("DVB-S2 ACM: Spectral Efficiency vs Required Es/N0")
+    ax.set_xlabel("Required Es/N0 for QEF on AWGN [dB]")
+    ax.set_ylabel("Spectral efficiency [bit/s/Hz]")
+    ax.grid(True, alpha=GRID_ALPHA)
+    ax.legend(loc="best")
+    return _save_figure(fig, output_dir / "28_dvbs2_modcod_ladder.png")
+
+
+def plot_dvbs2_acm_vs_availability(
+    itu_curve: list[ITUPropagationResult],
+    output_dir: Path,
+    design_availability_percent: float | None = None,
+) -> Path:
+    """Plot the ACM-selected throughput and spectral efficiency vs availability.
+
+    As the availability target increases, the deeper ITU-R fade forces the ACM
+    selector to a more robust (lower-efficiency) MODCOD, reducing net throughput.
+    Points where no MODCOD closes appear as zero throughput.
+    """
+
+    availability = np.array([r.design_availability_percent for r in itu_curve], dtype=float)
+
+    def _eff(result: ITUPropagationResult) -> float:
+        sel = result.downlink_modcod
+        return sel.spectral_efficiency_bps_hz if (sel is not None and sel.selected is not None) else 0.0
+
+    def _throughput(result: ITUPropagationResult) -> float:
+        sel = result.downlink_modcod
+        return (sel.net_throughput_bps / 1.0e6) if (sel is not None and sel.selected is not None) else 0.0
+
+    throughput = np.array([_throughput(r) for r in itu_curve], dtype=float)
+    efficiency = np.array([_eff(r) for r in itu_curve], dtype=float)
+
+    fig, ax = plt.subplots(figsize=FIGSIZE_LINE)
+    ax.plot(availability, throughput, linewidth=LINE_WIDTH, marker="o", markersize=MARKER_SIZE,
+            color="#1f77b4", label="net throughput")
+    ax.set_xlabel("Availability [%]")
+    ax.set_ylabel("Net throughput [Mbit/s]", color="#1f77b4")
+    ax.tick_params(axis="y", labelcolor="#1f77b4")
+
+    ax2 = ax.twinx()
+    ax2.plot(availability, efficiency, linewidth=THIN_LINE_WIDTH, linestyle="--", marker="s", markersize=MARKER_SIZE,
+             color="#4c9f70", label="spectral efficiency")
+    ax2.set_ylabel("Spectral efficiency [bit/s/Hz]", color="#4c9f70")
+    ax2.tick_params(axis="y", labelcolor="#4c9f70")
+
+    if design_availability_percent is not None:
+        ax.axvline(design_availability_percent, linestyle=":", linewidth=1.6, color=BASELINE_COLOR,
+                   label=f"design = {design_availability_percent:g}%")
+
+    ax.set_title("DVB-S2 ACM: Throughput and Efficiency vs Availability")
+    ax.grid(True, alpha=GRID_ALPHA)
+    handles1, labels1 = ax.get_legend_handles_labels()
+    handles2, labels2 = ax2.get_legend_handles_labels()
+    ax.legend(handles1 + handles2, labels1 + labels2, loc="best")
+    return _save_figure(fig, output_dir / "29_dvbs2_acm_vs_availability.png")
+
+
+def generate_itu_plots(
+    scenario: ScenarioConfig,
+    itu_curve: list[ITUPropagationResult],
+    output_dir: Path,
+) -> list[Path]:
+    """Generate the ITU-R propagation and DVB-S2 ACM figures.
+
+    Returns an empty list when ITU-R propagation is disabled. The DVB-S2 figures
+    mark the operating point of the ITU-faded downlink, so they are only drawn
+    when both ITU-R propagation and the ACM layer are enabled.
+    """
+
+    if not scenario.itu_propagation.enabled or not itu_curve:
+        return []
+
+    _prepare_output_dir(output_dir)
+    design_p = scenario.itu_propagation.design_exceedance_percent
+    design_av = scenario.itu_propagation.design_availability_percent
+    paths = [
+        plot_itu_attenuation_vs_availability(itu_curve, output_dir, design_p),
+        plot_itu_margin_vs_availability(itu_curve, output_dir, design_av),
+        plot_itu_attenuation_breakdown_bar(scenario, output_dir),
+        plot_rain_attenuation_vs_frequency(scenario, output_dir),
+        plot_specific_rain_attenuation(scenario, output_dir),
+    ]
+    if scenario.modcod.enabled:
+        paths.append(plot_dvbs2_modcod_ladder(scenario, output_dir))
+        paths.append(plot_dvbs2_acm_vs_availability(itu_curve, output_dir, design_av))
+    return paths
