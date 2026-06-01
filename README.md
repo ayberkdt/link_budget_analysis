@@ -40,16 +40,21 @@ The core static budget is mathematically matched to the **MATLAB "Static Link Bu
 ## 📁 File Structure & Project Architecture
 
 ```text
-├── scenario_inputs.py  # Düzenlenebilir yer istasyonları (GS1/GS2), uydu, frekans ve kayıp girdileri
-├── constants.py        # Fiziksel sabitler, birim dönüştürücüler ve ortak mühendislik sabitleri (DRY)
-├── entities.py         # Konum, anten, bağlantı ve sonuçlar için kullanılan Python dataclass yapıları
-├── calculations.py     # Geometri, RF bütçesi, girişim, dijital kapasite ve simülasyon hesaplamaları
-├── itu_propagation.py  # ITU-R P.838 / P.839 / P.618 / P.676 / P.840 slant-path sönümleme modelleri
-├── modcod.py           # DVB-S2 MODCOD tablosu ve adaptif kodlama/modülasyon (ACM) mekanizması
-├── plotting.py         # Yüksek çözünürlüklü 2D kontur çizimleri ve ileri seviye simülasyon grafikleri
-├── main.py             # Giriş noktası (Girdileri doğrular, modülleri çalıştırır, CSV ve grafikleri kaydeder)
+├── src/                # Python kaynak kodları (Source files)
+│   ├── main.py         # Giriş noktası (Girdileri doğrular, modülleri çalıştırır, CSV ve grafikleri kaydeder)
+│   ├── calculations.py # Geometri, RF bütçesi, girişim, dijital kapasite ve simülasyon hesaplamaları
+│   ├── constants.py    # Fiziksel sabitler, birim dönüştürücüler ve ortak mühendislik sabitleri (DRY)
+│   ├── entities.py     # Konum, anten, bağlantı ve sonuçlar için kullanılan Python dataclass yapıları
+│   ├── itu_propagation.py # ITU-R P.838 / P.839 / P.618 / P.676 / P.840 slant-path sönümleme modelleri
+│   ├── modcod.py       # DVB-S2 MODCOD tablosu ve adaptif kodlama/modülasyon (ACM) mekanizması
+│   ├── plotting.py     # Yüksek çözünürlüklü 2D kontur çizimleri ve ileri seviye simülasyon grafikleri
+│   └── scenario_inputs.py # Düzenlenebilir yer istasyonları (GS1/GS2), uydu, frekans ve kayıp girdileri
+├── LaTeX Rapor/        # Akademik rapor şablonu (LaTeX template)
+│   ├── main.tex
+│   └── preamble.tex
 ├── requirements.txt    # Gerekli kütüphaneler (numpy, matplotlib)
-└── .gitignore          # Derlenmiş dosyaları ve çıktıları (results/) git dışı tutan ayarlar
+├── .gitignore          # Derlenmiş dosyaları ve çıktıları (outputs/) git dışı tutan ayarlar
+└── README.md           # Bu belge (Bilingual documentation)
 ```
 
 ---
@@ -70,25 +75,25 @@ You can run the full suite or restrict execution using command-line arguments:
 
 ```bash
 # Run all enabled advanced analyses and generate all plots
-python main.py
+python src/main.py
 
 # Write CSV outputs only, skipping plot generation (quicker execution)
-python main.py --skip-plots
+python src/main.py --skip-plots
 
 # Run ONLY the clear-sky static baseline (MATLAB-comparable, P.618 losses off)
-python main.py --static-only
+python src/main.py --static-only
 
 # Clear-sky static baseline with CSV output only
-python main.py --static-only --skip-plots
+python src/main.py --static-only --skip-plots
 ```
 
 ---
 
 ## 📝 Where to Edit Scenario Inputs
-All project inputs are centralized inside [scenario_inputs.py](file:///c:/Users/ayber/Desktop/Spacecraft%20Communication%20Proje/V5/scenario_inputs.py). You can update coordinates, frequencies, transmitter power, dish diameters, and enable/disable advanced features:
+All project inputs are centralized inside the source directory [src/scenario_inputs.py](file:///c:/Users/ayber/Desktop/Spacecraft%20Communication%20Proje/src/scenario_inputs.py). You can update coordinates, frequencies, transmitter power, dish diameters, and enable/disable advanced features:
 
 ```python
-# scenario_inputs.py (Example)
+# src/scenario_inputs.py (Example)
 GS1 = {
     "site_name": "GS1 Istanbul",
     "latitude_deg": 41.0082,
@@ -102,14 +107,14 @@ GS1 = {
 ---
 
 ## 📊 Outputs & Reports
-After execution, all data tables are written to `results/` as CSV files, and all figures are saved in `results/plots/` as high-resolution **PNG** (for quick preview) and **PDF** (for LaTeX/Word report insertion):
+After execution, all data tables are written to `outputs/` as CSV files, and all figures are saved in `outputs/plots/` as high-resolution **PNG** (for quick preview) and **PDF** (for LaTeX/Word report insertion):
 
 ### Core Static Baseline Files:
-*   `geometry_static.csv` — Slant range, elevation, azimuth, and central angles.
-*   `link_budget_static.csv` — Complete uplink and downlink clear-sky metrics.
-*   `scenario_summary_static.csv` — Combined end-to-end link budget.
+*   `outputs/geometry_static.csv` — Slant range, elevation, azimuth, and central angles.
+*   `outputs/link_budget_static.csv` — Complete uplink and downlink clear-sky metrics.
+*   `outputs/scenario_summary_static.csv` — Combined end-to-end link budget.
 
-### Generated Contour Plots (Always produced):
+### Generated Contour Plots (Always produced under `outputs/plots/`):
 *   **01_downlink_cn0_dish_vs_frequency** — Downlink $C/N_0$ vs GS2 dish diameter and frequency.
 *   **02_downlink_margin_eirp_vs_tsys** — Margin map showing the $0$ dB closure line.
 *   **03_uplink_cn_power_vs_dish** — Uplink $C/N$ vs HPA power and dish size.
@@ -121,4 +126,4 @@ After execution, all data tables are written to `results/` as CSV files, and all
 ## ⚠️ Academic Integrity & Disclaimer
 *   This tool is developed for educational purposes in the **UZB451 Spacecraft Communications** course.
 *   It is structured based on the Link Design Procedure in **Chapter 4 of Pratt's *Satellite Communications*** textbook.
-*   Default parameters in `scenario_inputs.py` are illustrative examples. Users should replace them with real datasheet values and cite their sources accordingly in their final reports.
+*   Default parameters in `src/scenario_inputs.py` are illustrative examples. Users should replace them with real datasheet values and cite their sources accordingly in their final reports.

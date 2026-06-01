@@ -76,7 +76,7 @@ from scenario_inputs import (
 )
 
 
-RESULTS_DIR = Path("results")
+RESULTS_DIR = Path("outputs")
 PLOTS_DIR = RESULTS_DIR / "plots"
 
 

@@ -6,7 +6,7 @@ __pycache__/
 .ipynb_checkpoints/
 
 # Project outputs
-results/
+outputs/
 
 # Editor/OS settings
 .vscode/
