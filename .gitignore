@@ -19,3 +19,15 @@ Desktop.ini
 *.zip
 *.tar.gz
 *.rar
+
+% LaTeX auxiliary files
+LaTeX Rapor/*.aux
+LaTeX Rapor/*.log
+LaTeX Rapor/*.toc
+LaTeX Rapor/*.lof
+LaTeX Rapor/*.lot
+LaTeX Rapor/*.out
+LaTeX Rapor/*.synctex.gz
+LaTeX Rapor/*.fdb_latexmk
+LaTeX Rapor/*.fls
+LaTeX Rapor/*.pdf

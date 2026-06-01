@@ -3,33 +3,29 @@
 
 \section{Introduction}
 
-\subsection{Project Overview}
-This term project presents a comprehensive analysis and simulation of a geostationary (GEO) satellite communication link. Modern satellite links require robust engineering calculations to size transmitter power, antenna diameters, and receiver noise performance. The objective of this study is two-fold:
-\begin{enumerate}
-    \item To establish a mathematically transparent, MATLAB-comparable \textbf{Clear-Sky Static Link Budget} as the primary compulsory academic deliverable.
-    \item To implement a series of advanced engineering extensions, including co-channel interference, digital baseband metrics, orbital motion, stochastic weather, standards-based \textbf{ITU-R atmospheric propagation sönümlemesi}, and \textbf{DVB-S2 Adaptive Coding and Modulation (ACM)} as professional extensions.
-\end{enumerate}
+\subsection{Fundamental Principles of Satellite Communications}
+Satellite communication represents a cornerstone of modern global telecommunication infrastructure, enabling high-capacity voice, video, and data transmission over vast geographical distances. Unlike terrestrial links, which are limited by line-of-sight constraints, geographical obstacles, and regional infrastructure deficits, space-based communication networks leverage orbiting platforms to establish wide-area broadcast and point-to-point connections. 
+
+A geostationary earth orbit (GEO) satellite is positioned in a circular orbit directly above the Earth's equator at a nominal altitude of approximately \SI{35786}{\km} (corresponding to a semi-major axis or orbit radius of \SI{42164}{\km}). At this specific distance, the orbital period of the satellite matches the Earth's sidereal rotation period ($T_{sidereal} \approx \SI{23.934}{\hour}$). Consequently, as viewed from any ground station on the Earth's surface, the satellite appears stationary at a fixed longitudinal position in the sky. This characteristic is highly advantageous as it allows ground station antennas to remain pointed at the satellite without requiring complex, continuous tracking systems, thereby reducing mechanical and control complexity at the earth terminals.
+
+\subsection{Bent-Pipe Transponder Architecture}
+The system modeled in this term project is a traditional one-way \textit{bent-pipe} (transparent) geostationary transponder. In a bent-pipe architecture, the satellite does not demodulate or process the payload data. Instead, it acts as a space-based repeater. The satellite's payload receive antenna intercepts the weak uplink carrier, which is then routed through a low-noise amplifier (LNA) to minimize noise figure contribution. The received signal is frequency-translated from the uplink band to the downlink band using a local oscillator and mixer, amplified via a traveling-wave tube amplifier (TWTA) or a solid-state power amplifier (SSPA) to the desired output power, and retransmitted through the downlink transmit antenna to the earth terminal. 
+
+This transparent repeat-only mechanism makes the satellite payload independent of the transmission modulation, framing, or coding protocols, providing extreme operational flexibility. However, it also implies that any uplink noise, interference, and distortions are amplified and retransmitted directly to the downlink, coupling the uplink and downlink link budgets.
+
+\subsection{Frequency Allocation and Polarization}
+The communications link operates in the Ku-band, which is widely utilized for satellite broadcasting (Direct-To-Home, DTH) and Very Small Aperture Terminal (VSAT) data networks. The uplink operates at a nominal carrier frequency of \SI{14.0}{\GHz}, while the downlink is translated to \SI{12.0}{\GHz}. Circular polarization is selected (polarization tilt angle $\tau = 45^\circ$) to eliminate the necessity for precise mechanical polarization alignment at the earth terminals, providing robustness against ionospheric Faraday rotation.
+
+The Ku-band frequency band offers an optimal trade-off in satellite system design. It provides highly directional beam patterns and high antenna gains for moderate dish sizes, preventing excessive co-channel interference with adjacent geostationary satellites. However, Ku-band signals are susceptible to atmospheric water molecules, meaning that rain fade, gaseous absorption, and cloud attenuation present significant propagation challenges that must be accounted for in the overall system design.
 
 \subsection{Scenario Definition}
-The system models a one-way bent-pipe (transparent transponder) geostationary satellite link at Ku-band. The uydunun nominal yörünge konumu $42^\circ$ Doğu (Doğu boylamı) olarak atanmıştır. Şekil~\ref{fig:scenario}'de gösterildiği üzere haberleşme tek yönlü bir bent-pipe hattı üzerinden iki yer istasyonu arasında kurulmuştur:
+The specific scenario modeled in this study consists of a one-way geostationary communication link through an commercial GEO satellite placed nominally at $42^\circ$ East longitude:
+\begin{equation*}
+    \text{GS1 (Istanbul)} \xrightarrow{\text{Uplink: } \SI{14.0}{\GHz}} \text{GEO Satellite (42E)} \xrightarrow{\text{Downlink: } \SI{12.0}{\GHz}} \text{GS2 (Ankara)}
+\end{equation*}
+*   \textbf{Ground Station 1 (GS1 Istanbul):} Located in Istanbul, Turkey ($41.0082^\circ$ N, $28.9784^\circ$ E, altitude \SI{0.0}{\km}). It acts as the broadcasting terminal (transmitting earth station), utilizing a \SI{2.4}{\m} parabolic dish antenna with a \SI{20.0}{\watt} high-power amplifier (HPA).
+*   \textbf{GEO Satellite (42E):} Positioned at $42.0^\circ$ E longitude on the geostationary equatorial arc. It is modeled with a constant downlink EIRP footprint value of \SI{50.0}{\dBW} over the coverage zone and a receive G/T value of \SI{3.0}{\dB/\kelvin} at the uplink beam.
+*   \textbf{Ground Station 2 (GS2 Ankara):} Located in Ankara, Turkey ($39.9334^\circ$ N, $32.8597^\circ$ E, altitude \SI{0.0}{\km}). It acts as the receive-only terminal, utilizing a \SI{0.9}{\m} parabolic dish receiver with a receiver system noise temperature ($T_{sys}$) of \SI{150.0}{\kelvin}.
 
-\begin{figure}[H]
-    \centering
-    % Placeholder for a block diagram
-    \begin{minipage}{0.8\textwidth}
-        \centering
-        \ttfamily
-        [GS1 Transmitter] $\rightarrow$ Uplink ($14$ GHz) $\rightarrow$ [GEO Satellite] $\rightarrow$ Downlink ($12$ GHz) $\rightarrow$ [GS2 Receiver] \\
-        (Istanbul, $2.4$m dish) \hspace{3cm} (Bent-pipe transponder) \hspace{2cm} (Ankara, $0.9$m dish)
-    \end{minipage}
-    \caption{UZB451E GEO Bent-Pipe Satellite Link Scenario.}
-    \label{fig:scenario}
-\end{figure}
-
-\begin{itemize}
-    \item \textbf{Ground Station 1 (GS1 - Istanbul):} Broadcasting earth station acting as the uplink transmitter. Equipped with a $2.4$-meter parabolic dish, transmitting at $14.0$ GHz with a $20$ Watt high-power amplifier (HPA).
-    \item \textbf{GEO Satellite (at 42E):} A transparent bent-pipe satellite that receives the uplink carrier at $14.0$ GHz and retransmits it on the downlink at $12.0$ GHz with a constant downlink EIRP footprint value of $50$ dBW.
-    \item \textbf{Ground Station 2 (GS2 - Ankara):} A receive-only terminal acting as the downlink receiver. Equipped with a $0.9$-meter parabolic dish, operating with a receiver system noise temperature ($T_{sys}$) of $150$ K.
-\end{itemize}
-
-The transponder has a bandwidth of $36.0$ MHz, supporting a net information transmission rate of $10.0$ Mbps. The system uses a QPSK modulation with a $3/4$ inner LDPC code rate.
+\subsection{Structure of the Report}
+This report details the theoretical, mathematical, and simulation results of the communications link. Chapter 2 documents the core Pratt-style link budget equations used to establish the open-sky baseline. Chapter 3 presents the advanced, optional interference, digital performance, and dynamic noise layers. Chapter 4 documents the standards-based ITU-R P.618 propagation suite and DVB-S2 ACM mitigation mechanism. Chapter 5 compiles the numerical results, presents detailed physical interpretations of the generated 2D contour maps, and discusses advanced findings, followed by a concluding summary in Chapter 6.

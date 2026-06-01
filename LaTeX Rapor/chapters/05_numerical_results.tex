@@ -59,31 +59,53 @@ The end-to-end combined carrier-to-noise density ratio is computed using inverse
 \end{equation}
 yielding a combined $E_b/N_0$ of $10.93$ dB and a combined open-air link margin of \textbf{3.93 dB}. This margins closes the link with a healthy cushion above the required threshold of $7.0$ dB.
 
-\subsection{Analysis of 2D Contour Maps}
-The Python analyzer generates five standard contour figures in `outputs/plots/` to study system sensitivity and trade-offs. They represent a core requirement of the term project:
+\subsection{Analysis of the 2D Contour Maps}
+The Python analyzer generates the standard contour figures to study system sensitivity and trade-offs. These plots represent a core requirement of the term project:
 
-\begin{enumerate}
-    \item \textbf{01\_downlink\_cn0\_dish\_vs\_frequency:} Plots Downlink $C/N_0$ on the Z-axis, with GS2 antenna diameter on the Y-axis ($0.5$m to $3.0$m) and downlink frequency on the X-axis ($10.7$ GHz to $12.75$ GHz).
-    \begin{itemize}
-        \item \textit{Physical Meaning:} As the antenna diameter increases, the receiver gain increases, causing the $C/N_0$ to rise. As frequency increases, even though the FSPL rises, the receive antenna gain rises faster (proportional to $f^2$), yielding a net increase in $C/N_0$ towards the top-right corner.
-    \end{itemize}
-    \item \textbf{02\_downlink\_margin\_eirp\_vs\_tsys:} Plots Downlink Link Margin on the Z-axis, with satellite downlink EIRP on the X-axis ($40$ dBW to $55$ dBW) and GS2 alıcı gürültü sıcaklığı ($T_{sys}$) on the Y-axis ($50$ K to $300$ K). A bold red line denotes the $0$ dB closure limit.
-    \begin{itemize}
-        \item \textit{Physical Meaning:} The link margin increases with higher satellite EIRP and lower receiver noise temperature. This plot is essential for design selection: any combination to the right of the $0$ dB contour line successfully closes the downlink, and the spacing helps size the margin cushion.
-    \end{itemize}
-    \item \textbf{03\_uplink\_cn\_power_vs\_dish:} Plots Uplink $C/N$ on the Z-axis over transponder bandwidth, with GS1 HPA output power on the X-axis ($5$ W to $100$ W) and GS1 antenna diameter on the Y-axis ($1.2$m to $4.5$m).
-    \begin{itemize}
-        \item \textit{Physical Meaning:} Sizing the uplink transmitter requires a trade-off: a larger ground antenna allows a lower power amplifier (HPA) to achieve the same target uplink $C/N$, protecting adjacent satellites from excessive boresight leakage.
-    \end{itemize}
-    \item \textbf{04\_total\_ebn0\_bitrate\_vs\_bandwidth:} Plots Combined $E_b/N_0$ on the Z-axis, with allocated transponder bandwidth on the Y-axis ($10$ MHz to $50$ MHz) and information bit rate on the X-axis ($2$ Mbps to $50$ Mbps).
-    \begin{itemize}
-        \item \textit{Physical Meaning:} Displays the classic power-vs-bandwidth trade-off. As bit rate increases, the energy-per-bit drops ($E_b/N_0 = C/N_0 - 10\log R_b$), indicating that high data rates require more carrier power.
-    \end{itemize}
-    \item \textbf{05\_gs2\_elevation\_latitude\_vs\_longitude:} Plots the elevation angle from GS2 to the GEO satellite as a function of ground coordinates (X-axis: longitude difference $-60^\circ$ to $+60^\circ$; Y-axis: latitude $0^\circ$ to $70^\circ$N).
-    \begin{itemize}
-        \item \textit{Physical Meaning:} Defines the geographic coverage visibility window. Higher latitudes or larger longitude separations push the ground station towards the edge of visibility, where the elevation drops below the standard $5^\circ$ or $10^\circ$ engineering limit.
-    \end{itemize}
-\end{enumerate}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{01_downlink_cn0_dish_vs_frequency.png}
+    \caption{Downlink C/N0 vs GS2 Dish Diameter and Frequency.}
+    \label{fig:contour01}
+\end{figure}
+As shown in Şekil~\ref{fig:contour01}, the Z-axis represents Downlink $C/N_0$ in dB-Hz, with GS2 antenna diameter on the Y-axis ($0.5$m to $3.0$m) and downlink frequency on the X-axis ($10.7$ GHz to $12.75$ GHz).
+As the antenna diameter increases, the receiver gain increases, causing the $C/N_0$ to rise. As frequency increases, even though the FSPL rises, the receive antenna gain rises faster (proportional to $f^2$), yielding a net increase in $C/N_0$ towards the top-right corner of the contour map.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{02_downlink_margin_eirp_vs_tsys.png}
+    \caption{Downlink Margin vs Satellite EIRP and GS2 Tsys.}
+    \label{fig:contour02}
+\end{figure}
+Şekil~\ref{fig:contour02} plots Downlink Link Margin on the Z-axis, with satellite downlink EIRP on the X-axis ($40$ dBW to $55$ dBW) and GS2 alıcı gürültü sıcaklığı ($T_{sys}$) on the Y-axis ($50$ K to $300$ K). A bold red line denotes the $0$ dB closure limit.
+The link margin increases with higher satellite EIRP and lower receiver noise temperature. This plot is essential for design selection: any combination to the right of the $0$ dB contour line successfully closes the downlink, and the spacing helps size the margin cushion.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{03_uplink_cn_power_vs_dish.png}
+    \caption{Uplink C/N vs HPA Power and GS1 Dish Diameter.}
+    \label{fig:contour03}
+\end{figure}
+Şekil~\ref{fig:contour03} plots Uplink $C/N$ on the Z-axis over transponder bandwidth, with GS1 HPA output power on the X-axis ($5$ W to $100$ W) and GS1 antenna diameter on the Y-axis ($1.2$m to $4.5$m).
+Sizing the uplink transmitter requires a trade-off: a larger ground antenna allows a lower power amplifier (HPA) to achieve the same target uplink $C/N$, protecting adjacent satellites from excessive boresight leakage.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{04_total_ebn0_bitrate_vs_bandwidth.png}
+    \caption{Combined Eb/N0 vs Information Bit Rate and Bandwidth.}
+    \label{fig:contour04}
+\end{figure}
+Şekil~\ref{fig:contour04} plots Combined $E_b/N_0$ on the Z-axis, with allocated transponder bandwidth on the Y-axis ($10$ MHz to $50$ MHz) and information bit rate on the X-axis ($2$ Mbps to $50$ Mbps).
+This figure displays the classic power-vs-bandwidth trade-off. As bit rate increases, the energy-per-bit drops ($E_b/N_0 = C/N_0 - 10\log R_b$), indicating that high data rates require more carrier power.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{05_gs2_elevation_latitude_vs_longitude.png}
+    \caption{GS2 Elevation Angle vs Latitude and Longitude Separation.}
+    \label{fig:contour05}
+\end{figure}
+Şekil~\ref{fig:contour05} plots the elevation angle from GS2 to the GEO satellite as a function of ground coordinates (X-axis: longitude difference $-60^\circ$ to $+60^\circ$; Y-axis: latitude $0^\circ$ to $70^\circ$N).
+This map defines the geographic coverage visibility window. Higher latitudes or larger longitude separations push the ground station towards the edge of visibility, where the elevation drops below the standard $5^\circ$ or $10^\circ$ engineering limit.
 
 \subsection{Advanced Analysis Results [EXTRA]}
 

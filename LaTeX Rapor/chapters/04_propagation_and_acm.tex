@@ -6,13 +6,13 @@
 This chapter presents the standards-based atmospheric attenuation models and Adaptive Coding and Modulation (ACM) mechanisms implemented in this project. \textbf{These models are optional professional extensions labeled as [EXTRA - OPSİYONEL] and represent an advanced study of link availability.}
 
 \subsection{ITU-R Slant-Path Attenuation Suite [EXTRA]}
-The standards-based availability study implements the slant-path propagation recommendations of the International Telecommunication Union (ITU-R). The total atmospheric attenuation $A_{total}(p)$ in dB exceeded for a time percentage $p$ ($0.001\% \le p \le 5\%$) is combined as recommended in \textit{ITU-R P.618-13 Section 2.5}:
+The standards-based availability study implements the slant-path propagation recommendations of the International Telecommunication Union (ITU-R). The total atmospheric attenuation $A_{total}(p)$ in dB exceeded for a time percentage $p$ ($0.001\% \le p \le 5\%$) is combined as recommended in \textit{ITU-R P.618-13 Section 2.5}~\cite{itu618}:
 \begin{equation}
     A_{total}(p) = A_{gaseous} + \sqrt{ \left( A_{rain}(p) + A_{cloud} \right)^2 + A_{scintillation}(p)^2 }
 \end{equation}
 
 \subsubsection{Yağış Sönümlemesi (ITU-R P.618, P.838, P.839)}
-The rain attenuation $A_{rain}(p)$ is calculated by determining the rain height $h_R$ and slant-path length $L_s$ under the rain layer. The specific attenuation $\gamma_R$ in dB/km is computed using the horizontal and vertical power-law coefficients $k$ and $\alpha$ from \textit{ITU-R P.838-3}:
+The rain attenuation $A_{rain}(p)$ is calculated by determining the rain height $h_R$ and slant-path length $L_s$ under the rain layer. The specific attenuation $\gamma_R$ in dB/km is computed using the horizontal and vertical power-law coefficients $k$ and $\alpha$ from \textit{ITU-R P.838-3}~\cite{itu838}:
 \begin{equation}
     \gamma_R = k R_{0.01}^\alpha
 \end{equation}
@@ -26,13 +26,13 @@ For other percentages $p$, $A_p$ is scaled exponentially using a latitude- and e
 \end{equation}
 
 \subsubsection{Atmosferik Gaz Emilimi (ITU-R P.676-12 Annex 2) [EXTRA]}
-The gaseous attenuation $A_{gaseous}$ accounts for dry air (oxygen) and water vapour absorption. Using surface pressure, temperature, and absolute humidity, specific zenith attenuations $\gamma_o$ and $\gamma_w$ are computed alongside their equivalent height limits $h_o$ and $h_w$:
+The gaseous attenuation $A_{gaseous}$ accounts for dry air (oxygen) and water vapour absorption. Using surface pressure, temperature, and absolute humidity, specific zenith attenuations $\gamma_o$ and $\gamma_w$ are computed alongside their equivalent height limits $h_o$ and $h_w$ according to \textit{ITU-R P.676-12}~\cite{itu676}:
 \begin{equation}
     A_{gaseous} = \frac{\gamma_o h_o + \gamma_w h_w}{\sin\theta}
 \end{equation}
 
 \subsubsection{Bulut Sıvı Su Sönümlemesi (ITU-R P.840-8) [EXTRA]}
-Attenuation due to cloud liquid water $A_{cloud}$ uses Rayleigh scattering with a double-Debye model for water dielectric permittivity, yielding a specific attenuation coefficient $K_l$ in $(\text{dB/km})/(\text{g/m}^3)$ scaled by the columnar liquid water $M$ in kg/m$^2$:
+Attenuation due to cloud liquid water $A_{cloud}$ uses Rayleigh scattering with a double-Debye model for water dielectric permittivity, yielding a specific attenuation coefficient $K_l$ in $(\text{dB/km})/(\text{g/m}^3)$ scaled by the columnar liquid water $M$ in kg/m$^2$ according to \textit{ITU-R P.840-8}~\cite{itu840}:
 \begin{equation}
     A_{cloud} = \frac{M \cdot K_l}{\sin\theta}
 \end{equation}
@@ -61,4 +61,4 @@ The usable symbol rate is $R_s = B / (1 + \alpha_{rolloff})$, yielding a dynamic
 \begin{equation}
     Throughput(Mbps) = \eta \cdot R_s
 \end{equation}
-which optimizes the channel capacity under time-varying atmospheric fades.
+which optimizes the channel capacity under time-varying atmospheric fades according to the DVB-S2 standard~\cite{dvbs2}.
