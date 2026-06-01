@@ -1,0 +1,57 @@
+% 03_advanced_models.tex
+% Chapter 3: Advanced Analysis Models [EXTRA]
+
+\section{Advanced Analysis Models [EXTRA]}
+
+Beyond the core academic baseline, several advanced modeling layers have been incorporated to study real-world design constraints, sensitivity, and trade-offs. \textbf{Note that all sections in this chapter represent [EXTRA] professional extensions outside the mandatory coursework requirements.}
+
+\subsection{Adjacent-Satellite Interference (ASI) and IMD [EXTRA]}
+In a crowded geostationary arc, adjacent satellite systems operating on the same frequency band introduce interference. The analyzer models Adjacent-Satellite Interference (ASI) and Intermodulation Distortion (IMD) as equivalent carrier-to-interference ($C/I$) ratios.
+The off-axis discrimination angle $\theta_{off}$ between the desired satellite and an adjacent satellite is calculated using ECEF vectors. The off-axis gain $G(\theta_{off})$ is estimated using the ITU-R off-axis antenna envelope approximation:
+\begin{equation}
+    G_{off}(\theta_{off}) = \min\left( G_{max} - 3.0,\ 32.0 - 25\log_{10}(\theta_{off}) \right)
+\end{equation}
+The uplink and downlink $C/I$ ratios are calculated and combined along with the transponder's intermodulation distortion ($C/I_{IMD}$) into the final carrier-to-noise-and-interference ratio $C/(N+I)$ using inverse-linear summation:
+\begin{equation}
+    \left( \frac{C}{N+I} \right)_{total}^{-1} = \left( \frac{C}{N} \right)_{uplink}^{-1} + \left( \frac{C}{N} \right)_{downlink}^{-1} + \left( \frac{C}{I_{ASI,up}} \right)^{-1} + \left( \frac{C}{I_{ASI,down}} \right)^{-1} + \left( \frac{C}{I_{IMD}} \right)^{-1}
+\end{equation}
+
+\subsection{Digital Baseband Performance Metrics [EXTRA]}
+To analyze transmission quality under additive white Gaussian noise (AWGN) and interference channels, bit-error-rate (BER) models are implemented.
+For coherent, Gray-coded QPSK (or BPSK) modulation, the theoretical uncoded bit error rate $P_{b}$ is:
+\begin{equation}
+    P_{b,uncoded} = \frac{1}{2} \text{erfc}\left( \sqrt{\frac{E_b}{N_0}} \right)
+\end{equation}
+where $\text{erfc}(x) = \frac{2}{\sqrt{\pi}}\int_x^\infty e^{-t^2}dt$ is the complementary error function. When forward error correction (FEC) is applied with a coding gain $G_{code}$ in dB, the coded BER is approximated by shifting the operating point:
+\begin{equation}
+    P_{b,coded} \approx \frac{1}{2} \text{erfc}\left( \sqrt{10^{(E_b/N_0 + G_{code})/10}} \right)
+\end{equation}
+The Shannon-Hartley channel capacity limit $C$ in bps is checked to evaluate spectral efficiency relative to bandwidth $B$:
+\begin{equation}
+    C = B \log_{2}\left( 1 + SNR \right)
+\end{equation}
+where $SNR$ is the linear carrier-to-noise ratio. The Shannon limit establishes the absolute minimum $E_b/N_0$ required to support a spectral efficiency $\eta = R_b/B$:
+\begin{equation}
+    \left( \frac{E_b}{N_0} \right)_{shannon}(dB) = 10\log_{10}\left( \frac{2^{\eta} - 1}{\eta} \right)
+\end{equation}
+
+\subsection{Dynamic System Noise Temperature [EXTRA]}
+In real receivers, the antenna noise temperature is not static. It increases as the elevation angle $\theta$ drops due to the longer atmospheric path, and spikes during rain events due to thermal emission from the lossy medium. The dynamic system noise temperature model computes:
+\begin{equation}
+    T_{sys}(\theta, A_{rain}) = T_{receiver} + T_{spillover} + T_{sky}(\theta) + T_{rain}(A_{rain})
+\end{equation}
+The rain thermal emission noise $T_{rain}$ is calculated using radiative transfer:
+\begin{equation}
+    T_{rain} = T_{atm} \left( 1 - 10^{-A_{rain}/10} \right)
+\end{equation}
+where $T_{atm} = 275$ K is the effective physical temperature of the lossy atmosphere.
+
+\subsection{Apparent GEO Orbit Motion [EXTRA]}
+Geostationary uydular mükemmel bir şekilde sabit kalmazlar; Ay, Güneş ve Dünya'nın homojen olmayan yerçekimsel etkileri nedeniyle bir istasyon tutma (station-keeping) kutusu içinde salınım yaparlar. 
+Bu model, uydunun pozisyonunu zamana bağlı olarak üç eksende simüle eder:
+\begin{align}
+    \Delta \lambda(t) &= A_{ew} \sin\left(\frac{2\pi t}{T_{sidereal}} + \phi_{ew}\right) \\
+    \Delta \phi(t) &= A_{ns} \sin\left(\frac{2\pi t}{T_{sidereal}} + \phi_{ns}\right) \\
+    \Delta r(t) &= A_{r} \sin\left(\frac{2\pi t}{T_{sidereal}/2} + \phi_{r}\right)
+\end{align}
+Bu salınımlar yer istasyonu ile uydu arasındaki slant range ($d$) değerini zamana bağlı olarak değiştirir, bu da Serbest Uzay Yayılım Kaybı (FSPL) ve yönelim kayıplarında küçük ama periyodik dalgalanmalara yol açar.

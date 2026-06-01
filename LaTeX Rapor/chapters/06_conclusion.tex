@@ -1,0 +1,20 @@
+% 06_conclusion.tex
+% Chapter 6: Conclusion
+
+\section{Conclusion}
+
+This term project presented a transparent, comprehensive, and highly robust analysis of a geostationary bent-pipe satellite communication link at Ku-band. 
+
+\subsection{Project Findings}
+Through the calculations implemented in our Python analyzer, the following key engineering outcomes were achieved:
+\begin{itemize}
+    \item \textbf{Baseline Validation:} The open-air static link budget closes with a combined $E_b/N_0$ of $10.93$ dB, yielding a link margin of $3.93$ dB under clear-sky conditions. This baseline is fully comparable to the MATLAB "Static Link Budget Analyzer" results (Include P.618 Losses left unticked), validating the structural correctness of the geometry and RF equations.
+    \item \textbf{Sensitivity Trade-offs:} The five 2D contour plots successfully demonstrated the core satellite design trade-offs: the positive impact of higher frequencies and antenna sizes on receive $C/N_0$, the power-bandwidth boundary for bit rate scaling, the adjacent satellite discrimination angle trends, and the geographical limits of elevation angles.
+    \item \textbf{Adjacent-Satellite Interference (ASI):} The co-channel adjacent interference analysis showed a $0.50$ dB penalty on our final margin (reducing it to $3.43$ dB), proving that satellite spacing and antenna off-axis discrimination are critical design constraints.
+    \item \textbf{Propagation and Availability:} The standards-based ITU-R propagation suite (P.618/P.676/P.840) demonstrated that atmospheric and rain attenuation impose significant slow fades ($3.83$ dB on the uplink and $2.65$ dB on the downlink at $99.9\%$ availability). This reduces our faded margin to $0.32$ dB, barely closing the link.
+    \item \textbf{Adaptive Mitigation:} The DVB-S2 Adaptive Coding and Modulation (ACM) successfully illustrated how the link can be protected. By dynamically shifting down to QPSK 1/2 during rain events, the transponder maintains connectivity with a net throughput of $29.66$ Mbps, instead of suffering a complete outage.
+\end{itemize}
+
+\subsection{Final Remarks}
+In conclusion, this project successfully bridges textbook theory from Pratt's \textit{Satellite Communications} with modern standards-compliant satellite system engineering. The modular Python structure ensures that the analyzer is easily adaptable for alternative coordinate configurations, frequency bands (e.g. Ka-band), or transponder parameters.
+The clear distinction between the compulsory clear-sky baseline and the advanced professional extensions (ASI, dynamic noise, orbit motion, Monte Carlo simulations, ITU-R models, and ACM) showcases a comprehensive study of geostationary communication links.

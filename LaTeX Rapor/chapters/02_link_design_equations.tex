@@ -1,0 +1,73 @@
+% 02_link_design_equations.tex
+% Chapter 2: Link Design Equations
+
+\section{Link Design Equations}
+
+This section documents the standard mathematical formulations based on the link design procedure in \textit{Chapter 4: Satellite Link Design} of Pratt's textbook. These calculations establish the academic baseline for the clear-sky static budget.
+
+\subsection{Slant-Path Geometry}
+The pointing geometry between a ground station and a geostationary satellite is determined using ECEF (Earth-Centered, Earth-Fixed) coordinate transformations. Let $R_e$ be the equatorial radius of the Earth ($6378.137$ km) and $r_{sat}$ be the orbit radius of the GEO satellite ($42164.0$ km). The ECEF coordinates of the ground station at latitude $\phi$ and longitude $\lambda$ with altitude $h$ are:
+\begin{equation}
+    \vec{R}_{ground} = \begin{bmatrix} (R_e + h)\cos\phi\cos\lambda \\ (R_e + h)\cos\phi\sin\lambda \\ (R_e + h)\sin\phi \end{bmatrix}
+\end{equation}
+The satellite coordinate vector $\vec{R}_{sat}$ is calculated similarly at latitude $0^\circ$ and nominal longitude $\lambda_{sat}$. The slant-range vector $\vec{\rho}$ is:
+\begin{equation}
+    \vec{\rho} = \vec{R}_{sat} - \vec{R}_{ground}
+\end{equation}
+The slant range distance $d = \|\vec{\rho}\|$ in km determines the path delay and free-space path loss. The local elevation angle $\theta$ and azimuth angle $Az$ are calculated by projecting $\vec{\rho}$ onto the local Up, East, and North unit vectors:
+\begin{equation}
+    \theta = \arcsin\left( \frac{\vec{\rho} \cdot \vec{u}_{up}}{\|\vec{\rho}\|} \right)
+\end{equation}
+
+\subsection{Antenna Parameters}
+For a parabolic dish antenna of diameter $D$ operating at frequency $f$ (with corresponding wavelength $\lambda_w = c/f$), the maximum boresight gain $G$ in dBi is given by:
+\begin{equation}
+    G(dBi) = 10\log_{10}\left( \eta \left( \frac{\pi D}{\lambda_w} \right)^2 \right)
+\end{equation}
+where $\eta$ is the aperture efficiency (nominally $0.62$). The half-power beamwidth ($\theta_{HPBW}$) in degrees is approximated by:
+\begin{equation}
+    \theta_{HPBW} \approx 70.0 \frac{\lambda_w}{D}
+\end{equation}
+
+\subsection{Free-Space Path Loss (FSPL)}
+The Serbest Uzay Yayılım Kaybı (FSPL) represents the geometrical spreading of electromagnetic wave energy as it propagates through space, defined as:
+\begin{equation}
+    FSPL(dB) = 20\log_{10}\left( \frac{4\pi d}{\lambda_w} \right) = 92.45 + 20\log_{10}(f_{GHz}) + 20\log_{10}(d_{km})
+\end{equation}
+
+\subsection{RF Power Budget and C/N0 Calculations}
+The equivalent isotropically radiated power (EIRP) is:
+\begin{equation}
+    EIRP(dBW) = P_{tx}(dBW) + G_{tx}(dBi) - L_{feeder}(dB)
+\end{equation}
+where $P_{tx}$ is the transmitter output power in dBW and $L_{feeder}$ represents physical feeder line losses. The receiver quality factor $G/T$ is:
+\begin{equation}
+    G/T(dB/K) = G_{rx}(dBi) - L_{feeder}(dB) - 10\log_{10}(T_{sys})
+\end{equation}
+The carrier-to-noise density ratio $C/N_0$ at the receiver input is:
+\begin{equation}
+    C/N_0(dB\text{-}Hz) = EIRP(dBW) + G/T(dB/K) - L_{total}(dB) + 228.6
+\end{equation}
+where $L_{total}$ is the sum of path loss, pointing losses, polarization losses, and atmospheric absorption. The constant $+228.6$ represents $-10\log_{10}(k)$ where $k$ is Boltzmann's constant ($1.380649\times 10^{-23}$ J/K). The carrier-to-noise ratio $C/N$ over the carrier bandwidth $B$ is:
+\begin{equation}
+    C/N(dB) = C/N_0(dB\text{-}Hz) - 10\log_{10}(B)
+\end{equation}
+The energy-per-bit to noise-density ratio $E_b/N_0$ at the information transmission rate $R_b$ is:
+\begin{equation}
+    E_b/N_0(dB) = C/N_0(dB\text{-}Hz) - 10\log_{10}(R_b)
+\end{equation}
+The final link margin is:
+\begin{equation}
+    Margin(dB) = E_b/N_0(dB) - Required\ E_b/N_0(dB)
+\end{equation}
+
+\subsection{Combined Bent-Pipe Budget}
+For a transparent bent-pipe GEO satellite transponder, the uplink and downlink are calculated separately. The end-to-end combined carrier-to-noise ratio $(C/N)_{total}$ is calculated by inverse-linear addition of the respective ratios:
+\begin{equation}
+    \left( \frac{C}{N} \right)_{total}^{-1} = \left( \frac{C}{N} \right)_{uplink}^{-1} + \left( \frac{C}{N} \right)_{downlink}^{-1}
+\end{equation}
+Alternatively, using the carrier-to-noise density ratio:
+\begin{equation}
+    \left( \frac{C}{N_0} \right)_{total}^{-1} = \left( \frac{C}{N_0} \right)_{uplink}^{-1} + \left( \frac{C}{N_0} \right)_{downlink}^{-1}
+\end{equation}
+which represents the core combined link budget calculation.

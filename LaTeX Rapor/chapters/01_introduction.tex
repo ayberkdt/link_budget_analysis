@@ -1,0 +1,35 @@
+% 01_introduction.tex
+% Chapter 1: Introduction
+
+\section{Introduction}
+
+\subsection{Project Overview}
+This term project presents a comprehensive analysis and simulation of a geostationary (GEO) satellite communication link. Modern satellite links require robust engineering calculations to size transmitter power, antenna diameters, and receiver noise performance. The objective of this study is two-fold:
+\begin{enumerate}
+    \item To establish a mathematically transparent, MATLAB-comparable \textbf{Clear-Sky Static Link Budget} as the primary compulsory academic deliverable.
+    \item To implement a series of advanced engineering extensions, including co-channel interference, digital baseband metrics, orbital motion, stochastic weather, standards-based \textbf{ITU-R atmospheric propagation sönümlemesi}, and \textbf{DVB-S2 Adaptive Coding and Modulation (ACM)} as professional extensions.
+\end{enumerate}
+
+\subsection{Scenario Definition}
+The system models a one-way bent-pipe (transparent transponder) geostationary satellite link at Ku-band. The uydunun nominal yörünge konumu $42^\circ$ Doğu (Doğu boylamı) olarak atanmıştır. Şekil~\ref{fig:scenario}'de gösterildiği üzere haberleşme tek yönlü bir bent-pipe hattı üzerinden iki yer istasyonu arasında kurulmuştur:
+
+\begin{figure}[H]
+    \centering
+    % Placeholder for a block diagram
+    \begin{minipage}{0.8\textwidth}
+        \centering
+        \ttfamily
+        [GS1 Transmitter] $\rightarrow$ Uplink ($14$ GHz) $\rightarrow$ [GEO Satellite] $\rightarrow$ Downlink ($12$ GHz) $\rightarrow$ [GS2 Receiver] \\
+        (Istanbul, $2.4$m dish) \hspace{3cm} (Bent-pipe transponder) \hspace{2cm} (Ankara, $0.9$m dish)
+    \end{minipage}
+    \caption{UZB451E GEO Bent-Pipe Satellite Link Scenario.}
+    \label{fig:scenario}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{Ground Station 1 (GS1 - Istanbul):} Broadcasting earth station acting as the uplink transmitter. Equipped with a $2.4$-meter parabolic dish, transmitting at $14.0$ GHz with a $20$ Watt high-power amplifier (HPA).
+    \item \textbf{GEO Satellite (at 42E):} A transparent bent-pipe satellite that receives the uplink carrier at $14.0$ GHz and retransmits it on the downlink at $12.0$ GHz with a constant downlink EIRP footprint value of $50$ dBW.
+    \item \textbf{Ground Station 2 (GS2 - Ankara):} A receive-only terminal acting as the downlink receiver. Equipped with a $0.9$-meter parabolic dish, operating with a receiver system noise temperature ($T_{sys}$) of $150$ K.
+\end{itemize}
+
+The transponder has a bandwidth of $36.0$ MHz, supporting a net information transmission rate of $10.0$ Mbps. The system uses a QPSK modulation with a $3/4$ inner LDPC code rate.

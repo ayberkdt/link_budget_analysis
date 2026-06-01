@@ -1,0 +1,105 @@
+% 05_numerical_results.tex
+% Chapter 5: Numerical Results and Discussion
+
+\section{Numerical Results and Discussion}
+
+This section presents the numerical outputs computed by the structured Python analyzer and provides an engineering evaluation of the system performance.
+
+\subsection{Static Clear-Sky Link Budget Results}
+The clear-sky static link budget has been evaluated for the transparent Ku-band bent-pipe link between GS1 (Istanbul) and GS2 (Ankara) through the GEO satellite at $42^\circ$E. Tablo~\ref{tab:static_budget} presents the exact parameter values and intermediate results computed by the software, matching the academic Pratt-style hand calculations.
+
+\begin{table}[H]
+    \centering
+    \caption{Static Clear-Sky Link Budget Results.}
+    \label{tab:static_budget}
+    \begin{tabular}{llccc}
+        \toprule
+        \textbf{Link Segment} & \textbf{Parameter} & \textbf{Uplink} & \textbf{Downlink} & \textbf{Unit} \\
+        \midrule
+        \multirow{6}{*}{Geometry} 
+        & Ground Station Coordinates & $41.01^\circ$N, $28.98^\circ$E & $39.93^\circ$N, $32.86^\circ$E & -- \\
+        & Satellite Nominal Longitude & $42.00^\circ$E & $42.00^\circ$E & -- \\
+        & Slant Range ($d$) & $38,555.07$ & $38,289.87$ & km \\
+        & Elevation Angle ($\theta$) & $41.22$ & $43.18$ & deg \\
+        & Azimuth Angle ($Az$) & $160.85$ & $168.04$ & deg \\
+        & Central Angle & $13.78$ & $11.75$ & deg \\
+        \midrule
+        \multirow{5}{*}{Transmitter} 
+        & Frequency ($f$) & $14.00$ & $12.00$ & GHz \\
+        & Antenna Diameter & $2.40$ & -- & m \\
+        & Antenna Gain & $48.83$ & -- & dBi \\
+        & Transmitter Power & $13.01$ ($20.0$ W) & -- & dBW \\
+        & EIRP & $60.84$ & $50.00$ (Override) & dBW \\
+        \midrule
+        \multirow{5}{*}{Path Losses} 
+        & Free Space Path Loss (FSPL) & $207.07$ & $205.68$ & dB \\
+        & Engineering Losses & $2.50$ & $2.50$ & dB \\
+        & Atmospheric Loss (Static) & $0.50$ & $0.50$ & dB \\
+        & Total Path Loss ($L_{total}$) & $210.07$ & $208.68$ & dB \\
+        \midrule
+        \multirow{4}{*}{Receiver} 
+        & Antenna Diameter & -- & $0.90$ & m \\
+        & Antenna Gain & -- & $38.93$ & dBi \\
+        & Noise Temperature ($T_{sys}$) & -- & $150.00$ & K \\
+        & Quality Factor ($G/T$) & $3.00$ (Override) & $16.67$ & dB/K \\
+        \midrule
+        \multirow{5}{*}{Link Performance} 
+        & Carrier-to-Noise Density ($C/N_0$) & $82.37$ & $86.59$ & dB-Hz \\
+        & Carrier-to-Noise Ratio ($C/N$) & $6.81$ & $11.03$ & dB \\
+        & Energy-per-Bit to Noise ($E_b/N_0$) & $12.37$ & $16.59$ & dB \\
+        & Required $E_b/N_0$ & $7.00$ & $7.00$ & dB \\
+        & Link Margin & $5.37$ & $9.59$ & dB \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The end-to-end combined carrier-to-noise density ratio is computed using inverse-linear addition:
+\begin{equation}
+    \left( \frac{C}{N_0} \right)_{total} = \left( 10^{-8.237} + 10^{-8.659} \right)^{-1} = 10^{8.093}\ \text{dB-Hz} \approx 80.93\ \text{dB-Hz}
+\end{equation}
+yielding a combined $E_b/N_0$ of $10.93$ dB and a combined open-air link margin of \textbf{3.93 dB}. This margins closes the link with a healthy cushion above the required threshold of $7.0$ dB.
+
+\subsection{Analysis of 2D Contour Maps}
+The Python analyzer generates five standard contour figures in `outputs/plots/` to study system sensitivity and trade-offs. They represent a core requirement of the term project:
+
+\begin{enumerate}
+    \item \textbf{01\_downlink\_cn0\_dish\_vs\_frequency:} Plots Downlink $C/N_0$ on the Z-axis, with GS2 antenna diameter on the Y-axis ($0.5$m to $3.0$m) and downlink frequency on the X-axis ($10.7$ GHz to $12.75$ GHz).
+    \begin{itemize}
+        \item \textit{Physical Meaning:} As the antenna diameter increases, the receiver gain increases, causing the $C/N_0$ to rise. As frequency increases, even though the FSPL rises, the receive antenna gain rises faster (proportional to $f^2$), yielding a net increase in $C/N_0$ towards the top-right corner.
+    \end{itemize}
+    \item \textbf{02\_downlink\_margin\_eirp\_vs\_tsys:} Plots Downlink Link Margin on the Z-axis, with satellite downlink EIRP on the X-axis ($40$ dBW to $55$ dBW) and GS2 alıcı gürültü sıcaklığı ($T_{sys}$) on the Y-axis ($50$ K to $300$ K). A bold red line denotes the $0$ dB closure limit.
+    \begin{itemize}
+        \item \textit{Physical Meaning:} The link margin increases with higher satellite EIRP and lower receiver noise temperature. This plot is essential for design selection: any combination to the right of the $0$ dB contour line successfully closes the downlink, and the spacing helps size the margin cushion.
+    \end{itemize}
+    \item \textbf{03\_uplink\_cn\_power_vs\_dish:} Plots Uplink $C/N$ on the Z-axis over transponder bandwidth, with GS1 HPA output power on the X-axis ($5$ W to $100$ W) and GS1 antenna diameter on the Y-axis ($1.2$m to $4.5$m).
+    \begin{itemize}
+        \item \textit{Physical Meaning:} Sizing the uplink transmitter requires a trade-off: a larger ground antenna allows a lower power amplifier (HPA) to achieve the same target uplink $C/N$, protecting adjacent satellites from excessive boresight leakage.
+    \end{itemize}
+    \item \textbf{04\_total\_ebn0\_bitrate\_vs\_bandwidth:} Plots Combined $E_b/N_0$ on the Z-axis, with allocated transponder bandwidth on the Y-axis ($10$ MHz to $50$ MHz) and information bit rate on the X-axis ($2$ Mbps to $50$ Mbps).
+    \begin{itemize}
+        \item \textit{Physical Meaning:} Displays the classic power-vs-bandwidth trade-off. As bit rate increases, the energy-per-bit drops ($E_b/N_0 = C/N_0 - 10\log R_b$), indicating that high data rates require more carrier power.
+    \end{itemize}
+    \item \textbf{05\_gs2\_elevation\_latitude\_vs\_longitude:} Plots the elevation angle from GS2 to the GEO satellite as a function of ground coordinates (X-axis: longitude difference $-60^\circ$ to $+60^\circ$; Y-axis: latitude $0^\circ$ to $70^\circ$N).
+    \begin{itemize}
+        \item \textit{Physical Meaning:} Defines the geographic coverage visibility window. Higher latitudes or larger longitude separations push the ground station towards the edge of visibility, where the elevation drops below the standard $5^\circ$ or $10^\circ$ engineering limit.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Advanced Analysis Results [EXTRA]}
+
+\subsubsection{Interference (ASI and IMD) [EXTRA]}
+When Adjacent-Satellite Interference (ASI) and transponder intermodulation (IMD) are enabled, the combined carrier-to-interference ratio $C/I$ is evaluated. For komşu uydu longitudes of $40^\circ$E and $44^\circ$E (nominal satellite at $42^\circ$E), the combined interference-included margin falls to \textbf{3.43 dB}. This demonstrates that adjacent-system leakage imposes a $0.50$ dB penalty on our link margin, highlighting the necessity of proper side-lobe suppression.
+
+\subsubsection{Orbital Motion Sensitivity [EXTRA]}
+The apparent GEO station-keeping motion simulation shows that over a 48-hour window, the satellite distance fluctuates periodically by up to $77.9$ km, causing the downlink FSPL to vary by $0.018$ dB. This small variation indicates that geostationary orbit keeping is highly deterministic, and standard engineering margins (e.g. $0.5$ dB pointing allowance) easily cover these variations.
+
+\subsubsection{ITU-R Availability and Outage Curves [EXTRA]}
+Under the standards-based ITU-R propagation availability study, total slant-path attenuation at $99.9\%$ availability (exceedance $p=0.1\%$) is computed:
+\begin{itemize}
+    \item \textbf{Uplink Attenuation ($14.0$ GHz):} $3.83$ dB (comprising $3.54$ dB rain, $0.11$ dB gas, $0.16$ dB cloud, and $0.27$ dB scintillation).
+    \item \textbf{Downlink Attenuation ($12.0$ GHz):} $2.65$ dB (comprising $2.43$ dB rain, $0.09$ dB gas, $0.11$ dB cloud, and $0.26$ dB scintillation).
+\end{itemize}
+Under these faded conditions, the combined margin falls to \textbf{0.32 dB}. This closes the link, but with a highly restricted margin, proving that Ku-band links in temperate climates require careful fade mitigation.
+
+\subsubsection{DVB-S2 ACM Throughput Trade-offs [EXTRA]}
+To prevent outage under these ITU fades, the DVB-S2 ACM selector dynamically adjusts the carrier format. Under open-sky conditions, the link supports high spectral efficiency MODCODs. However, during the $99.9\%$ availability rain event, the selector downshifts the downlink carrier to \textbf{QPSK 1/2} (theoretical required Es/N0 of $1.00$ dB) to maintain the link with a net throughput of \textbf{29.66 Mbps}, demonstrating a highly robust adaptive mitigation strategy.

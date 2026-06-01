@@ -1,0 +1,64 @@
+% 04_propagation_and_acm.tex
+% Chapter 4: Atmospheric Propagation and ACM [EXTRA]
+
+\section{Atmospheric Propagation and ACM [EXTRA]}
+
+This chapter presents the standards-based atmospheric attenuation models and Adaptive Coding and Modulation (ACM) mechanisms implemented in this project. \textbf{These models are optional professional extensions labeled as [EXTRA - OPSİYONEL] and represent an advanced study of link availability.}
+
+\subsection{ITU-R Slant-Path Attenuation Suite [EXTRA]}
+The standards-based availability study implements the slant-path propagation recommendations of the International Telecommunication Union (ITU-R). The total atmospheric attenuation $A_{total}(p)$ in dB exceeded for a time percentage $p$ ($0.001\% \le p \le 5\%$) is combined as recommended in \textit{ITU-R P.618-13 Section 2.5}:
+\begin{equation}
+    A_{total}(p) = A_{gaseous} + \sqrt{ \left( A_{rain}(p) + A_{cloud} \right)^2 + A_{scintillation}(p)^2 }
+\end{equation}
+
+\subsubsection{Yağış Sönümlemesi (ITU-R P.618, P.838, P.839)}
+The rain attenuation $A_{rain}(p)$ is calculated by determining the rain height $h_R$ and slant-path length $L_s$ under the rain layer. The specific attenuation $\gamma_R$ in dB/km is computed using the horizontal and vertical power-law coefficients $k$ and $\alpha$ from \textit{ITU-R P.838-3}:
+\begin{equation}
+    \gamma_R = k R_{0.01}^\alpha
+\end{equation}
+where $R_{0.01}$ is the local point rainfall rate exceeded for $0.01\%$ of an average year in mm/h. The horizontal projection $L_G$ and reduction factor $r_{0.01}$ are computed to account for the finite spatial cell-size of rain cells. The vertical adjustment factor $v_{0.01}$ accounts for the slant path profile, yielding the effective path length $L_{eff} = L_R v_{0.01}$. The sönümleme $A_{0.01}$ is:
+\begin{equation}
+    A_{0.01} = \gamma_R L_{eff}
+\end{equation}
+For other percentages $p$, $A_p$ is scaled exponentially using a latitude- and elevation-dependent scaling factor:
+\begin{equation}
+    A_p = A_{0.01} \left( \frac{p}{0.01} \right)^{-\left[0.655 + 0.033\ln p - 0.045\ln A_{0.01} - \beta(1-p)\sin\theta\right]}
+\end{equation}
+
+\subsubsection{Atmosferik Gaz Emilimi (ITU-R P.676-12 Annex 2) [EXTRA]}
+The gaseous attenuation $A_{gaseous}$ accounts for dry air (oxygen) and water vapour absorption. Using surface pressure, temperature, and absolute humidity, specific zenith attenuations $\gamma_o$ and $\gamma_w$ are computed alongside their equivalent height limits $h_o$ and $h_w$:
+\begin{equation}
+    A_{gaseous} = \frac{\gamma_o h_o + \gamma_w h_w}{\sin\theta}
+\end{equation}
+
+\subsubsection{Bulut Sıvı Su Sönümlemesi (ITU-R P.840-8) [EXTRA]}
+Attenuation due to cloud liquid water $A_{cloud}$ uses Rayleigh scattering with a double-Debye model for water dielectric permittivity, yielding a specific attenuation coefficient $K_l$ in $(\text{dB/km})/(\text{g/m}^3)$ scaled by the columnar liquid water $M$ in kg/m$^2$:
+\begin{equation}
+    A_{cloud} = \frac{M \cdot K_l}{\sin\theta}
+\end{equation}
+
+\subsubsection{Troposferik Sintilasyon Sönümlemesi (ITU-R P.618-13 Sec. 2.4.1) [EXTRA]}
+Tropospheric scintillation $A_{scintillation}(p)$ represents fast signal standard-deviation variations $\sigma$ caused by local atmospheric turbulence, scaled by the aperture-averaging factor $g(x)$ of the receive dish antenna:
+\begin{equation}
+    A_{scintillation}(p) = a(p) \sigma
+\end{equation}
+where $a(p)$ is a time-percentage factor.
+
+\subsection{Monte-Carlo Yağış Outage Simülasyonu [EXTRA]}
+To study the statistical weather dynamics, an educational stochastic generator was designed. It simulates 8760 samples (one hour steps for a full year). At each step, a weather state is randomly sampled:
+\begin{itemize}
+    \item \textbf{Clear-sky:} No rain fade.
+    \item \textbf{Light, Moderate, Heavy Rain:} Triggers rain attenuation randomly within documented dB ranges, which are scaled with frequency.
+\end{itemize}
+This provides a stochastic model of link margin distributions and outages to contrast with the standards-based deterministic ITU availability model.
+
+\subsection{DVB-S2 ACM (Adaptive Coding \& Modulation) [EXTRA]}
+In faded downlink channels, a fixed transmission format (MODCOD) either causes link outage or wastes capacity. The DVB-S2 ACM module models a receiver that monitors the measured $Es/N0$ and dynamically selects the highest spectral efficiency $\eta$ from the DVB-S2 MODCOD ladder that closes the link:
+\begin{equation}
+    Es/N0_{available} \ge Required\ Es/N0_{MODCOD} + Margin_{impl}
+\end{equation}
+The usable symbol rate is $R_s = B / (1 + \alpha_{rolloff})$, yielding a dynamic net throughput:
+\begin{equation}
+    Throughput(Mbps) = \eta \cdot R_s
+\end{equation}
+which optimizes the channel capacity under time-varying atmospheric fades.

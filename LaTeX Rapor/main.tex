@@ -1,0 +1,114 @@
+% main.tex
+% Main LaTeX file for UZB451E Spacecraft Communications Term Project Report
+
+\documentclass[12pt, a4paper]{article}
+
+% Input the packages and custom styling from preamble
+\input{preamble}
+
+\begin{document}
+
+% ========================================================================
+%                               COVER PAGE
+% ========================================================================
+\begin{titlepage}
+    \centering
+    
+    % ITU Logo (located in resimler/itu_logo.png)
+    \includegraphics[width=0.35\textwidth]{itu_logo.png}\\[1.5cm]
+    
+    {\large\bfseries İSTANBUL TECHNICAL UNIVERSITY}\\[0.3cm]
+    {\large\bfseries FACULTY OF AERONAUTICS AND ASTRONAUTICS}\\[0.3cm]
+    {\large\bfseries ASTRONAUTICAL ENGINEERING DEPARTMENT}\\[2cm]
+    
+    {\large\bfseries UZB451E -- SPACECRAFT COMMUNICATIONS}\\[0.5cm]
+    {\large\bfseries TERM PROJECT REPORT}\\[1.5cm]
+    
+    % Title of the project
+    \rule{\linewidth}{1.5pt}\\[0.5cm]
+    {\Large\bfseries GEOSTATIONARY BENT-PIPE SATELLITE LINK BUDGET ANALYSIS \& ATMOSPHERIC PROPAGATION STUDY}\\[0.5cm]
+    \rule{\linewidth}{1.5pt}\\[2.5cm]
+    
+    % Authors and Supervisor details
+    \begin{minipage}[t]{0.45\textwidth}
+        \begin{flushleft}
+            \large\bfseries Prepared By:\\[0.2cm]
+            \normalsize
+            Ayberk Demirkanat \\ (110210121)\\[0.2cm]
+            Rabia Nur Toprak \\ (110220142)
+        \end{flushleft}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.45\textwidth}
+        \begin{flushright}
+            \large\bfseries Submitted To:\\[0.2cm]
+            \normalsize
+            Assoc. Prof. Dr. Erdem Onur Özyurt
+        \end{flushright}
+    \end{minipage}\\[3cm]
+    
+    \vfill
+    {\large June 2026}
+    
+\end{titlepage}
+
+\newpage
+
+% ========================================================================
+%                           TABLE OF CONTENTS
+% ========================================================================
+\tableofcontents
+\newpage
+
+\listoffigures
+\listoftables
+\newpage
+
+% ========================================================================
+%                               CHAPTERS
+% ========================================================================
+\input{chapters/01_introduction}
+\newpage
+
+\input{chapters/02_link_design_equations}
+\newpage
+
+\input{chapters/03_advanced_models}
+\newpage
+
+\input{chapters/04_propagation_and_acm}
+\newpage
+
+\input{chapters/05_numerical_results}
+\newpage
+
+\input{chapters/06_conclusion}
+\newpage
+
+% ========================================================================
+%                             REFERENCES
+% ========================================================================
+\begin{thebibliography}{99}
+    \bibitem{pratt}
+    Pratt, T., Bostian, C. W., \& Allnutt, J. E. (2003). {\it Satellite Communications} (2nd ed.). John Wiley \& Sons.
+    
+    \bibitem{itu618}
+    ITU-R Recommendation P.618-13 (2017). {\it Propagation data and prediction methods required for the design of Earth-space telecommunication systems}. International Telecommunication Union.
+    
+    \bibitem{itu838}
+    ITU-R Recommendation P.838-3 (2005). {\it Specific attenuation model for rain}. International Telecommunication Union.
+    
+    \bibitem{itu839}
+    ITU-R Recommendation P.839-4 (2013). {\it Rain height model for prediction methods}. International Telecommunication Union.
+    
+    \bibitem{itu676}
+    ITU-R Recommendation P.676-12 (2019). {\it Attenuation by atmospheric gases and related effects}. International Telecommunication Union.
+    
+    \bibitem{itu840}
+    ITU-R Recommendation P.840-8 (2019). {\it Attenuation due to clouds and fog}. International Telecommunication Union.
+    
+    \bibitem{dvbs2}
+    ETSI EN 302 307-1 V1.4.1 (2014). {\it Digital Video Broadcasting (DVB); Second generation framing structure, channel coding and modulation systems for Broadcasting, Interactive Services, News Gathering and other satellite applications (DVB-S2)}. European Telecommunications Standards Institute.
+\end{thebibliography}
+
+\end{document}
