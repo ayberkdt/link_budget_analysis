@@ -1,5 +1,5 @@
 # modcod.py
-"""DVB-S2 adaptive coding and modulation (ACM) support for the V5 analyzer.
+"""DVB-S2 adaptive coding and modulation (ACM) support for the analyzer.
 
 A real broadcast/VSAT bent-pipe link rarely runs a single fixed modulation. The
 DVB-S2 standard (ETSI EN 302 307) defines a ladder of modulation-and-coding

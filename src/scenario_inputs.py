@@ -1,10 +1,9 @@
-"""Editable scenario inputs for the V5 GEO link-budget analyzer.
+"""Editable scenario inputs for the GEO link-budget analyzer.
 
 Update the values in this file when you want to analyze a different GS1, GS2,
 or satellite setup. ``main.py`` reads this module each time it runs, so any
 changes made here are applied automatically on the next execution.
-
-V5 adds two new input blocks at the bottom:
+ adds two new input blocks at the bottom:
 
 * ``ITU_PROPAGATION`` drives the standards-based ITU-R P.618/P.676/P.840 fade
   model. Replace ``rain_rate_001_mm_per_h`` with the ITU-R P.837 value for your
@@ -12,7 +11,7 @@ V5 adds two new input blocks at the bottom:
 * ``MODCOD`` configures the DVB-S2 adaptive coding-and-modulation layer.
 """
 
-SCENARIO_NAME = "Rome to Ankara Link via Hotbird 13G (V5)"
+SCENARIO_NAME = "Rome to Ankara Link via Hotbird 13G "
 
 
 # ========================================================================
@@ -182,7 +181,7 @@ ITU_PROPAGATION = {
 }
 
 # ========================================================================
-# 7.                  DVB-S2 ADAPTIVE CODING & MODULATION (V5)
+# 7.                  DVB-S2 ADAPTIVE CODING & MODULATION 
 # ========================================================================
 MODCOD = {
     "enabled": True,

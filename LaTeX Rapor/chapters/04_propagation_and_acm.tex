@@ -45,12 +45,24 @@ Tropospheric scintillation $A_{scintillation}(p)$ represents fast signal standar
 where $a(p)$ is a time-percentage factor.
 
 \subsection[Monte-Carlo Yağış Outage Simülasyonu]{Monte-Carlo Yağış Outage Simülasyonu\textsuperscript{*}}
-To study the statistical weather dynamics, an educational stochastic generator was designed. It simulates 8760 samples (one hour steps for a full year). At each step, a weather state is randomly sampled:
+While the ITU-R recommendations provide deterministic, standards-based bounds for system availability, understanding the true statistical distribution of link outages requires stochastic modeling. To evaluate the link margin under dynamic weather events, an advanced Monte Carlo simulation engine was developed. 
+
+The simulation executes $N = 8760$ discrete trials, representing hourly atmospheric states over an entire meteorological year. At each time step $t_i$, the atmospheric state $S(t_i)$ is sampled from an empirical probability mass function representing local climatology:
 \begin{itemize}
-    \item \textbf{Clear-sky:} No rain fade.
-    \item \textbf{Light, Moderate, Heavy Rain:} Triggers rain attenuation randomly within documented dB ranges, which are scaled with frequency.
+    \item \textbf{Clear-Sky ($S_0$):} Represents standard operating conditions ($0$~dB excess attenuation). Occurs with high probability (e.g., $90\%$).
+    \item \textbf{Light and Moderate Rain ($S_1, S_2$):} Introduces small to medium fade depths, drawn from a uniformly distributed attenuation profile.
+    \item \textbf{Heavy Storms ($S_3$):} Rare events ($p < 0.5\%$) triggering severe attenuation (up to $15$~dB in Ku-band), modeled as a heavy-tailed stochastic variable.
 \end{itemize}
-This provides a stochastic model of link margin distributions and outages to contrast with the standards-based deterministic ITU availability model.
+
+For each generated weather state, the exact signal-to-noise ratio and link margin are instantaneously recalculated:
+\begin{equation}
+    Margin(t_i) = E_b/N_0(t_i) - \text{Required } E_b/N_0
+\end{equation}
+By aggregating the results across all $N$ trials, the system generates a massive statistical dataset. This dataset is then sorted to produce a Cumulative Distribution Function (CDF) of the link margin. An \textit{outage event} is mathematically defined as any trial where $Margin(t_i) < 0$. The overall system availability is directly computed as:
+\begin{equation}
+    \text{Availability (\%)} = 100 \times \left( 1 - \frac{\sum \mathbf{1}(Margin(t_i) < 0)}{N} \right)
+\end{equation}
+This Monte Carlo framework provides a highly intuitive, distribution-based contrast to the rigid analytical curves of the ITU-R models, enabling robust risk assessment for satellite operators.
 
 \subsection[DVB-S2 ACM (Adaptive Coding \& Modulation)]{DVB-S2 ACM (Adaptive Coding \& Modulation)\textsuperscript{*}}
 In faded downlink channels, a fixed transmission format (MODCOD) either causes link outage or wastes capacity. The DVB-S2 ACM module models a receiver that monitors the measured $Es/N0$ and dynamically selects the highest spectral efficiency $\eta$ from the DVB-S2 MODCOD ladder that closes the link:

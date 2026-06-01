@@ -1,5 +1,5 @@
 # plotting.py
-"""Report-quality figure generation for the V5 UZB451 GEO link-budget analyzer.
+"""Report-quality figure generation for the UZB451 GEO link-budget analyzer.
 
 This module renders the figures used in the project report. It defines a single
 centralized style (typography, line/marker sizing, grid, colormaps, and figure

@@ -10,16 +10,17 @@ The clear-sky static link budget has been evaluated for the transparent Ku-band 
 
 \begin{table}[H]
     \centering
+    \renewcommand{\arraystretch}{1.2}
     \caption{Static Clear-Sky Link Budget Results (Rome - Ankara).}
     \label{tab:static_budget}
     \vspace{0.15cm}
     {\small
-    \setlength{\tabcolsep}{4pt}
-    \begin{tabular}{lp{4.8cm}ccc}
+    \setlength{\tabcolsep}{5pt}
+    \begin{tabular}{l l c c c}
         \toprule
         \textbf{Link Segment} & \textbf{Parameter} & \textbf{Uplink} & \textbf{Downlink} & \textbf{Unit} \\
         \midrule
-        \multirow{6}{*}{Geometry} 
+        \multirow{6}{*}{\textbf{Geometry}} 
         & Coordinates & $41.90^\circ$N, $12.50^\circ$E & $39.93^\circ$N, $32.86^\circ$E & -- \\
         & Satellite Longitude & $13.00^\circ$E & $13.00^\circ$E & -- \\
         & Slant Range ($d$) & $37,658.79$ & $37,823.12$ & km \\
@@ -27,26 +28,26 @@ The clear-sky static link budget has been evaluated for the transparent Ku-band 
         & Azimuth Angle ($Az$) & $179.25$ & $209.37$ & deg \\
         & Central Angle & $41.91$ & $43.85$ & deg \\
         \midrule
-        \multirow{5}{*}{Transmitter} 
+        \multirow{5}{*}{\textbf{Transmitter}} 
         & Frequency ($f$) & $14.00$ & $12.00$ & GHz \\
         & Antenna Diameter & $2.40$ & -- & m \\
         & Antenna Gain & $48.86$ & -- & dBi \\
         & Transmitter Power & $13.01$ ($20.0$ W) & -- & dBW \\
         & EIRP & $60.87$ & $50.00$ (Override) & dBW \\
         \midrule
-        \multirow{5}{*}{Path Losses} 
+        \multirow{5}{*}{\textbf{Path Losses}} 
         & Free Space Path Loss (FSPL) & $206.89$ & $205.59$ & dB \\
         & Engineering Losses & $2.50$ & $2.50$ & dB \\
         & Clear-Sky Atmospheric Loss & $0.50$ & $0.50$ & dB \\
         & Total Path Loss ($L_{total}$) & $209.39$ & $208.09$ & dB \\
         \midrule
-        \multirow{4}{*}{Receiver} 
+        \multirow{4}{*}{\textbf{Receiver}} 
         & Antenna Diameter & -- & $0.90$ & m \\
         & Antenna Gain & -- & $39.00$ & dBi \\
         & Noise Temperature ($T_{sys}$) & -- & $150.00$ & K \\
         & Quality Factor ($G/T$) & $3.00$ (Override) & $16.74$ & dB/K \\
         \midrule
-        \multirow{5}{*}{Link Performance} 
+        \multirow{5}{*}{\textbf{Performance}} 
         & Carrier-to-Noise Density ($C/N_0$) & $83.08$ & $87.25$ & dB-Hz \\
         & Carrier-to-Noise Ratio ($C/N$) & $7.51$ & $11.69$ & dB \\
         & Energy-per-Bit to Noise ($E_b/N_0$) & $13.08$ & $17.25$ & dB \\

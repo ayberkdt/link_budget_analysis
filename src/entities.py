@@ -1,11 +1,10 @@
 # entities.py
-"""Data models used by the V5 UZB451 GEO link-budget analyzer.
+"""Data models used by the UZB451 GEO link-budget analyzer.
 
 The dataclasses in this module separate scenario inputs, modeling assumptions,
 and calculated outputs. Most fields map directly to quantities that students can
 replace later with datasheet or footprint values.
-
-V5 additions
+ additions
 ------------
 * :class:`ITUPropagationConfig` and :class:`ITUPropagationResult` expose the
   standards-based ITU-R P.618/P.676/P.840 slant-path attenuation suite.
@@ -234,7 +233,7 @@ class RainOutageConfig:
 
 @dataclass(frozen=True)
 class ITUPropagationConfig:
-    """Standards-based ITU-R slant-path attenuation inputs (V5).
+    """Standards-based ITU-R slant-path attenuation inputs .
 
     Unlike :class:`RainOutageConfig`, which is an educational Monte-Carlo
     weather generator, this configuration drives the deterministic ITU-R
@@ -246,7 +245,7 @@ class ITUPropagationConfig:
     * ITU-R P.618-13 tropospheric scintillation.
 
     The base course assignment intentionally runs the static MATLAB analyzer
-    with P.618 losses disabled. V5 keeps that clean static link budget and adds
+    with P.618 losses disabled. keeps that clean static link budget and adds
     this separate layer so the link can be studied against an availability
     target. It is a self-contained engineering implementation; site-specific
     accuracy requires replacing the example inputs with mapped/measured values.
@@ -286,7 +285,7 @@ class ITUPropagationConfig:
 
 @dataclass(frozen=True)
 class ModcodConfig:
-    """DVB-S2 adaptive coding-and-modulation (ACM) configuration (V5)."""
+    """DVB-S2 adaptive coding-and-modulation (ACM) configuration ."""
 
     enabled: bool = True
     rolloff_factor: float = 0.20
@@ -346,7 +345,7 @@ class LinkEnvironment:
     """Extra time/weather inputs applied to one instantaneous link calculation.
 
     ``rain_attenuation_db`` is the attenuation that reduces the wanted carrier
-    on the path (in V5 this can be the full ITU-R atmospheric total). The
+    on the path (in this can be the full ITU-R atmospheric total). The
     optional ``emission_attenuation_db`` is the *absorptive* part used to raise
     the receive sky-noise temperature; when ``None`` the model falls back to
     ``rain_attenuation_db``. Separating them lets a refractive impairment such

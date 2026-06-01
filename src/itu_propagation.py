@@ -1,5 +1,5 @@
 # itu_propagation.py
-"""ITU-R atmospheric propagation models for the V5 GEO link-budget analyzer.
+"""ITU-R atmospheric propagation models for the GEO link-budget analyzer.
 
 [TURKISH / TÜRKÇE AÇIKLAMA]
 Bu modül, UZB451 Uzay Aracı Haberleşmesi dönem projesi için tamamen OPSİYONEL olan 
@@ -18,7 +18,7 @@ Bu modül içindeki:
 This module provides the advanced slant-path attenuation analysis. The base
 course assignment asks students *not* to tick the "Include P.618 Losses"
 checkbox in the MATLAB analyzer, because the required static run is meant to be
-a clean clear-sky link budget. V5 keeps that clean static run, and adds this
+a clean clear-sky link budget. keeps that clean static run, and adds this
 transparent, standards-based slant-path attenuation suite as a *separate*
 availability/fade-margin study (rain fade, gaseous absorption, clouds, and
 scintillation).

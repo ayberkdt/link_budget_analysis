@@ -1,5 +1,5 @@
 # calculations.py
-"""Core calculations for the V5 GEO link-budget analyzer.
+"""Core calculations for the GEO link-budget analyzer.
 
 The functions in this module cover five areas:
 
@@ -1051,7 +1051,7 @@ def calculate_asi_ci_grid(
 
 
 # ========================================================================
-# 8.            ITU-R PROPAGATION AND DVB-S2 ACM INTEGRATION (V5)
+# 8.            ITU-R PROPAGATION AND DVB-S2 ACM INTEGRATION 
 # ========================================================================
 def _link_attenuation_breakdown(
     config: ITUPropagationConfig,
@@ -1179,7 +1179,7 @@ def calculate_scenario_with_itu(
 ) -> ITUPropagationResult:
     """Evaluate the full bent-pipe scenario with ITU-R atmospheric fades applied.
 
-    This is the V5 deterministic counterpart of the static clear-sky budget. It
+    This is the deterministic counterpart of the static clear-sky budget. It
     computes the ITU-R total slant-path attenuation for the design availability,
     applies it to both link directions (carrier loss and downlink sky-noise
     emission), recomputes the combined link budget, and selects the DVB-S2 ACM

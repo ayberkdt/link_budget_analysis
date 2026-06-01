@@ -3,102 +3,100 @@
 
 \section{Link Design Equations}
 
-This chapter details the fundamental RF engineering equations and geometric transformations used to design the clear-sky static link budget. These models are derived based on the link design procedure outlined in \textit{Chapter 4} of the reference textbook by Pratt, Bostian, and Allnutt~\cite{pratt}.
+This chapter details the fundamental RF engineering equations and geometric transformations used to design the clear-sky static link budget. These models are derived based on the link design procedure outlined in \textit{Chapter 4} of the reference textbook by Pratt, Bostian, and Allnutt~\cite{pratt}. The equations form the mathematical engine of our custom Python simulation suite.
 
 \subsection{Slant-Path Geometry and Coordinate Transformations}
-Calculating the pointing parameters (slant range, elevation angle, and azimuth angle) between the ground station and the geostationary satellite requires transformations between spherical coordinates and the Earth-Centered, Earth-Fixed (ECEF) Cartesian coordinate system. 
+Calculating the pointing parameters (slant range, elevation angle, and azimuth angle) between a terrestrial ground station and a geostationary satellite requires robust transformations between spherical Earth coordinates and the Earth-Centered, Earth-Fixed (ECEF) Cartesian coordinate system. 
 
-Let the Earth's equatorial radius be $R_e = 6378.137$~km, and the nominal radius of the geostationary orbit be $r_{sat} = 42164.0$~km. For a ground station located at latitude $\phi$, longitude $\lambda$, and altitude $h$ above mean sea level, the ECEF position vector $\vec{R}_{ground}$ is given by:
+Before locating the satellite, its nominal radius must be defined. According to Kepler's Third Law of Planetary Motion, the orbital radius $r_{sat}$ for a geosynchronous orbit with period $T$ (one sidereal day, $\approx 86164$ seconds) is given by:
+\begin{equation}
+    r_{sat} = \sqrt[3]{\frac{\mu \cdot T^2}{4\pi^2}} \approx 42164.0\text{ km}
+\end{equation}
+where $\mu \approx 3.986 \times 10^5 \text{ km}^3/\text{s}^2$ is the Earth's standard gravitational parameter. Given the Earth's equatorial radius $R_e = 6378.137$~km, the satellite's altitude above the equator is approximately $35786$~km.
+
+For a ground station located at latitude $\phi$, longitude $\lambda$, and altitude $h$ above mean sea level, the ECEF position vector $\vec{R}_{ground}$ is:
 \begin{equation}
     \vec{R}_{ground} = \begin{bmatrix} (R_e + h)\cos\phi\cos\lambda \\ (R_e + h)\cos\phi\sin\lambda \\ (R_e + h)\sin\phi \end{bmatrix}
 \end{equation}
-The geostationary satellite, located in the equatorial plane ($\phi_{sat} = 0^\circ$) at longitude $\lambda_{sat}$, has the Cartesian position vector:
+The geostationary satellite, stationed perfectly in the equatorial plane ($\phi_{sat} = 0^\circ$) at longitude $\lambda_{sat}$, has the Cartesian position vector:
 \begin{equation}
     \vec{R}_{sat} = \begin{bmatrix} r_{sat}\cos\lambda_{sat} \\ r_{sat}\sin\lambda_{sat} \\ 0 \end{bmatrix}
 \end{equation}
-The slant-range vector $\vec{\rho}$ pointing from the ground station to the satellite is computed as:
+The slant-range vector $\vec{\rho}$ pointing directly from the ground station to the satellite is computed via vector subtraction:
 \begin{equation}
     \vec{\rho} = \vec{R}_{sat} - \vec{R}_{ground}
 \end{equation}
-The absolute physical distance (slant range) $d$ is the Euclidean norm of the slant-range vector:
+The absolute physical distance (slant range) $d$, representing the electromagnetic wave's travel path, is the Euclidean norm of this vector:
 \begin{equation}
     d = \|\vec{\rho}\| = \sqrt{\rho_x^2 + \rho_y^2 + \rho_z^2}
 \end{equation}
+
 To determine the pointing elevation angle $\theta$, we project the unit line-of-sight vector $\vec{a}_{\rho} = \vec{\rho}/d$ onto the local topocentric unit vector pointing vertically Up ($\vec{u}_{up}$). The unit Up vector at the ground station coordinates is:
 \begin{equation}
     \vec{u}_{up} = \begin{bmatrix} \cos\phi\cos\lambda \\ \cos\phi\sin\lambda \\ \sin\phi \end{bmatrix}
 \end{equation}
-The local elevation angle $\theta$ is then calculated as:
+The local elevation angle $\theta$, critical for calculating atmospheric attenuation path lengths, is then calculated as:
 \begin{equation}
     \theta = \arcsin\left( \vec{a}_{\rho} \cdot \vec{u}_{up} \right) = \arcsin\left( \frac{\vec{\rho} \cdot \vec{u}_{up}}{d} \right)
 \end{equation}
-The azimuth angle $Az$ is determined by projecting the line-of-sight vector onto the local East ($\vec{u}_{east}$) and North ($\vec{u}_{north}$) unit vectors:
-\begin{align}
-    \vec{u}_{east} &= \begin{bmatrix} -\sin\lambda \\ \cos\lambda \\ 0 \end{bmatrix} \\
-    \vec{u}_{north} &= \begin{bmatrix} -\sin\phi\cos\lambda \\ -\sin\phi\sin\lambda \\ \cos\phi \end{bmatrix}
-\end{align}
-yielding the azimuth angle relative to true North:
+The azimuth angle $Az$ is determined by projecting the line-of-sight vector onto the local East ($\vec{u}_{east}$) and North ($\vec{u}_{north}$) unit vectors, yielding the azimuth angle relative to true North:
 \begin{equation}
     Az = \arctan_2\left( \vec{a}_{\rho} \cdot \vec{u}_{east},\ \vec{a}_{\rho} \cdot \vec{u}_{north} \right)
 \end{equation}
-The central angle $\psi$ between the ground station and the satellite ECEF position vectors is:
-\begin{equation}
-    \psi = \arccos\left( \frac{\vec{R}_{ground} \cdot \vec{R}_{sat}}{\|\vec{R}_{ground}\| \|\vec{R}_{sat}\|} \right)
-\end{equation}
 
-\subsection{Antenna Parameters}
-For a circular parabolic dish antenna of diameter $D$ operating at carrier frequency $f$, the wavelength of the electromagnetic wave is:
-\begin{equation}
-    \lambda_w = \frac{c}{f}
-\end{equation}
-where $c \approx 2.99792458 \times 10^8$~m/s is the speed of light in vacuum. The peak boresight gain $G$ in dBi is calculated as:
+\subsection{Antenna Parameters and Aperture Efficiency}
+For a circular parabolic dish antenna of physical diameter $D$ operating at carrier frequency $f$, the wavelength of the electromagnetic wave is $\lambda_w = c/f$, where $c$ is the speed of light in vacuum. The peak boresight gain $G$ in dBi is calculated as:
 \begin{equation}
     G(dBi) = 10\log_{10}\left( \eta \left( \frac{\pi D}{\lambda_w} \right)^2 \right)
 \end{equation}
-where $\eta$ is the aperture efficiency (set to $0.62$, representing standard engineering efficiency). The half-power beamwidth ($\theta_{HPBW}$), which determines the angular separation at which the antenna gain drops by 3~dB, is approximated by:
+The parameter $\eta$ represents the aperture efficiency. While an ideal antenna has an efficiency of 1.0 ($100\%$), physical parabolic reflectors suffer from edge spillover, illumination taper, sub-reflector blockage, and surface phase errors. Consequently, a standard engineering efficiency of $\eta = 0.62$ ($62\%$) is utilized in our models. 
+
+The Half-Power Beamwidth ($\theta_{HPBW}$), which dictates how tightly the antenna focuses its energy and dictates adjacent satellite interference susceptibility, is approximated by:
 \begin{equation}
     \theta_{HPBW} \approx 70^\circ \frac{\lambda_w}{D}
 \end{equation}
 
-\subsection{Free-Space Path Loss (FSPL)}
-The Free-Space Path Loss (FSPL) represents the geometrical attenuation of signal power due to the spherical spreading of the wavefront over the distance $d$. In decibel terms, FSPL is expressed as:
+\subsection{Free-Space Path Loss (FSPL) and Signal Spreading}
+The Free-Space Path Loss (FSPL) is often misunderstood as a resistive "loss" of energy to the vacuum. In reality, it is a purely geometric phenomenon resulting from the spherical spreading of the wavefront over the vast distance $d$. As the wave expands, its power density (Watts per square meter) drops proportionally to the surface area of the expanding sphere ($4\pi d^2$). 
+
+Derived directly from the Friis Transmission Equation, the FSPL in decibel terms is expressed as:
 \begin{equation}
     FSPL(dB) = 20\log_{10}\left( \frac{4\pi d}{\lambda_w} \right) = 92.45 + 20\log_{10}(f_{GHz}) + 20\log_{10}(d_{km})
 \end{equation}
-where $f_{GHz}$ is the frequency in GHz and $d_{km}$ is the slant range in km.
+For a geostationary link, this term overwhelmingly dominates the power budget, typically ranging from $205$ to $210$~dB.
 
-\subsection{RF Link Power Budget and Carrier-to-Noise Density}
-For any link segment, the Equivalent Isotropically Radiated Power (EIRP) is the total effective power radiated in the direction of the main beam:
+\subsection{RF Link Power Budget and Receiver Figure of Merit}
+For any link segment, the Equivalent Isotropically Radiated Power (EIRP) defines the total effective power radiated in the direction of the main beam. It effectively multiplies the raw amplifier power by the focusing gain of the antenna:
 \begin{equation}
     EIRP(dBW) = P_{tx}(dBW) + G_{tx}(dBi) - L_{tx\_feeder}(dB)
 \end{equation}
-where $P_{tx}$ is the transmitter HPA output power in dBW, $G_{tx}$ is the transmit antenna gain, and $L_{tx\_feeder}$ represents physical attenuation in the waveguide feeder line.
-The receiver figure of merit (quality factor) $G/T$ is:
+
+At the receiving end, the ultimate metric of hardware quality is the Figure of Merit ($G/T$), measured in dB/K. This parameter elegantly isolates the receiver's performance from the incoming signal strength:
 \begin{equation}
     G/T(dB/K) = G_{rx}(dBi) - L_{rx\_feeder}(dB) - 10\log_{10}(T_{sys})
 \end{equation}
-where $G_{rx}$ is the receive antenna gain, $L_{rx\_feeder}$ is the receive feeder loss, and $T_{sys}$ is the system noise temperature in Kelvin (set to 150.0~K for the static downlink receiver).
-The carrier-to-noise density ratio $C/N_0$ at the receiver demodulator input is:
+where $T_{sys}$ is the comprehensive system noise temperature in Kelvin. $T_{sys}$ accounts for cosmic sky noise, atmospheric emission noise, and the internal thermal noise of the Low-Noise Block (LNB) amplifier.
+
+The fundamental Carrier-to-Noise Density ratio $C/N_0$ at the receiver demodulator input is synthesized using the link budget equation:
 \begin{equation}
     C/N_0(dB\text{-}Hz) = EIRP(dBW) + G/T(dB/K) - L_{total}(dB) - 10\log_{10}(k)
 \end{equation}
-where $L_{total}$ is the sum of path loss, pointing misalignments, polarization losses, and atmospheric clear-sky absorption. The term $-10\log_{10}(k) \approx 228.6$~dB represents Boltzmann's constant in decibels.
-The carrier-to-noise ratio $C/N$ over the transponder bandwidth $B$ is:
-\begin{equation}
-    C/N(dB) = C/N_0(dB\text{-}Hz) - 10\log_{10}(B)
-\end{equation}
-The energy-per-bit to noise-density ratio $E_b/N_0$, which acts as the core digital indicator of link viability, is given by:
+where $L_{total}$ encompasses FSPL, pointing misalignments, polarization losses, and atmospheric clear-sky absorption. The term $-10\log_{10}(k) \approx 228.6$~dB represents Boltzmann's constant in decibels.
+
+Ultimately, the Energy-per-Bit to Noise-Density ratio $E_b/N_0$ acts as the core digital indicator of link viability:
 \begin{equation}
     E_b/N_0(dB) = C/N_0(dB\text{-}Hz) - 10\log_{10}(R_b)
 \end{equation}
-where $R_b$ is the information transmission bit rate in bps. The link margin is the excess power above the demodulator's threshold:
+where $R_b$ is the information transmission bit rate in bits per second (bps). The overall Link Margin, representing the system's safety cushion against fading events, is defined as:
 \begin{equation}
     Margin(dB) = E_b/N_0(dB) - Required\ E_b/N_0(dB)
 \end{equation}
 
 \subsection{Uplink-Downlink Coupling in Bent-Pipe Transponders}
-Because a transparent geostationary bent-pipe transponder acts merely as a frequency-translating amplifier, the noise added on the uplink is amplified and retransmitted on the downlink. The end-to-end combined carrier-to-noise ratio $(C/N_0)_{total}$ is therefore coupled, and is calculated via inverse-linear addition of the individual uplink and downlink ratios:
+Because a transparent geostationary bent-pipe transponder acts merely as an analog frequency-translating amplifier, it lacks the ability to distinguish between signal and noise. Any thermal noise, interference, or distortion captured by the satellite's receiving antenna on the uplink is indiscriminately amplified and retransmitted on the downlink.
+
+Consequently, the end-to-end total Carrier-to-Noise Density ratio $(C/N_0)_{total}$ is mathematically coupled. It must be calculated via the inverse-linear addition of the individual uplink and downlink ratios (converted out of decibels into linear power ratios):
 \begin{equation}
     \left( \frac{C}{N_0} \right)_{total}^{-1} = \left( \frac{C}{N_0} \right)_{uplink}^{-1} + \left( \frac{C}{N_0} \right)_{downlink}^{-1}
 \end{equation}
-This indicates that the combined link margin will always be lower than the individual margins of either the uplink or the downlink alone, presenting a critical design trade-off in space communications.
+This harmonic-like summation dictates that the combined link margin will always be strictly lower than the margin of the weakest individual link. For instance, if a massive rainstorm attenuates the uplink ($C/N_{up} \ll C/N_{down}$), the uplink becomes the system bottleneck, driving the total $(C/N_0)_{total}$ down asymptotically toward the uplink value. This physical coupling is a defining challenge of bent-pipe satellite engineering.

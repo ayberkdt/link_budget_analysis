@@ -1,5 +1,5 @@
 # main.py
-"""Run the V5 GEO link-budget workflow end to end.
+"""Run the GEO link-budget workflow end to end.
 
 This script builds the scenario from ``scenario_inputs.py``, validates it, prints
 the active analysis mode, runs every enabled analysis (always the clear-sky
@@ -300,7 +300,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     """Parse the command-line flags for the analyzer."""
 
     parser = argparse.ArgumentParser(
-        description="UZB451 V5 GEO bent-pipe link-budget analyzer.",
+        description="UZB451 GEO bent-pipe link-budget analyzer.",
     )
     parser.add_argument(
         "--skip-plots",
