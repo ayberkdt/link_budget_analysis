@@ -46,12 +46,12 @@ PAGES = [
                 "title": "Ground Station 1 (Uplink)",
                 "desc": "The transmitting station sending the signal up to the satellite.",
                 "params": [
-                    {"key": "GS1['terminal_name']", "type": "str", "label": "Terminal Name", "default": "Rome Broadcast TX"},
-                    {"key": "GS1['site_name']", "type": "str", "label": "Site Name", "default": "Rome, Italy"},
-                    {"key": "GS1['latitude_deg']", "type": "float", "label": "Latitude (deg)", "min": -90.0, "max": 90.0, "default": 41.9028},
-                    {"key": "GS1['longitude_deg']", "type": "float", "label": "Longitude (deg)", "min": -180.0, "max": 180.0, "default": 12.4964},
-                    {"key": "GS1['antenna_diameter_m']", "type": "float", "label": "Antenna Diameter (m)", "min": 0.5, "max": 15.0, "default": 2.4},
-                    {"key": "GS1['tx_power_w']", "type": "float", "label": "HPA TX Power (W)", "min": 1.0, "max": 5000.0, "default": 20.0},
+                    {"key": "GS1['terminal_name']", "type": "str", "label": "Terminal Name", "help": "Identifier for the uplink site", "default": "Rome Broadcast TX"},
+                    {"key": "GS1['site_name']", "type": "str", "label": "Site Name", "help": "City or geographical location", "default": "Rome, Italy"},
+                    {"key": "GS1['latitude_deg']", "type": "float", "label": "Latitude (deg)", "help": "North positive, South negative (-90 to 90)", "min": -90.0, "max": 90.0, "default": 41.9028},
+                    {"key": "GS1['longitude_deg']", "type": "float", "label": "Longitude (deg)", "help": "East positive, West negative (-180 to 180)", "min": -180.0, "max": 180.0, "default": 12.4964},
+                    {"key": "GS1['antenna_diameter_m']", "type": "float", "label": "Antenna Diameter (m)", "help": "Parabolic dish physical diameter", "min": 0.5, "max": 15.0, "default": 2.4},
+                    {"key": "GS1['tx_power_w']", "type": "float", "label": "HPA TX Power (W)", "help": "High Power Amplifier output in Watts", "min": 1.0, "max": 5000.0, "default": 20.0},
                 ]
             },
             {
@@ -59,8 +59,8 @@ PAGES = [
                 "title": "Geostationary Satellite",
                 "desc": "The bent-pipe space segment.",
                 "params": [
-                    {"key": "SATELLITE['name']", "type": "str", "label": "Satellite Name", "default": "Eutelsat Hotbird 13G"},
-                    {"key": "SATELLITE['longitude_deg']", "type": "float", "label": "Longitude (deg)", "min": -180.0, "max": 180.0, "default": 13.0},
+                    {"key": "SATELLITE['name']", "type": "str", "label": "Satellite Name", "help": "Common name of the spacecraft", "default": "Eutelsat Hotbird 13G"},
+                    {"key": "SATELLITE['longitude_deg']", "type": "float", "label": "Longitude (deg)", "help": "Orbital slot in the GEO arc (East positive)", "min": -180.0, "max": 180.0, "default": 13.0},
                 ]
             },
             {
@@ -68,11 +68,11 @@ PAGES = [
                 "title": "Ground Station 2 (Downlink)",
                 "desc": "The receiving earth station.",
                 "params": [
-                    {"key": "GS2['terminal_name']", "type": "str", "label": "Terminal Name", "default": "Ankara Receive RX"},
-                    {"key": "GS2['site_name']", "type": "str", "label": "Site Name", "default": "Ankara, Turkey"},
-                    {"key": "GS2['latitude_deg']", "type": "float", "label": "Latitude (deg)", "min": -90.0, "max": 90.0, "default": 39.9334},
-                    {"key": "GS2['longitude_deg']", "type": "float", "label": "Longitude (deg)", "min": -180.0, "max": 180.0, "default": 32.8597},
-                    {"key": "GS2['antenna_diameter_m']", "type": "float", "label": "Antenna Diameter (m)", "min": 0.3, "max": 10.0, "default": 0.9},
+                    {"key": "GS2['terminal_name']", "type": "str", "label": "Terminal Name", "help": "Identifier for the downlink site", "default": "Ankara Receive RX"},
+                    {"key": "GS2['site_name']", "type": "str", "label": "Site Name", "help": "City or geographical location", "default": "Ankara, Turkey"},
+                    {"key": "GS2['latitude_deg']", "type": "float", "label": "Latitude (deg)", "help": "North positive, South negative (-90 to 90)", "min": -90.0, "max": 90.0, "default": 39.9334},
+                    {"key": "GS2['longitude_deg']", "type": "float", "label": "Longitude (deg)", "help": "East positive, West negative (-180 to 180)", "min": -180.0, "max": 180.0, "default": 32.8597},
+                    {"key": "GS2['antenna_diameter_m']", "type": "float", "label": "Antenna Diameter (m)", "help": "Parabolic dish physical diameter", "min": 0.3, "max": 10.0, "default": 0.9},
                 ]
             }
         ]
@@ -87,11 +87,11 @@ PAGES = [
                 "title": "ITU-R P.618 Propagation",
                 "desc": "The rigorous standard for satellite link design. Computes exact gaseous attenuation, cloud attenuation, rain fade, and tropospheric scintillation based on local meteorology and availability targets.",
                 "params": [
-                    {"key": "ITU_PROPAGATION['enabled']", "type": "bool", "label": "Enable Module"},
-                    {"key": "rain_rate_001_mm_per_h", "type": "float", "label": "R0.01 Rain Rate (mm/h)", "min": 0, "max": 150},
-                    {"key": "design_availability_percent", "type": "float", "label": "Target Availability (%)", "min": 90, "max": 99.999},
-                    {"key": "surface_temperature_c", "type": "float", "label": "Surface Temp (°C)", "min": -50, "max": 60},
-                    {"key": "water_vapour_density_g_m3", "type": "float", "label": "Water Vapour (g/m³)", "min": 0, "max": 30},
+                    {"key": "enabled", "type": "bool", "label": "Enable Module", "help": "Toggle the ITU-R empirical models"},
+                    {"key": "rain_rate_001_mm_per_h", "type": "float", "label": "R0.01 Rain Rate (mm/h)", "help": "Rain intensity exceeded 0.01% of an average year", "min": 0, "max": 150},
+                    {"key": "design_availability_percent", "type": "float", "label": "Target Availability (%)", "help": "Link availability requirement (e.g., 99.9%)", "min": 90, "max": 99.999},
+                    {"key": "surface_temperature_c", "type": "float", "label": "Surface Temp (°C)", "help": "Average ground temperature", "min": -50, "max": 60},
+                    {"key": "water_vapour_density_g_m3", "type": "float", "label": "Water Vapour (g/m³)", "help": "Average atmospheric water vapour density", "min": 0, "max": 30},
                 ]
             },
             {
@@ -99,10 +99,10 @@ PAGES = [
                 "title": "Rain Outage (Stochastic)",
                 "desc": "A basic stochastic model for rain fade events over a year, assigning probability states (Clear, Light, Moderate, Heavy) to randomize the channel. Useful for Monte Carlo availability studies.",
                 "params": [
-                    {"key": "RAIN_OUTAGE['enabled']", "type": "bool", "label": "Enable Module"},
-                    {"key": "light_rain_probability", "type": "float", "label": "Light Rain Prob.", "min": 0, "max": 1},
-                    {"key": "moderate_rain_probability", "type": "float", "label": "Moderate Rain Prob.", "min": 0, "max": 1},
-                    {"key": "heavy_rain_probability", "type": "float", "label": "Heavy Rain Prob.", "min": 0, "max": 1},
+                    {"key": "enabled", "type": "bool", "label": "Enable Module", "help": "Toggle Monte Carlo state simulations"},
+                    {"key": "light_rain_probability", "type": "float", "label": "Light Rain Prob.", "help": "Probability of light rain occurrence", "min": 0, "max": 1},
+                    {"key": "moderate_rain_probability", "type": "float", "label": "Moderate Rain Prob.", "help": "Probability of moderate rain occurrence", "min": 0, "max": 1},
+                    {"key": "heavy_rain_probability", "type": "float", "label": "Heavy Rain Prob.", "help": "Probability of heavy rain occurrence", "min": 0, "max": 1},
                 ]
             },
             {
@@ -110,9 +110,9 @@ PAGES = [
                 "title": "DVB-S2 ACM",
                 "desc": "Adaptive Coding and Modulation (ACM). Dynamically adapts the modulation (QPSK, 8PSK, 16APSK, 32APSK) and FEC rate to maximize throughput without dropping the link during rain fades.",
                 "params": [
-                    {"key": "MODCOD['enabled']", "type": "bool", "label": "Enable Module"},
-                    {"key": "rolloff_factor", "type": "float", "label": "Roll-off Factor", "min": 0, "max": 1},
-                    {"key": "implementation_margin_db", "type": "float", "label": "Implementation Margin (dB)", "min": 0, "max": 5},
+                    {"key": "enabled", "type": "bool", "label": "Enable Module", "help": "Enable dynamic MODCOD selection"},
+                    {"key": "rolloff_factor", "type": "float", "label": "Roll-off Factor", "help": "Pulse shaping roll-off (e.g., 0.20 or 0.25)", "min": 0, "max": 1},
+                    {"key": "implementation_margin_db", "type": "float", "label": "Implementation Margin (dB)", "help": "Hardware non-ideality losses", "min": 0, "max": 5},
                 ]
             }
         ]
@@ -127,9 +127,9 @@ PAGES = [
                 "title": "Interference Model",
                 "desc": "Models Adjacent Satellite Interference (ASI) and Intermodulation (IMD) noise. ASI depends on the separation angles to neighboring satellites on the geostationary arc. IMD represents internal transponder non-linearities.",
                 "params": [
-                    {"key": "INTERFERENCE['enabled']", "type": "bool", "label": "Enable Module"},
-                    {"key": "adjacent_activity_factor_db", "type": "float", "label": "Adjacent Activity Factor (dB)", "min": -20, "max": 0},
-                    {"key": "imd_c_i_db", "type": "float", "label": "Intermodulation C/I (dB)", "min": 0, "max": 40},
+                    {"key": "enabled", "type": "bool", "label": "Enable Module", "help": "Include interference noise in total C/(N+I)"},
+                    {"key": "adjacent_activity_factor_db", "type": "float", "label": "Adjacent Activity Factor (dB)", "help": "Back-off due to adjacent satellite usage", "min": -20, "max": 0},
+                    {"key": "imd_c_i_db", "type": "float", "label": "Intermodulation C/I (dB)", "help": "Carrier-to-Intermodulation ratio generated inside transponder", "min": 0, "max": 40},
                 ]
             },
             {
@@ -137,10 +137,10 @@ PAGES = [
                 "title": "Dynamic Noise",
                 "desc": "A refined antenna noise temperature model accounting for low-elevation ground spillover, internal LNB noise, and emission noise from rain clouds. This replaces the static 150K assumption.",
                 "params": [
-                    {"key": "DYNAMIC_NOISE['enabled']", "type": "bool", "label": "Enable Module"},
-                    {"key": "receiver_internal_noise_k", "type": "float", "label": "LNB Internal Noise (K)", "min": 10, "max": 300},
-                    {"key": "clear_sky_base_noise_k", "type": "float", "label": "Clear-Sky Sky Noise (K)", "min": 10, "max": 300},
-                    {"key": "rain_emission_temperature_k", "type": "float", "label": "Rain Emission Temp (K)", "min": 200, "max": 300},
+                    {"key": "enabled", "type": "bool", "label": "Enable Module", "help": "Calculate real-time Tsys based on weather"},
+                    {"key": "receiver_internal_noise_k", "type": "float", "label": "LNB Internal Noise (K)", "help": "Noise temperature of the Low Noise Block", "min": 10, "max": 300},
+                    {"key": "clear_sky_base_noise_k", "type": "float", "label": "Clear-Sky Sky Noise (K)", "help": "Baseline galactic and atmospheric noise", "min": 10, "max": 300},
+                    {"key": "rain_emission_temperature_k", "type": "float", "label": "Rain Emission Temp (K)", "help": "Effective medium temperature during rain", "min": 200, "max": 300},
                 ]
             },
             {
@@ -148,11 +148,11 @@ PAGES = [
                 "title": "Apparent Motion",
                 "desc": "Simulates the daily drift of the geostationary satellite within its station-keeping box (typically ±0.05° to ±0.1°). This affects slant range, elevation angle, and free-space path loss continuously over the specified duration.",
                 "params": [
-                    {"key": "APPARENT_MOTION['enabled']", "type": "bool", "label": "Enable Module"},
-                    {"key": "duration_hours", "type": "float", "label": "Duration (hours)", "min": 1, "max": 72},
-                    {"key": "step_minutes", "type": "float", "label": "Step Size (minutes)", "min": 1, "max": 60},
-                    {"key": "east_west_amplitude_deg", "type": "float", "label": "East-West Amp (°)", "min": 0, "max": 1},
-                    {"key": "north_south_amplitude_deg", "type": "float", "label": "North-South Amp (°)", "min": 0, "max": 1},
+                    {"key": "enabled", "type": "bool", "label": "Enable Module", "help": "Simulate satellite drifting over time"},
+                    {"key": "duration_hours", "type": "float", "label": "Duration (hours)", "help": "Length of the orbital simulation", "min": 1, "max": 72},
+                    {"key": "step_minutes", "type": "float", "label": "Step Size (minutes)", "help": "Time resolution of the simulation", "min": 1, "max": 60},
+                    {"key": "east_west_amplitude_deg", "type": "float", "label": "East-West Amp (°)", "help": "Longitudinal station-keeping limits", "min": 0, "max": 1},
+                    {"key": "north_south_amplitude_deg", "type": "float", "label": "North-South Amp (°)", "help": "Latitudinal orbital inclination", "min": 0, "max": 1},
                 ]
             }
         ]
@@ -247,7 +247,6 @@ class MainWindow(QMainWindow):
 
     def load_current_config(self):
         if not os.path.exists(SCENARIO_FILE):
-            print("Error loading:", SCENARIO_FILE)
             return
         with open(SCENARIO_FILE, "r", encoding="utf-8") as f:
             content = f.read()
@@ -474,10 +473,20 @@ class MainWindow(QMainWindow):
                 
                 for param in mod["params"]:
                     row = QHBoxLayout()
-                    lbl = QLabel(param["label"])
-                    lbl.setStyleSheet("font-size: 14px; border: none; background: transparent;")
-                    row.addWidget(lbl)
                     
+                    # Parameter Label & Help text
+                    lbl_box = QVBoxLayout()
+                    lbl_box.setSpacing(2)
+                    lbl = QLabel(param["label"])
+                    lbl.setStyleSheet(f"font-size: 14px; font-weight: 500; color: {THEME['fg_main']}; border: none; background: transparent;")
+                    lbl_box.addWidget(lbl)
+                    
+                    if "help" in param:
+                        h_lbl = QLabel(param["help"])
+                        h_lbl.setStyleSheet(f"font-size: 12px; color: {THEME['fg_muted']}; border: none; background: transparent;")
+                        lbl_box.addWidget(h_lbl)
+                        
+                    row.addLayout(lbl_box)
                     row.addStretch()
                     
                     k = param["key"]
@@ -556,6 +565,21 @@ class MainWindow(QMainWindow):
                 btn_calc.clicked.connect(self.calculate_quick_metrics)
                 vbox.addWidget(btn_calc)
                 
+                self.metrics_result_lbl = QLabel("")
+                self.metrics_result_lbl.setStyleSheet(f"""
+                    QLabel {{
+                        background: {THEME['bg_card']};
+                        border: 1px solid {THEME['border']};
+                        border-radius: 8px;
+                        padding: 15px;
+                        font-size: 14px; 
+                        color: {THEME['fg_main']}; 
+                        line-height: 1.5;
+                    }}
+                """)
+                self.metrics_result_lbl.hide()
+                vbox.addWidget(self.metrics_result_lbl)
+                
             vbox.addStretch()
             container.setLayout(vbox)
             scroll.setWidget(container)
@@ -616,12 +640,9 @@ class MainWindow(QMainWindow):
             s1, e1 = calc_slant(lat1, lon1, sat_lon)
             s2, e2 = calc_slant(lat2, lon2, sat_lon)
             
-            msg = QMessageBox(self)
-            msg.setWindowTitle("Quick Metrics Calculation")
-            msg.setText(f"<b>GS1 (Uplink)</b><br>Slant Range: {s1:.2f} km<br>Elevation: {e1:.2f}°<br><br>"
-                        f"<b>GS2 (Downlink)</b><br>Slant Range: {s2:.2f} km<br>Elevation: {e2:.2f}°")
-            msg.setStyleSheet(f"QMessageBox {{ background-color: {THEME['bg_card']}; }} QLabel {{ color: {THEME['fg_main']}; font-size: 14px; }}")
-            msg.exec()
+            self.metrics_result_lbl.setText(f"<b>GS1 (Uplink)</b> &nbsp;&nbsp;&nbsp; Slant Range: {s1:.2f} km &nbsp;|&nbsp; Elevation: {e1:.2f}°<br>"
+                                            f"<b>GS2 (Downlink)</b> &nbsp; Slant Range: {s2:.2f} km &nbsp;|&nbsp; Elevation: {e2:.2f}°")
+            self.metrics_result_lbl.show()
             
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Could not calculate metrics: {str(e)}")
