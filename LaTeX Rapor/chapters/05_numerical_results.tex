@@ -12,13 +12,16 @@ The clear-sky static link budget has been evaluated for the transparent Ku-band 
     \centering
     \caption{Static Clear-Sky Link Budget Results (Rome - Ankara).}
     \label{tab:static_budget}
-    \begin{tabular}{llccc}
+    \vspace{0.15cm}
+    {\small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{lp{4.8cm}ccc}
         \toprule
         \textbf{Link Segment} & \textbf{Parameter} & \textbf{Uplink} & \textbf{Downlink} & \textbf{Unit} \\
         \midrule
         \multirow{6}{*}{Geometry} 
-        & Ground Station Coordinates & $41.90^\circ$N, $12.50^\circ$E & $39.93^\circ$N, $32.86^\circ$E & -- \\
-        & Satellite Nominal Longitude & $13.00^\circ$E & $13.00^\circ$E & -- \\
+        & Coordinates & $41.90^\circ$N, $12.50^\circ$E & $39.93^\circ$N, $32.86^\circ$E & -- \\
+        & Satellite Longitude & $13.00^\circ$E & $13.00^\circ$E & -- \\
         & Slant Range ($d$) & $37,658.79$ & $37,823.12$ & km \\
         & Elevation Angle ($\theta$) & $41.60$ & $39.44$ & deg \\
         & Azimuth Angle ($Az$) & $179.25$ & $209.37$ & deg \\
@@ -34,7 +37,7 @@ The clear-sky static link budget has been evaluated for the transparent Ku-band 
         \multirow{5}{*}{Path Losses} 
         & Free Space Path Loss (FSPL) & $206.89$ & $205.59$ & dB \\
         & Engineering Losses & $2.50$ & $2.50$ & dB \\
-        & Atmospheric Loss (Static) & $0.50$ & $0.50$ & dB \\
+        & Clear-Sky Atmospheric Loss & $0.50$ & $0.50$ & dB \\
         & Total Path Loss ($L_{total}$) & $209.39$ & $208.09$ & dB \\
         \midrule
         \multirow{4}{*}{Receiver} 
@@ -51,6 +54,7 @@ The clear-sky static link budget has been evaluated for the transparent Ku-band 
         & Link Margin & $6.08$ & $10.25$ & dB \\
         \bottomrule
     \end{tabular}
+    }
 \end{table}
 
 The end-to-end combined carrier-to-noise density ratio is computed using inverse-linear addition:
