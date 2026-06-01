@@ -1,11 +1,11 @@
 % 03_advanced_models.tex
 % Chapter 3: Advanced Analysis Models [EXTRA]
 
-\section{Advanced Analysis Models [EXTRA]}
+\section[Advanced Analysis Models]{Advanced Analysis Models\textsuperscript{*}\footnote{Chapters and sections marked with \textsuperscript{*} represent advanced, optional extensions developed beyond the core UZB451E term project specifications to model real-world satellite communication dynamics.}}
 
-Beyond the core academic baseline, several advanced modeling layers have been incorporated to study real-world design constraints, sensitivity, and trade-offs. \textbf{Note that all sections in this chapter represent [EXTRA] professional extensions outside the mandatory coursework requirements.}
+Beyond the core academic baseline, several advanced modeling layers have been incorporated to study real-world design constraints, sensitivity, and trade-offs. \textbf{Note that all sections in this chapter represent optional professional extensions outside the mandatory coursework requirements.}
 
-\subsection{Adjacent-Satellite Interference (ASI) and IMD [EXTRA]}
+\subsection[Adjacent-Satellite Interference (ASI) and IMD]{Adjacent-Satellite Interference (ASI) and IMD\textsuperscript{*}}
 In a crowded geostationary arc, adjacent satellite systems operating on the same frequency band introduce interference. The analyzer models Adjacent-Satellite Interference (ASI) and Intermodulation Distortion (IMD) as equivalent carrier-to-interference ($C/I$) ratios.
 The off-axis discrimination angle $\theta_{off}$ between the desired satellite and an adjacent satellite is calculated using ECEF vectors. The off-axis gain $G(\theta_{off})$ is estimated using the ITU-R off-axis antenna envelope approximation:
 \begin{equation}
@@ -16,7 +16,7 @@ The uplink and downlink $C/I$ ratios are calculated and combined along with the 
     \left( \frac{C}{N+I} \right)_{total}^{-1} = \left( \frac{C}{N} \right)_{uplink}^{-1} + \left( \frac{C}{N} \right)_{downlink}^{-1} + \left( \frac{C}{I_{ASI,up}} \right)^{-1} + \left( \frac{C}{I_{ASI,down}} \right)^{-1} + \left( \frac{C}{I_{IMD}} \right)^{-1}
 \end{equation}
 
-\subsection{Digital Baseband Performance Metrics [EXTRA]}
+\subsection[Digital Baseband Performance Metrics]{Digital Baseband Performance Metrics\textsuperscript{*}}
 To analyze transmission quality under additive white Gaussian noise (AWGN) and interference channels, bit-error-rate (BER) models are implemented.
 For coherent, Gray-coded QPSK (or BPSK) modulation, the theoretical uncoded bit error rate $P_{b}$ is:
 \begin{equation}
@@ -35,7 +35,7 @@ where $SNR$ is the linear carrier-to-noise ratio. The Shannon limit establishes 
     \left( \frac{E_b}{N_0} \right)_{shannon}(dB) = 10\log_{10}\left( \frac{2^{\eta} - 1}{\eta} \right)
 \end{equation}
 
-\subsection{Dynamic System Noise Temperature [EXTRA]}
+\subsection[Dynamic System Noise Temperature]{Dynamic System Noise Temperature\textsuperscript{*}}
 In real receivers, the antenna noise temperature is not static. It increases as the elevation angle $\theta$ drops due to the longer atmospheric path, and spikes during rain events due to thermal emission from the lossy medium. The dynamic system noise temperature model computes:
 \begin{equation}
     T_{sys}(\theta, A_{rain}) = T_{receiver} + T_{spillover} + T_{sky}(\theta) + T_{rain}(A_{rain})
@@ -46,7 +46,7 @@ The rain thermal emission noise $T_{rain}$ is calculated using radiative transfe
 \end{equation}
 where $T_{atm} = 275$ K is the effective physical temperature of the lossy atmosphere.
 
-\subsection{Apparent GEO Orbit Motion [EXTRA]}
+\subsection[Apparent GEO Orbit Motion]{Apparent GEO Orbit Motion\textsuperscript{*}}
 Geostationary uydular mükemmel bir şekilde sabit kalmazlar; Ay, Güneş ve Dünya'nın homojen olmayan yerçekimsel etkileri nedeniyle bir istasyon tutma (station-keeping) kutusu içinde salınım yaparlar. 
 Bu model, uydunun pozisyonunu zamana bağlı olarak üç eksende simüle eder:
 \begin{align}

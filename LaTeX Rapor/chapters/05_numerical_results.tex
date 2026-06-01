@@ -107,15 +107,15 @@ This figure displays the classic power-vs-bandwidth trade-off. As bit rate incre
 Şekil~\ref{fig:contour05} plots the elevation angle from GS2 to the GEO satellite as a function of ground coordinates (X-axis: longitude difference $-60^\circ$ to $+60^\circ$; Y-axis: latitude $0^\circ$ to $70^\circ$N).
 This map defines the geographic coverage visibility window. Higher latitudes or larger longitude separations push the ground station towards the edge of visibility, where the elevation drops below the standard $5^\circ$ or $10^\circ$ engineering limit.
 
-\subsection{Advanced Analysis Results [EXTRA]}
+\subsection[Advanced Analysis Results]{Advanced Analysis Results\textsuperscript{*}}
 
-\subsubsection{Interference (ASI and IMD) [EXTRA]}
+\subsubsection[Interference (ASI and IMD)]{Interference (ASI and IMD)\textsuperscript{*}}
 When Adjacent-Satellite Interference (ASI) and transponder intermodulation (IMD) are enabled, the combined carrier-to-interference ratio $C/I$ is evaluated. For komşu uydu longitudes of $11^\circ$E and $15^\circ$E (nominal satellite at $13^\circ$E), the combined interference-included margin falls to \textbf{4.16 dB}. This demonstrates that adjacent-system leakage imposes a $0.51$ dB penalty on our link margin, highlighting the necessity of proper side-lobe suppression.
 
-\subsubsection{Orbital Motion Sensitivity [EXTRA]}
+\subsubsection[Orbital Motion Sensitivity]{Orbital Motion Sensitivity\textsuperscript{*}}
 The apparent GEO station-keeping motion simulation shows that over a 48-hour window, the satellite distance fluctuates periodically by up to $83.6$ km for downlink, causing the downlink FSPL to vary by $0.019$ dB. This small variation indicates that geostationary orbit keeping is highly deterministic, and standard engineering margins (e.g. $0.5$ dB pointing allowance) easily cover these variations.
 
-\subsubsection{ITU-R Availability and Outage Curves [EXTRA]}
+\subsubsection[ITU-R Availability and Outage Curves]{ITU-R Availability and Outage Curves\textsuperscript{*}}
 Under the standards-based ITU-R propagation availability study, total slant-path attenuation at $99.9\%$ availability (exceedance $p=0.1\%$) is computed:
 \begin{itemize}
     \item \textbf{Uplink Attenuation ($14.0$ GHz):} $3.76$ dB (comprising $3.47$ dB rain, $0.11$ dB gas, $0.16$ dB cloud, and $0.27$ dB scintillation).
@@ -123,5 +123,5 @@ Under the standards-based ITU-R propagation availability study, total slant-path
 \end{itemize}
 Under these faded conditions, the combined margin falls to \textbf{0.30 dB} (with interference). This closes the link, but with a highly restricted margin, proving that Ku-band links in temperate climates require careful fade mitigation.
 
-\subsubsection{DVB-S2 ACM Throughput Trade-offs [EXTRA]}
+\subsubsection[DVB-S2 ACM Throughput Trade-offs]{DVB-S2 ACM Throughput Trade-offs\textsuperscript{*}}
 To prevent outage under these ITU fades, the DVB-S2 ACM selector dynamically adjusts the carrier format. Under open-sky conditions, the link supports high spectral efficiency MODCODs. However, during the $99.9\%$ availability rain event, the selector downshifts the downlink carrier to \textbf{QPSK 1/2} (theoretical required Es/N0 of $1.00$ dB) to maintain the link with a net throughput of \textbf{29.67 Mbps}, demonstrating a highly robust adaptive mitigation strategy.
