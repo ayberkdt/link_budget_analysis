@@ -3,44 +3,12 @@
 
 \section{Conclusion}
 
-This term project presented a rigorous, standards-compliant system engineering analysis of a geostationary bent-pipe satellite communication link operating at Ku-band. Connecting Ground Station 1 (Rome) to Ground Station 2 (Ankara) via the Eutelsat Hotbird 13G satellite, the study established a solid theoretical baseline and overlaid advanced physical layers, atmospheric physics, and modern adaptive mitigation techniques.
+This project developed and evaluated a Ku-band GEO bent-pipe satellite link from Rome to Ankara via the Eutelsat Hotbird 13G satellite. The core analysis followed the standard link-budget procedure and was implemented in a custom Python framework. Additional modules were then used to examine interference, atmospheric attenuation, dynamic receiver noise, Monte Carlo rain states, and DVB-S2 ACM.
 
-\subsection{Summary of Numerical Findings}
-Through the object-oriented Python simulation suite, several critical performance metrics were computed. The calculations are based on standard link-budget equations and ITU-R propagation models:
-\begin{itemize}
-    \item \textbf{Clear-Sky Baseline Performance:} The nominal clear-sky link budget closes with an end-to-end carrier-to-noise density ratio $(C/N_0)_{\text{total}}$ of $\cnTotal~\text{dB}\cdot\text{Hz}$, which corresponds to a received energy-per-bit to noise-power spectral density ratio $E_b/N_0$ of $\ebnoTotal~\text{dB}$. Under a required digital threshold of $\reqEbNo~\text{dB}$, the link possesses an open-loop clear-sky margin of $\marginClear~\text{dB}$.
-    
-    \textbf{Validation Table:}
-    \begin{table}[H]
-        \centering
-        \small
-        \begin{tabular}{lccc}
-            \toprule
-            \textbf{Quantity} & \textbf{Python} & \textbf{Hand calculation} & \textbf{Difference} \\
-            \midrule
-            Uplink FSPL & \upFSPL~dB & \upFSPL~dB & 0.00 dB \\
-            Downlink FSPL & \downFSPL~dB & \downFSPL~dB & 0.00 dB \\
-            Combined $(C/N_0)$ & \cnTotal~dB-Hz & \cnTotal~dB-Hz & 0.00 dB \\
-            \bottomrule
-        \end{tabular}
-    \end{table}
-    \item \textbf{Adjacent Satellite Interference (ASI):} Accounting for co-channel adjacent satellite interference and non-linear IMD, the link suffers an equivalent noise degradation. This reduces the operating clear-sky margin to $\marginASI~\text{dB}$.
-    \item \textbf{Atmospheric Propagation Penalty:} The ITU-R P.618-13 propagation models predict that gaseous absorption, cloud attenuation, and rain-induced scattering introduce severe, dynamic propagation losses. At an annual availability target of $99.9\%$, the uplink total attenuation reaches $\upRainAtten~\text{dB}$ at $14.0~\text{GHz}$, while the downlink total attenuation is $\downRainAtten~\text{dB}$ at $12.0~\text{GHz}$. These atmospheric fades plunge the operational link margin to $\marginRain~\text{dB}$.
-    \item \textbf{Adaptive Coding and Modulation (ACM):} The ACM selector attempts to preserve service by downshifting to QPSK 2/5; however, because the 99.9\% rain-fade margin remains negative, strict link closure still requires additional RF margin, such as a larger GS2 dish, higher satellite EIRP, or uplink power control.
-\end{itemize}
+In the baseline clear-sky scenario without interference, the link calculations resulted in a total $(C/N_0)_{\text{total}}$ of \cnTotal~dB-Hz and an $E_b/N_0$ of \ebnoTotal~dB. This provided a \marginClear~dB margin over the 7.0 dB required for the 10 Mbps baseline. However, introducing Adjacent Satellite Interference (ASI) and Intermodulation Distortion (IMD) reduced this margin to \marginASI~dB, showing the importance of accounting for a crowded GEO arc.
 
-\subsection{System Engineering Recommendations}
-Based on the parametric contour analysis and Monte Carlo simulations, the following design recommendations are proposed:
-\begin{enumerate}
-    \item \textbf{Downlink Antenna Upgrade:} Ground terminals in high rain-rate zones ($R_{0.01} > 30~\text{mm/h}$) should utilise a minimum dish diameter of $1.2~\text{m}$. The current $\gsTwoDish$~m consumer dish provides minimal fade protection.
-    \item \textbf{Uplink Power Control (ULPC):} The Rome uplink terminal should implement ULPC, dynamically raising HPA output from 20~W up to 100~W during localised storm events to pre-compensate the uplink rain attenuation.
-    \item \textbf{Probabilistic Margin Planning:} Operators should transition from deterministic margins to probabilistic risk assessment. The Monte Carlo models developed here illustrate that a static $4~\text{dB}$ margin is insufficient for strict $99.9\%$ availability in Southern Europe and Anatolia.
-\end{enumerate}
+The atmospheric propagation analysis, modeled after ITU-R guidelines, showed the significant impact of rain fade at Ku-band frequencies. At a 99.9\% availability target, the combined effects of signal attenuation and the resulting increase in dynamic system noise temperature consumed the remaining margin, leaving the fixed-rate 10 Mbps link with a deficit of \marginRain~dB.
 
-\subsection{Future Work}
-Potential extensions of this study include:
-\begin{itemize}
-    \item Regenerative On-Board Processing (OBP) to decouple uplink and downlink noise, yielding an estimated 2.5--3.0~dB improvement.
-    \item High-Throughput spot-beam architectures with frequency reuse for higher aggregate capacity.
-    \item Transition to Ka-band or Q/V-band, which offer larger bandwidth but require advanced site diversity and fast-acting ACM loops.
-\end{itemize}
+To address this deficit without increasing antenna sizes or transmitter power, a DVB-S2 Adaptive Coding and Modulation (ACM) approach was examined. While the fixed-rate link fails during a 99.9\% rain event, the ACM model demonstrated that the system could step down to a more robust MODCOD (such as QPSK 2/5), preserving the connection at a reduced data rate.
+
+In summary, this project illustrated the step-by-step process of sizing a satellite link and the necessity of looking beyond clear-sky thermal noise. By incorporating basic interference and dynamic weather effects into the Python model, the analysis highlighted how practical satellite networks manage physical constraints to maintain operation.

@@ -7,12 +7,12 @@
 
 This chapter presents the standards-based atmospheric attenuation models and Adaptive Coding and Modulation (ACM) mechanisms implemented in this project. \textbf{These models are optional professional extensions representing an advanced study of link availability.}
 
-\textit{Note: The implemented attenuation workflow strictly follows the cited ITU-R recommendation versions (e.g., P.618-13, P.837-7). Later ITU-R revisions may contain updated parameter databases or procedural refinements, but the baseline equations implemented in this analysis are kept consistent with the listed versions.}
+\textit{Note: The implemented attenuation workflow is based on the cited ITU-R recommendation versions. It uses a self-contained engineering implementation of the main slant-path attenuation terms; site-specific regulatory design would require exact ITU digital maps and operational coordination data. The models dynamically convert standard meteorological parameters (pressure, temperature, water vapor density, and probability of exceedance) into composite decibel attenuation penalties.}
 
 \subsection[ITU-R Slant-Path Attenuation Suite]{ITU-R Slant-Path Attenuation Suite}
 
 \subsubsection{The Engineering Problem}
-Electromagnetic waves propagating along a slant path between a terrestrial ground station and a geostationary satellite traverse the Earth's troposphere, where they suffer from absorption and scattering. These impairments are caused by atmospheric gases (oxygen and water vapour), suspended water droplets in clouds, tropospheric turbulence, and liquid rain. At Ku-band frequencies, the physical wavelength of the signal is comparable to the size of falling raindrops, triggering severe Mie scattering and thermal absorption that can completely disrupt the communication link.
+Instead of a complete link outage, the network dynamically trades off data rate to attempt degraded-mode operation by switching to a more robust MODCOD (e.g., QPSK 1/4 or QPSK 1/2) to operate at reduced throughput under lower $E_s/N_0$ conditions. The ASI and IMD noise floors remain static, allowing rain fade to significantly degrade the link margin during heavy storms.
 
 \subsubsection{Design Motivation and Rationale}
 To design a reliable satellite communication system, engineers must accurately predict these atmospheric fades to calculate the required system margins. The International Telecommunication Union (ITU) publishes the ITU-R propagation recommendations---empirically validated mathematical suites that allow engineers to predict slant-path attenuation at any geographic coordinate on Earth. Analyzing these atmospheric effects is a mandatory step in high-frequency RF engineering.
@@ -23,7 +23,7 @@ The total atmospheric attenuation $A_{\text{total}}(p)$ in dB exceeded for an an
     A_{\text{total}}(p) = A_{\text{gaseous}} + \sqrt{ \left( A_{\text{rain}}(p) + A_{\text{cloud}} \right)^2 + A_{\text{scintillation}}(p)^2 }
 \end{equation}
 
-For rain attenuation, the local point rainfall rate $R_{0.01}$, representing the rainfall intensity exceeded for $0.01\%$ of an average year, is obtained from \textit{ITU-R P.837} \cite{itu837}. The frequency- and polarization-dependent specific attenuation $\gamma_{\text{R}}$ in dB/km is then computed using power-law coefficients $k$ and $\alpha$ tabulated in \textit{ITU-R P.838-3} \cite{itu838}:
+The point rainfall rate $R_{0.01}$ is treated as a P.837-based representative design input. In the implemented scenario, $R_{0.01} = 42$ mm/h is used; for a regulatory-grade design this value should be replaced by the exact mapped value for the selected ground-station site. The frequency- and polarization-dependent specific attenuation $\gamma_{\text{R}}$ in dB/km is then computed using power-law coefficients $k$ and $\alpha$ tabulated in \textit{ITU-R P.838-3} \cite{itu838}:
 \begin{equation}
     \gamma_{\text{R}} = k R_{0.01}^\alpha
 \end{equation}

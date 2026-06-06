@@ -16,45 +16,45 @@ Database file #1: references.bib
 Warning--empty year in triax_td88
 
 Done.
-You've used 11 entries,
+You've used 10 entries,
             4087 wiz_defined-function locations,
-            876 strings with 8895 characters,
-and the built_in function-call counts, 5158 in all, are:
-= -- 423
-> -- 77
+            873 strings with 8801 characters,
+and the built_in function-call counts, 4746 in all, are:
+= -- 382
+> -- 73
 < -- 27
-+ -- 35
-- -- 12
-* -- 202
-:= -- 949
-add.period$ -- 21
-call.type$ -- 11
-change.case$ -- 14
++ -- 33
+- -- 11
+* -- 188
+:= -- 863
+add.period$ -- 19
+call.type$ -- 10
+change.case$ -- 13
 chr.to.int$ -- 81
-cite$ -- 12
-duplicate$ -- 412
-empty$ -- 410
-format.name$ -- 13
-if$ -- 1128
+cite$ -- 11
+duplicate$ -- 377
+empty$ -- 378
+format.name$ -- 12
+if$ -- 1039
 int.to.chr$ -- 0
-int.to.str$ -- 11
-missing$ -- 95
-newline$ -- 56
-num.names$ -- 10
-pop$ -- 212
+int.to.str$ -- 10
+missing$ -- 86
+newline$ -- 53
+num.names$ -- 9
+pop$ -- 195
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 2
-skip$ -- 387
+skip$ -- 354
 stack$ -- 0
-substring$ -- 97
-swap$ -- 296
+substring$ -- 96
+swap$ -- 272
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 5
-type$ -- 11
+type$ -- 10
 warning$ -- 1
-while$ -- 12
-width$ -- 13
-write$ -- 122
+while$ -- 11
+width$ -- 12
+write$ -- 112
 (There was 1 warning)

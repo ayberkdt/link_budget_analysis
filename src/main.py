@@ -115,7 +115,7 @@ def build_scenario_from_inputs() -> ScenarioConfig:
     Scenario interpretation
     -----------------------
     * GS1 is the broadcasting earth station.
-    * The GEO satellite is nominally placed at 42 deg East.
+    * The GEO satellite is nominally placed at 13 deg East.
     * GS2 is a receive-only dish terminal.
     * Uplink and downlink are calculated separately.
     * The clear-sky static baseline applies no rain/atmospheric fade.

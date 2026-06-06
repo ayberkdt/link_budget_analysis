@@ -93,7 +93,7 @@ For any link segment, the Equivalent Isotropically Radiated Power (EIRP) defines
     EIRP(\text{dBW}) = P_{tx}(\text{dBW}) + G_{tx}(\text{dBi}) - L_{tx\_feeder}(\text{dB})
 \end{equation}
 
-At the receiving end, the ultimate metric of hardware quality is the Figure of Merit ($G/T$), measured in dB/K. This parameter elegantly isolates the receiver's performance from the incoming signal strength:
+At the receiving end, a useful receiver performance metric is the Figure of Merit ($G/T$), measured in dB/K. This parameter combines antenna gain and receiver noise temperature into a single figure of merit:
 \begin{equation}
     G/T(\text{dB/K}) = G_{\text{rx}}(\text{dBi}) - L_{\text{rx,feeder}}(\text{dB}) - 10\log_{10}(T_{\text{sys}})
 \end{equation}

@@ -241,6 +241,7 @@ Table~\ref{tab:comparison_summary} summarizes the key performance indicators acr
         \textbf{Available $E_s/N_0$ for ACM} & $\approx 5.38$ dB & $\approx 5.01$ dB & $\approx 1.12$ dB \\
         \textbf{Supported MODCOD} & QPSK 3/4 & QPSK 2/3 & QPSK 2/5 \\
         \textbf{System Availability} & 100\% (Theoretical) & 100\% (Clear) & 99.9\% (Target) \\
+        \textbf{Fixed-rate 10 Mbps closure} & Closed & Closed & Not closed \\
         \textbf{ACM Net Throughput} & $\approx 44.6$ Mbps & $\approx 39.7$ Mbps & \throughputRain~Mbps \\
         \bottomrule
     \end{tabular}
@@ -251,9 +252,9 @@ Table~\ref{tab:comparison_summary} summarizes the key performance indicators acr
 
   \textbf{Interpretation of the Comparison:}
 \begin{enumerate}
-    \item \textbf{The Impact of Non-Linearities and Congestion:} Moving from a purely thermal-noise limited system to an interference-limited system (ASI + IMD) imposes an immediate $\approx 0.4$ dB power penalty. This demonstrates that simple static calculations dangerously overestimate link viability if adjacent orbital slots are congested or if the transponder is driven near saturation.
-    \item \textbf{The Dominance of Atmospheric Fade:} The introduction of ITU-R rain fade models drastically alters the system state. The severe attenuation in the Ku-band consumes the available \marginASI~dB margin, plunging the system into a \marginRain~dB margin deficit at 99.9\% availability. This indicates that the current hardware sizing is technically insufficient for a strict 99.9\% SLA, requiring either more satellite EIRP, a larger GS2 dish, or relaxing the availability target.
-    \item \textbf{Dynamic Compensation Strategy:} When the physical margin runs out during deep fade, the DVB-S2 ACM software stack takes over, aggressively downgrading the modulation scheme to highly robust QPSK 2/5 to decode buried signals. This sacrifices the data rate (down to \throughputRain~Mbps), attempting to maintain the link as long as physically possible before total outage.
+    \item \textbf{The Impact of Non-Linearities and Congestion:} Moving from a purely thermal-noise limited system to an interference-limited system (ASI + IMD) imposes an immediate $\approx 0.4$ dB power penalty. This demonstrates that simple static calculations may lead to optimistic margin estimates if adjacent orbital slots are congested or if the transponder is driven near saturation.
+    \item \textbf{The Dominance of Atmospheric Fade:} The introduction of ITU-R rain fade models drastically alters the system state. The severe attenuation in the Ku-band consumes the available \marginASI~dB margin, reducing the margin to a \marginRain~dB margin deficit at 99.9\% availability. This indicates that the current hardware sizing is technically insufficient for a strict 99.9\% SLA, requiring either more satellite EIRP, a larger GS2 dish, or relaxing the availability target.
+    \item \textbf{Dynamic Compensation Strategy:} When the physical margin runs out during deep fade, the DVB-S2 ACM software stack takes over, downshifting to a lower-rate MODCOD to highly robust QPSK 2/5 to operate at reduced throughput under lower $E_s/N_0$ conditions. This sacrifices the data rate (down to \throughputRain~Mbps), attempting to maintain the link as long as physically possible before total outage.
 \end{enumerate}
 
 In synthesis, the staged analysis successfully demonstrates that the link is resilient. The static phase validates the hardware sizing, while the advanced phase confirms that the network can tolerate moderate impairments and can attempt service preservation under deep fades through ACM. However, strict 99.9\% fixed-rate link closure is not achieved by the baseline configuration (falling short by $\approx 1.10$ dB) and requires additional RF margin, larger receive aperture, or higher EIRP.
