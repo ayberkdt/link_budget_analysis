@@ -28,12 +28,12 @@ In practice, the satellite transponder is not an ideal linear amplifier. The TWT
     \begin{equation}
         EIRP_{\text{active}}(\text{dBW}) = EIRP_{\text{sat}}(\text{dBW}) - OBO(\text{dB})
     \end{equation}
-    \item \textbf{Implementation Margin ($M_{\text{impl}}$):} A composite margin (typically 1.0--2.0~\text{dB}) accounting for residual phase noise, modem non-idealities, and filter imperfections. In this study, the implementation margin is applied only in the DVB-S2 ACM MODCOD selection stage (Chapter~4), not as a static RF path loss:
+    \item \textbf{Implementation Margin ($M_{\text{impl}}$):} In this study, modem implementation effects are not included as a static RF path loss. Instead, a 1.0~\text{dB} DVB-S2 implementation margin is applied only during MODCOD threshold selection:
     \begin{equation}
         (E_s/N_0)_{\text{usable}} = (E_s/N_0)_{\text{available}} - M_{\text{impl}}
     \end{equation}
 \end{itemize}
-For the present study, an OBO of 2.5~\text{dB} and a DVB-S2 implementation margin of 1.0~\text{dB} are used. The OBO is consistent with typical Ku-band TWTA operating practices \cite{pratt}. The implementation margin is deducted from the available $E_s/N_0$ before MODCOD selection, ensuring it is counted exactly once.
+For the present study, an OBO of 2.5~\text{dB} and a DVB-S2 implementation margin of 1.0~\text{dB} are used. The OBO is consistent with typical Ku-band TWTA operating practices \cite{pratt}. Static RF path implementation loss is set to 0~dB to avoid double-counting, while the miscellaneous RF path loss allowance remains at 0.2~dB. The implementation margin is deducted from the available $E_s/N_0$ before MODCOD selection, ensuring it is counted exactly once.
 
 \subsection{Digital Baseband Performance Metrics}
 The satellite link must meet a strict Quality of Service, typically $\text{BER} \le 10^{-7}$ for IP data. For coherent QPSK over AWGN, the uncoded bit error rate is:
@@ -61,7 +61,7 @@ where $T_{\text{sky}}(\theta)$ is the clear-sky noise at elevation angle $\theta
 \end{equation}
 where $T_{\text{atm}} = 275$~Kelvin represents the physical atmospheric temperature of the lossy rain medium.
 
-During a heavy Ku-band storm causing an attenuation of $A_{\text{rain}} = 10.0$~\text{dB}, the rain noise contribution $T_{\text{rain}}$ spikes by approximately $247.5$~Kelvin. For a high-performance ground receiver with a clear-sky $T_{\text{sys}} = 150.0$~K, this storm nearly triples the total system noise to $397.5$~K. This dynamic thermal noise increase adds a $4.2$~\text{dB} penalty directly to the link margin on top of the physical $10.0$~\text{dB} signal attenuation, showing why dynamic noise modelling is useful for fade-margin studies.
+During a heavy Ku-band storm causing an attenuation of $A_{\text{rain}} = 10.0$~\text{dB}, the rain noise contribution $T_{\text{rain}}$ spikes by approximately $247.5$~Kelvin. For a high-performance ground receiver with a clear-sky $T_{\text{sys}} = 150.0$~K, this storm nearly triples the total system noise to $397.5$~K. This dynamic thermal noise increase adds a $4.2$~\text{dB} penalty directly to the link margin on top of the physical $10.0$~\text{dB} signal attenuation, showing why dynamic noise modeling is useful for fade-margin studies.
 
 \subsection{Apparent GEO Orbit Motion}
 Although geostationary satellites are nominally ``fixed'', gravitational perturbations cause three-axis oscillations within the station-keeping box. The satellite's deviations are modeled as:

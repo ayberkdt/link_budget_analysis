@@ -110,6 +110,8 @@ To explicitly verify the software's accuracy, Table~\ref{tab:pratt_comparison} c
         Uplink EIRP & $60.87$ dBW & $60.87$ dBW & $0.00$ dB \\
         Uplink $C/N_0$ & $84.08$ dB-Hz & $84.08$ dB-Hz & $0.00$ dB \\
         Combined $C/N_0$ & $81.15$ dB-Hz & $81.15$ dB-Hz & $0.00$ dB \\
+        Combined $E_b/N_0$ & $11.15$ dB & $11.15$ dB & $0.00$ dB \\
+        Combined margin & $4.15$ dB & $4.15$ dB & $0.00$ dB \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -300,7 +302,7 @@ Table~\ref{tab:comparison_summary} summarizes the key performance indicators acr
   \textbf{Interpretation of the Comparison:}
 \begin{enumerate}
     \item \textbf{The Impact of Non-Linearities and Congestion:} Moving from a purely thermal-noise limited system to an interference-limited system (ASI + IMD) imposes an immediate $\approx 0.46$ dB power penalty. This demonstrates that simple static calculations may lead to optimistic margin estimates if adjacent orbital slots are congested or if the transponder is driven near saturation.
-    \item \textbf{The Dominance of Atmospheric Fade:} The introduction of ITU-R rain fade models drastically alters the system state. The severe attenuation in the Ku-band consumes the available \marginASI~dB margin, reducing the margin to a \marginRain~dB margin deficit at 99.9\% availability. This indicates that the current hardware sizing is technically insufficient for a strict 99.9\% SLA, requiring either more satellite EIRP, a larger GS2 dish, or relaxing the availability target.
+    \item \textbf{The Dominance of Atmospheric Fade:} The introduction of ITU-R rain fade models drastically alters the system state. The severe attenuation in the Ku-band consumes the available \marginASI~dB margin, reducing the margin to a \marginRain~dB margin deficit at 99.9\% availability. This indicates that the current hardware sizing is technically insufficient for the strict 99.9\% availability target, requiring either more satellite EIRP, a larger GS2 dish, or relaxing the availability target.
     \item \textbf{Dynamic Compensation Strategy:} When the physical margin runs out during deep fade, the DVB-S2 ACM selector downshifts to the more robust QPSK 1/2 MODCOD, allowing operation at reduced throughput under lower $E_s/N_0$ conditions. This reduces the net throughput to \throughputRain~Mbps and attempts degraded-mode operation when the fixed-rate 10 Mbps margin is no longer positive.
 \end{enumerate}
 
