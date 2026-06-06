@@ -154,7 +154,7 @@ DIGITAL = {
 # 6.            ITU-R PROPAGATION (V5 standards-based fade model)
 # ========================================================================
 # Not: MATLAB'deki varsayılan ödev isterlerinde P.618 sönümlemeleri kapalı varsayılmaktadır.
-# Bu blok, projeye gerçekçilik katan opsiyonel ITU-R P.618/P.676/P.840
+# Bu blok, projeye gerçekçilik katan opsiyonel ITU-R P.618/P.837/P.838/P.676/P.840
 # atmosferik sönümleme (attenuation) modellerini konfigüre eder. İstasyonunuzun 
 # değerleriyle (örneğin P.837 yağış oranı) değiştirebilirsiniz.
 ITU_PROPAGATION = {
