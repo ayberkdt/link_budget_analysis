@@ -111,7 +111,7 @@ def rain_coefficients_p838(
         Path elevation angle in degrees.
     polarization_tilt_deg:
         Polarization tilt angle relative to the horizontal. Use 0 deg for
-        horizontal, 90 deg for vertical, and 45 deg for circular polarization.
+        horizontal, and 90 deg for vertical linear polarization assumption.
         Most VSAT/DTH Ku links are linearly polarized; defaulting to 90 deg (vertical).
 
     Returns

@@ -20,7 +20,7 @@ GS1 = {
     "antenna_name": "GS1 Ku-band uplink dish",
     "antenna_diameter_m": 2.4,
     "antenna_efficiency": 0.62,
-    "antenna_gain_dbi": 49.20,  # Prodelin Series 1244 Tx Gain at 14 GHz
+    "antenna_gain_dbi": None,  # Use this instead of diameter if you have a datasheet gain.
     "tx_power_w": 20.0,
     "tx_feeder_loss_db": 1.0,
     "notes": "Rome broadcasting earth station.",
@@ -39,7 +39,7 @@ GS2 = {
     "antenna_name": "GS2 Ku-band receive dish",
     "antenna_diameter_m": 0.9,
     "antenna_efficiency": 0.62,
-    "antenna_gain_dbi": 39.02,  # Triax TD88 Rx Gain at 12 GHz (38.8 dBi @ 11.7 GHz extrapolated)
+    "antenna_gain_dbi": None,  # Use this instead of diameter if you have a datasheet gain.
     "system_noise_temperature_k": 150.0,
     "rx_feeder_loss_db": 0.5,
     "notes": "Ankara receive terminal.",

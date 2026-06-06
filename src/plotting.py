@@ -59,14 +59,14 @@ MARKER_SIZE = 5.0
 GRID_ALPHA = 0.60
 
 # Default figure sizes (inches) - Golden ratio inspired where applicable.
-FIGSIZE_CONTOUR = (8.5, 6.0)
+FIGSIZE_CONTOUR = (10.0, 7.0)
 FIGSIZE_LINE = (8.0, 5.0)
 FIGSIZE_BAR = (8.0, 5.0)
 FIGSIZE_SQUARE = (6.0, 6.0)
 FIGSIZE_WIDE = (9.0, 3.5)
 
 # Colormaps and key colors.
-SEQUENTIAL_CMAP = "magma"       # Premium perceptually uniform map.
+SEQUENTIAL_CMAP = "viridis"       # Premium perceptually uniform map.
 DIVERGING_CMAP = "RdBu_r"       # Classic academic diverging.
 BASELINE_COLOR = "#c0392b"      # Premium deeper red for operating point.
 THRESHOLD_COLOR = "#2c3e50"     # Dark slate for thresholds.
@@ -207,7 +207,7 @@ def _filled_contour(
 
     cbar = fig.colorbar(filled, ax=ax, fraction=0.046, pad=0.04)
     cbar.set_label(cbar_label, fontsize=COLORBAR_LABEL_SIZE)
-    ax.set_title(title)
+
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.grid(True, alpha=GRID_ALPHA)
@@ -256,7 +256,7 @@ def _line_plot(
         plot(x, y, **kwargs)
     if hline is not None:
         ax.axhline(hline, linestyle="--", linewidth=THIN_LINE_WIDTH, color=THRESHOLD_COLOR, alpha=0.9, label=hline_label)
-    ax.set_title(title)
+
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.grid(True, which="both" if logy else "major", alpha=GRID_ALPHA)
@@ -545,7 +545,7 @@ def generate_time_varying_plots(samples: list[TimeVaryingSample], output_dir: Pa
     ax.axhline(mean_ni, linestyle=":", linewidth=THIN_LINE_WIDTH, color="#1f77b4", alpha=0.9, label=f"mean = {mean_ni:.2f} dB")
     i_min = int(np.argmin(margin_ni))
     _annotate_value(ax, t[i_min], margin_ni[i_min], f"min {margin_ni[i_min]:.2f} dB", color=BASELINE_COLOR)
-    ax.set_title("Time-Varying Link Margin Under Apparent GEO Motion")
+
     ax.set_xlabel("Time [h]")
     ax.set_ylabel("Combined Eb/N0 margin [dB]")
     ax.grid(True, alpha=GRID_ALPHA)
@@ -592,7 +592,7 @@ def generate_time_varying_plots(samples: list[TimeVaryingSample], output_dir: Pa
     fig, ax = plt.subplots(figsize=FIGSIZE_SQUARE)
     ax.plot(lon, lat, marker="o", markersize=2.6, linewidth=1.2, color="#1f77b4")
     _mark_baseline(ax, lon[0], lat[0], "start")
-    ax.set_title("Sub-Satellite Apparent Motion (Station-Keeping Box)")
+
     ax.set_xlabel("Sub-satellite longitude [deg East]")
     ax.set_ylabel("Sub-satellite latitude [deg North]")
     ax.grid(True, alpha=GRID_ALPHA)
@@ -637,7 +637,7 @@ def plot_interference_comparison(scenario: ScenarioConfig, output_dir: Path) -> 
     for bar, value in zip(bars, values):
         ax.text(bar.get_x() + bar.get_width() / 2.0, value + 0.15, f"{value:.2f} dB", ha="center", va="bottom",
                 fontsize=ANNOTATION_FONTSIZE)
-    ax.set_title("Effect of Adjacent-Satellite and IMD Interference")
+
     ax.set_ylabel("End-to-end energy ratio [dB]")
     ax.grid(True, axis="y", alpha=GRID_ALPHA)
     ax.legend(loc="best")
@@ -690,7 +690,7 @@ def generate_availability_plots(samples: list[TimeVaryingSample], output_dir: Pa
     ax.hist(margin, bins=55, color="#3498db", alpha=0.7, edgecolor="#2980b9", linewidth=1.2)
     ax.axvline(0.0, linestyle="--", color="#e74c3c", linewidth=2.0, label="0 dB outage threshold")
     availability = 100.0 * float(np.mean(margin >= 0.0))
-    ax.set_title("Annual Margin Distribution (Educational Monte-Carlo)")
+
     ax.set_xlabel("Combined Eb/N0 margin [dB]")
     ax.set_ylabel("Number of hourly samples")
     ax.text(0.02, 0.95, f"availability = {availability:.3f}%", transform=ax.transAxes,
@@ -707,7 +707,7 @@ def generate_availability_plots(samples: list[TimeVaryingSample], output_dir: Pa
     ax.set_ylim(-0.1, 1.1)
     ax.set_yticks([0, 1])
     ax.set_yticklabels(["available", "outage"])
-    ax.set_title("Estimated Outage Timeline (Educational Monte-Carlo)")
+
     ax.set_xlabel("Time [h] over one simulated year")
     ax.grid(True, axis="x", alpha=GRID_ALPHA)
     paths.append(_save_figure(fig, output_dir / "17_availability_outage_timeline.png"))
@@ -733,7 +733,7 @@ def plot_ber_curves_vs_ebn0(scenario: ScenarioConfig, output_dir: Path) -> Path:
     ax.axhline(cfg.target_ber, linestyle="--", linewidth=THIN_LINE_WIDTH, color=THRESHOLD_COLOR, label=f"target BER = {cfg.target_ber:g}")
     ax.axvline(result.combined_ebn0_ni_db, linestyle=":", linewidth=1.6, color=BASELINE_COLOR,
                label=f"operating Eb/N0 = {result.combined_ebn0_ni_db:.2f} dB")
-    ax.set_title("Digital Performance: Theoretical BER vs Eb/N0")
+
     ax.set_xlabel("Eb/N0 [dB]")
     ax.set_ylabel("Bit error rate")
     ax.set_ylim(1.0e-12, 1.0)
@@ -781,7 +781,7 @@ def plot_shannon_capacity_vs_cn(scenario: ScenarioConfig, output_dir: Path) -> P
                label=f"information rate = {bit_rate / 1.0e6:g} Mbit/s")
     ax.axvline(result.combined_cni_db, linestyle=":", linewidth=1.6, color=BASELINE_COLOR,
                label=f"operating C/(N+I) = {result.combined_cni_db:.2f} dB")
-    ax.set_title("Shannon-Hartley Capacity for the Allocated Bandwidth")
+
     ax.set_xlabel("C/N or C/(N+I) over bandwidth [dB]")
     ax.set_ylabel("Capacity [Mbit/s]")
     ax.grid(True, alpha=GRID_ALPHA)
@@ -808,7 +808,7 @@ def plot_capacity_comparison(scenario: ScenarioConfig, output_dir: Path) -> Path
     for bar, value in zip(bars, values):
         ax.text(bar.get_x() + bar.get_width() / 2.0, value + 0.5, f"{value:.1f}", ha="center", va="bottom",
                 fontsize=ANNOTATION_FONTSIZE)
-    ax.set_title("Information Rate vs Shannon Capacity")
+
     ax.set_ylabel("Rate [Mbit/s]")
     ax.grid(True, axis="y", alpha=GRID_ALPHA)
     return _save_figure(fig, output_dir / "21_capacity_margin_bar.png")
@@ -828,7 +828,7 @@ def plot_occupied_bandwidth_vs_code_rate(scenario: ScenarioConfig, output_dir: P
     ax.axhline(scenario.uplink.bandwidth_hz / 1.0e6, linestyle="--", linewidth=THIN_LINE_WIDTH, color=THRESHOLD_COLOR,
                label=f"allocated bandwidth = {scenario.uplink.bandwidth_hz / 1.0e6:g} MHz")
     _mark_baseline(ax, cfg.code_rate, baseline_bw, "baseline code rate")
-    ax.set_title("FEC Tradeoff: Code Rate vs Occupied Bandwidth")
+
     ax.set_xlabel("FEC code rate [-]")
     ax.set_ylabel("Estimated occupied bandwidth [MHz]")
     ax.grid(True, alpha=GRID_ALPHA)
@@ -917,7 +917,7 @@ def plot_itu_attenuation_vs_availability(
     if design_exceedance_percent is not None:
         ax.axvline(design_exceedance_percent, linestyle="--", linewidth=THIN_LINE_WIDTH, color=BASELINE_COLOR,
                    label=f"design point p = {design_exceedance_percent:g}%")
-    ax.set_title("ITU-R Downlink Slant-Path Attenuation vs Unavailability")
+
     ax.set_xlabel("Unavailability p [% of average year]  (right = higher availability)")
     ax.set_ylabel("Attenuation [dB]")
     ax.grid(True, which="both", alpha=GRID_ALPHA)
@@ -949,7 +949,7 @@ def plot_itu_margin_vs_availability(
         if design:
             _annotate_value(ax, design_availability_percent, design[0].faded_result.combined_margin_ni_db,
                             f"{design[0].faded_result.combined_margin_ni_db:.2f} dB", color=BASELINE_COLOR)
-    ax.set_title("Faded Link Margin vs Target Availability (ITU-R Fades Applied)")
+
     ax.set_xlabel("Availability [%]")
     ax.set_ylabel("Combined Eb/N0 margin [dB]")
     ax.grid(True, alpha=GRID_ALPHA)
@@ -980,7 +980,7 @@ def plot_itu_attenuation_breakdown_bar(scenario: ScenarioConfig, output_dir: Pat
                     ha="center", va="bottom", fontsize=7)
     ax.set_xticks(x)
     ax.set_xticklabels(mechanisms)
-    ax.set_title(f"ITU-R Attenuation Breakdown at {design.design_availability_percent:g}% Availability")
+
     ax.set_ylabel("Attenuation [dB]")
     ax.grid(True, axis="y", alpha=GRID_ALPHA)
     ax.legend(loc="best")
@@ -1014,7 +1014,7 @@ def plot_rain_attenuation_vs_frequency(scenario: ScenarioConfig, output_dir: Pat
         ax.axvline(f0, linestyle=":", linewidth=0.9, color="#999999", alpha=0.7)
         ax.text(f0, ax.get_ylim()[1] * 0.93, band, fontsize=ANNOTATION_FONTSIZE, ha="center", color="#666666")
     _mark_baseline(ax, design_freq, design_a001, "downlink design frequency")
-    ax.set_title(f"ITU-R P.618 Rain Attenuation A(0.01%) vs Frequency  (R0.01 = {cfg.rain_rate_001_mm_per_h:g} mm/h)")
+
     ax.set_xlabel("Frequency [GHz]")
     ax.set_ylabel("Rain attenuation exceeded 0.01% of year [dB]")
     ax.grid(True, alpha=GRID_ALPHA)
@@ -1040,7 +1040,7 @@ def plot_specific_rain_attenuation(scenario: ScenarioConfig, output_dir: Path) -
         ax.plot(rates, gamma, linewidth=LINE_WIDTH, label=f"{label}  (k = {k:.4f}, alpha = {alpha:.3f})")
     ax.axvline(cfg.rain_rate_001_mm_per_h, linestyle="--", linewidth=THIN_LINE_WIDTH, color=THRESHOLD_COLOR,
                label=f"R0.01 = {cfg.rain_rate_001_mm_per_h:g} mm/h")
-    ax.set_title("ITU-R P.838 Specific Rain Attenuation vs Rain Rate")
+
     ax.set_xlabel("Rain rate R [mm/h]")
     ax.set_ylabel("Specific attenuation gamma_R [dB/km]")
     ax.grid(True, alpha=GRID_ALPHA)
@@ -1067,7 +1067,7 @@ def plot_dvbs2_modcod_ladder(scenario: ScenarioConfig, output_dir: Path) -> Path
         ax.scatter([sel.selected.required_esn0_db], [sel.spectral_efficiency_bps_hz], marker="*", s=350,
                    color="#e74c3c", edgecolors="#c0392b", linewidths=1.2, zorder=6,
                    label=f"selected {sel.selected.name} ({sel.spectral_efficiency_bps_hz:.2f} bit/s/Hz)")
-    ax.set_title("DVB-S2 ACM: Spectral Efficiency vs Required Es/N0")
+
     ax.set_xlabel("Required Es/N0 for QEF on AWGN [dB]")
     ax.set_ylabel("Spectral efficiency [bit/s/Hz]")
     ax.grid(True, alpha=GRID_ALPHA)
@@ -1120,7 +1120,7 @@ def plot_dvbs2_acm_vs_availability(
         ax.axvline(design_availability_percent, linestyle=":", linewidth=1.6, color=BASELINE_COLOR,
                    label=f"design = {design_availability_percent:g}%")
 
-    ax.set_title("DVB-S2 ACM: Throughput and Efficiency vs Availability")
+
     ax.grid(True, alpha=GRID_ALPHA)
     handles1, labels1 = ax.get_legend_handles_labels()
     handles2, labels2 = ax2.get_legend_handles_labels()

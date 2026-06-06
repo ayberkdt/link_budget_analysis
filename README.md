@@ -106,10 +106,10 @@ To verify the calculations against baseline test cases, run the test suite from 
 
 ```bash
 # On Linux / macOS
-PYTHONPATH=src pytest -q
+pytest -q
 
 # On Windows PowerShell
-$env:PYTHONPATH="src"; pytest -q
+pytest -q
 ```
 
 ---
@@ -119,7 +119,7 @@ $env:PYTHONPATH="src"; pytest -q
 All input parameters (e.g., coordinates, HPA power, frequencies, bandwidth, noise figures) are declared in [src/scenario_inputs.py](src/scenario_inputs.py). You can edit this file to run your own link analysis:
 
 ```python
-# Example snippet from src/scenario_inputs.py
+# Representative snippet from src/scenario_inputs.py
 GS1_Rome = {
     "site_name": "GS1 Rome",
     "latitude_deg": 41.9028,
@@ -137,11 +137,15 @@ GS1_Rome = {
 
 Upon running the code, all tabular calculations are exported to the `outputs/` folder in CSV format. Graphics are saved in both high-resolution **PNG** (for web/doc previewing) and vector **PDF** (for LaTeX insertion) in the `outputs/plots/` subdirectory.
 
+The analyzer writes tabular outputs to `outputs/`. The file `parameter_sources.csv` documents the status of the main scenario inputs, separating datasheet-supported values, footprint-estimated values, calculated quantities, and representative assumptions. 
+Representative baseline CSV outputs are tracked in the repository, while other generated files (like logs and plots) are ignored by default.
+
 ### Static Baseline Outputs
-*   `outputs/parameter_sources.csv` — Documented sources and assumptions for all key input parameters.
+*   `outputs/parameter_sources.csv` — Documents whether each major input is sourced, datasheet-supported, estimated, or assumed.
 *   `outputs/geometry_static.csv` — Calculated slant-paths, elevation angles, azimuths, and range distances.
 *   `outputs/link_budget_static.csv` — Point-by-point gains, losses, noise powers, and carrier-to-noise ratios.
 *   `outputs/scenario_summary_static.csv` — Unified end-to-end performance metrics ($C/(N+I)$, margins, spectral efficiencies).
+*   `outputs/mode_definitions.csv` — Documents fixed-rate vs ACM mode definitions.
 
 ### Visualizations & Plots
 *   **01_downlink_cn0_dish_vs_frequency** — Downlink $C/N_0$ contour as a function of GS2 dish diameter and downlink frequency.
@@ -159,4 +163,4 @@ Upon running the code, all tabular calculations are exported to the `outputs/` f
 - Academic methodology for basic RF link parameters is based on **Pratt, Bostian, and Allnutt - Satellite Communications (2nd Edition)**, Chapter 4.
 - Atmospheric propagation models follow **ITU-R P.618-13 (Rain attenuation on slant paths)** and related recommendations.
 
-> **Disclaimer:** This repository provides a standards-based engineering implementation for an academic link-budget study. It is not a regulatory-grade coordination tool and does not automatically extract ITU digital map values. For operational design, replace representative parameters with site-specific meteorological data and exact transponder datasheet values.
+> **Disclaimer:** This repository provides a standards-based engineering implementation for an academic link-budget study. It is based on ITU-R recommendations but does not extract digital map values automatically. For operational design, replace representative parameters with site-specific meteorological data.

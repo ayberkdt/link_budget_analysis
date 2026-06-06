@@ -1,0 +1,28 @@
+parameter,value,unit,status,source_or_note
+GS1 latitude,41.9028,deg,sourced,Rome coordinate source
+GS1 longitude,12.4964,deg,sourced,Rome coordinate source
+GS1 dish diameter,2.4,m,datasheet_or_selected,Skyware Type 243 / selected project dish
+GS1 antenna efficiency,0.62,-,assumed,Representative aperture efficiency
+GS1 HPA power,20,W,assumed,Representative commercial Ku-band HPA power
+GS1 feeder loss,1.0,dB,assumed,Representative uplink feeder allowance
+Satellite longitude,13.0,deg,sourced,HOTBIRD 13G orbital slot
+Satellite downlink EIRP,46,dBW,estimated,Estimated from HOTBIRD footprint contour at Ankara receiving site
+Satellite receive G/T,3,dB/K,assumed,Public selected-transponder uplink G/T unavailable
+GS2 latitude,39.9334,deg,sourced,Ankara coordinate source
+GS2 longitude,32.8597,deg,sourced,Ankara coordinate source
+GS2 dish diameter,0.9,m,datasheet_or_selected,Triax TD88 / selected receive dish
+GS2 antenna efficiency,0.62,-,assumed,Representative aperture efficiency
+GS2 system noise temperature,150,K,assumed,Representative consumer Ku-band receive system estimate
+GS2 receiver feeder loss,0.5,dB,assumed,Representative receive feeder allowance
+Pointing loss,0.5,dB,assumed,Engineering pointing allowance
+Polarization loss,0.3,dB,assumed,Engineering polarization mismatch allowance
+Clear-sky atmospheric loss,0.5,dB,assumed,Clear-sky engineering allowance
+Miscellaneous RF loss,0.2,dB,assumed,Small unallocated RF/system allowance
+Static implementation loss,0,dB,model_choice,Removed from RF path to avoid double-counting with DVB-S2 implementation margin
+Required fixed-rate Eb/N0,7,dB,assumed,Conservative fixed-rate design threshold
+R0.01 rainfall rate,42,mm/h,representative,P.837-based rainfall-rate input
+ITU-R polarization tilt,90,deg,assumed,Vertical linear polarization for P.838 rain attenuation
+DVB-S2 rolloff,0.2,-,assumed,DVB-S2 ACM carrier roll-off
+DVB-S2 implementation margin,1,dB,assumed,Representative modem threshold back-off
+ACM carrier bandwidth,36,MHz,configured,DVB-S2 carrier bandwidth for MODCOD throughput
+Fixed-rate bit rate,10,Mbps,configured,Fixed-rate closure mode bit rate

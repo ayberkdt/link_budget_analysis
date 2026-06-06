@@ -1,6 +1,6 @@
 import pytest
 from src.calculations import free_space_path_loss_db, combine_inverse_db, dish_gain_dbi, calculate_scenario
-from src.main import build_scenario_from_inputs
+from src.main import build_scenario_from_inputs, build_parameter_source_rows
 
 def test_free_space_path_loss():
     # Test typical Ku-band FSPL
@@ -28,9 +28,15 @@ def test_full_static_scenario_regression():
     scenario = build_scenario_from_inputs()
     result = calculate_scenario(scenario)
 
-    assert result.combined_cn0_dbhz == pytest.approx(81.33, abs=0.05)
-    assert result.combined_ebn0_db == pytest.approx(11.33, abs=0.05)
-    assert result.combined_margin_db == pytest.approx(4.33, abs=0.05)
+    assert result.combined_cn0_dbhz == pytest.approx(81.15, abs=0.05)
+    assert result.combined_ebn0_db == pytest.approx(11.15, abs=0.05)
+    assert result.combined_margin_db == pytest.approx(4.15, abs=0.05)
     
     if result.combined_margin_ni_db is not None:
-        assert result.combined_margin_ni_db == pytest.approx(3.86, abs=0.1)
+        assert result.combined_margin_ni_db == pytest.approx(3.69, abs=0.1)
+
+def test_parameter_source_rows():
+    scenario = build_scenario_from_inputs()
+    rows = build_parameter_source_rows(scenario)
+    assert len(rows) > 10
+    assert "parameter" in rows[0]

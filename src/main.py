@@ -314,6 +314,61 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def build_parameter_source_rows(scenario: ScenarioConfig) -> list[dict[str, object]]:
+    """Return rows for the parameter_sources.csv output."""
+    return [
+        {"parameter": "GS1 latitude", "value": 41.9028, "unit": "deg", "status": "sourced", "source_or_note": "Rome coordinate source"},
+        {"parameter": "GS1 longitude", "value": 12.4964, "unit": "deg", "status": "sourced", "source_or_note": "Rome coordinate source"},
+        {"parameter": "GS1 dish diameter", "value": 2.4, "unit": "m", "status": "datasheet_or_selected", "source_or_note": "Skyware Type 243 / selected project dish"},
+        {"parameter": "GS1 antenna efficiency", "value": 0.62, "unit": "-", "status": "assumed", "source_or_note": "Representative aperture efficiency"},
+        {"parameter": "GS1 HPA power", "value": 20, "unit": "W", "status": "assumed", "source_or_note": "Representative commercial Ku-band HPA power"},
+        {"parameter": "GS1 feeder loss", "value": 1.0, "unit": "dB", "status": "assumed", "source_or_note": "Representative uplink feeder allowance"},
+        {"parameter": "Satellite longitude", "value": 13.0, "unit": "deg", "status": "sourced", "source_or_note": "HOTBIRD 13G orbital slot"},
+        {"parameter": "Satellite downlink EIRP", "value": 46, "unit": "dBW", "status": "estimated", "source_or_note": "Estimated from HOTBIRD footprint contour at Ankara receiving site"},
+        {"parameter": "Satellite receive G/T", "value": 3, "unit": "dB/K", "status": "assumed", "source_or_note": "Public selected-transponder uplink G/T unavailable"},
+        {"parameter": "GS2 latitude", "value": 39.9334, "unit": "deg", "status": "sourced", "source_or_note": "Ankara coordinate source"},
+        {"parameter": "GS2 longitude", "value": 32.8597, "unit": "deg", "status": "sourced", "source_or_note": "Ankara coordinate source"},
+        {"parameter": "GS2 dish diameter", "value": 0.9, "unit": "m", "status": "datasheet_or_selected", "source_or_note": "Triax TD88 / selected receive dish"},
+        {"parameter": "GS2 antenna efficiency", "value": 0.62, "unit": "-", "status": "assumed", "source_or_note": "Representative aperture efficiency"},
+        {"parameter": "GS2 system noise temperature", "value": 150, "unit": "K", "status": "assumed", "source_or_note": "Representative consumer Ku-band receive system estimate"},
+        {"parameter": "GS2 receiver feeder loss", "value": 0.5, "unit": "dB", "status": "assumed", "source_or_note": "Representative receive feeder allowance"},
+        {"parameter": "Pointing loss", "value": 0.5, "unit": "dB", "status": "assumed", "source_or_note": "Engineering pointing allowance"},
+        {"parameter": "Polarization loss", "value": 0.3, "unit": "dB", "status": "assumed", "source_or_note": "Engineering polarization mismatch allowance"},
+        {"parameter": "Clear-sky atmospheric loss", "value": 0.5, "unit": "dB", "status": "assumed", "source_or_note": "Clear-sky engineering allowance"},
+        {"parameter": "Miscellaneous RF loss", "value": 0.2, "unit": "dB", "status": "assumed", "source_or_note": "Small unallocated RF/system allowance"},
+        {"parameter": "Static implementation loss", "value": 0, "unit": "dB", "status": "model_choice", "source_or_note": "Removed from RF path to avoid double-counting with DVB-S2 implementation margin"},
+        {"parameter": "Required fixed-rate Eb/N0", "value": 7, "unit": "dB", "status": "assumed", "source_or_note": "Conservative fixed-rate design threshold"},
+        {"parameter": "R0.01 rainfall rate", "value": 42, "unit": "mm/h", "status": "representative", "source_or_note": "P.837-based rainfall-rate input"},
+        {"parameter": "ITU-R polarization tilt", "value": 90, "unit": "deg", "status": "assumed", "source_or_note": "Vertical linear polarization for P.838 rain attenuation"},
+        {"parameter": "DVB-S2 rolloff", "value": 0.20, "unit": "-", "status": "assumed", "source_or_note": "DVB-S2 ACM carrier roll-off"},
+        {"parameter": "DVB-S2 implementation margin", "value": 1, "unit": "dB", "status": "assumed", "source_or_note": "Representative modem threshold back-off"},
+        {"parameter": "ACM carrier bandwidth", "value": 36, "unit": "MHz", "status": "configured", "source_or_note": "DVB-S2 carrier bandwidth for MODCOD throughput"},
+        {"parameter": "Fixed-rate bit rate", "value": 10, "unit": "Mbps", "status": "configured", "source_or_note": "Fixed-rate closure mode bit rate"},
+    ]
+
+
+def build_mode_definitions_rows() -> list[dict[str, object]]:
+    """Return rows defining fixed-rate vs ACM modes."""
+    return [
+        {
+            "mode": "fixed_rate",
+            "bit_rate_Mbps": "10",
+            "bandwidth_MHz": "36",
+            "metric": "Eb/N0",
+            "threshold_basis": "required Eb/N0 = 7 dB",
+            "note": "Fixed-rate closure mode",
+        },
+        {
+            "mode": "DVB-S2 ACM",
+            "bit_rate_Mbps": "variable",
+            "bandwidth_MHz": "36",
+            "metric": "Es/N0",
+            "threshold_basis": "DVB-S2 MODCOD table + implementation margin",
+            "note": "Variable throughput carrier mode; not direct continuation of fixed 10 Mbps closure",
+        },
+    ]
+
+
 def _geometry_rows(static_result) -> list[dict[str, object]]:
     """Return the uplink/downlink geometry rows for CSV export."""
 
@@ -371,6 +426,8 @@ def main(argv: list[str] | None = None) -> None:
     # ---------------------------------------------------------------
     static_result = calculate_scenario(scenario)
     geometry_rows = _geometry_rows(static_result)
+    write("parameter_sources.csv", build_parameter_source_rows(scenario))
+    write("mode_definitions.csv", build_mode_definitions_rows())
     write("geometry_static.csv", geometry_rows)
     write("link_budget_static.csv", [static_result.uplink.to_dict(), static_result.downlink.to_dict()])
     write("scenario_summary_static.csv", [static_result.to_summary_dict()])
@@ -484,11 +541,11 @@ def main(argv: list[str] | None = None) -> None:
                         print(f"- {pdf}")
 
     print(
-        "\nNote: the default parameters are example values; replace them with "
-        "datasheet/measured values before the final report. The clear-sky static "
-        "baseline never includes rain or atmospheric fade. ITU-R propagation and "
-        "DVB-S2 ACM are separate advanced extensions and are standards-based "
-        "engineering implementations, not regulatory-grade or map-exact tools."
+        "\nNote: several scenario parameters are representative engineering assumptions "
+        "or footprint-based estimates, as documented in parameter_sources.csv and the report. "
+        "The clear-sky static baseline never includes rain fade. ITU-R propagation and "
+        "DVB-S2 ACM are separate advanced extensions and are standards-based engineering "
+        "implementations, not regulatory-grade or map-exact tools."
     )
 
 

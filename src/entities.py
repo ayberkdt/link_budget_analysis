@@ -243,7 +243,7 @@ class ITUPropagationConfig:
     with P.618 losses disabled. keeps that clean static link budget and adds
     this separate layer so the link can be studied against an availability
     target. It is a self-contained engineering implementation; site-specific
-    accuracy requires replacing the example inputs with mapped/measured values.
+    accuracy requires replacing the representative inputs with mapped/measured values.
     """
 
     enabled: bool = True
