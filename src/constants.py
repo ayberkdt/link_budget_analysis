@@ -1,9 +1,8 @@
 # constants.py
-"""Physical constants and unit conversions for the UZB451 Python link-budget analyzer.
+"""Projede kullanılan fiziksel sabitler ve birim dönüştürücüler.
 
-The project intentionally keeps constants in one small module so that the link
-budget can be checked easily against hand calculations, MATLAB results, and the
-course notes.
+Hesaplamaların doğruluğunu garanti altına almak için tüm temel sabitler tek bir 
+yerde tanımlanmış ve projenin geri kalanında buradan çağırılmıştır.
 """
 
 # ========================================================================

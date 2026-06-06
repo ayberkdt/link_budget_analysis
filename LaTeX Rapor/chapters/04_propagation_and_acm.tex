@@ -1,15 +1,15 @@
 % 04_propagation_and_acm.tex
 % Chapter 4: Atmospheric Propagation and ACM [EXTRA]
 
-\section[Atmospheric Propagation and ACM]{Atmospheric Propagation and ACM\textsuperscript{*}}
-
-\noindent\textit{\small * Chapters and sections marked with * represent advanced, optional extensions developed beyond the core UZB451E term project specifications to model real-world satellite communication dynamics.}
+\section[Atmospheric Propagation and ACM]{Atmospheric Propagation and ACM\footnote{All topics discussed in this chapter represent advanced, optional professional extensions developed beyond the core UZB451E term project specifications to model real-world satellite communication dynamics.}}
 
 \vspace{0.3cm}
 
 This chapter presents the standards-based atmospheric attenuation models and Adaptive Coding and Modulation (ACM) mechanisms implemented in this project. \textbf{These models are optional professional extensions representing an advanced study of link availability.}
 
-\subsection[ITU-R Slant-Path Attenuation Suite]{ITU-R Slant-Path Attenuation Suite\textsuperscript{*}}
+\textit{Note: The implemented attenuation workflow strictly follows the cited ITU-R recommendation versions (e.g., P.618-13, P.837-7). Later ITU-R revisions may contain updated parameter databases or procedural refinements, but the baseline equations implemented in this analysis are kept consistent with the listed versions.}
+
+\subsection[ITU-R Slant-Path Attenuation Suite]{ITU-R Slant-Path Attenuation Suite}
 
 \subsubsection{The Engineering Problem}
 Electromagnetic waves propagating along a slant path between a terrestrial ground station and a geostationary satellite traverse the Earth's troposphere, where they suffer from absorption and scattering. These impairments are caused by atmospheric gases (oxygen and water vapour), suspended water droplets in clouds, tropospheric turbulence, and liquid rain. At Ku-band frequencies, the physical wavelength of the signal is comparable to the size of falling raindrops, triggering severe Mie scattering and thermal absorption that can completely disrupt the communication link.
@@ -23,7 +23,7 @@ The total atmospheric attenuation $A_{\text{total}}(p)$ in dB exceeded for an an
     A_{\text{total}}(p) = A_{\text{gaseous}} + \sqrt{ \left( A_{\text{rain}}(p) + A_{\text{cloud}} \right)^2 + A_{\text{scintillation}}(p)^2 }
 \end{equation}
 
-For rain attenuation, we retrieve the local point rainfall rate $R_{0.01}$ from the \textit{ITU-R P.837} database \cite{itu838}. The specific attenuation $\gamma_{\text{R}}$ in dB/km is computed using power-law coefficients $k$ and $\alpha$ from \textit{ITU-R P.838-3} \cite{itu838}:
+For rain attenuation, the local point rainfall rate $R_{0.01}$, representing the rainfall intensity exceeded for $0.01\%$ of an average year, is obtained from \textit{ITU-R P.837} \cite{itu837}. The frequency- and polarization-dependent specific attenuation $\gamma_{\text{R}}$ in dB/km is then computed using power-law coefficients $k$ and $\alpha$ tabulated in \textit{ITU-R P.838-3} \cite{itu838}:
 \begin{equation}
     \gamma_{\text{R}} = k R_{0.01}^\alpha
 \end{equation}
@@ -73,7 +73,7 @@ This ITU-R suite provides the estimated fade depths that the RF link must tolera
     \label{fig:itu_propagation_metrics}
 \end{figure}
 
-\subsection[Monte-Carlo Rain Outage Simulation]{Monte-Carlo Rain Outage Simulation\textsuperscript{*}}
+\subsection[Monte-Carlo Rain Outage Simulation]{Monte-Carlo Rain Outage Simulation}
 
 \subsubsection{The Engineering Problem}
 The ITU-R recommendations provide static, deterministic bounds for link availability at specific annual time percentages. However, they do not simulate the chronological, time-varying behaviour of weather---the transitions between clear-sky and storm states---nor do they provide a probability distribution of the active link margin over a continuous meteorological time series.
@@ -98,7 +98,9 @@ An \textit{outage event} is any hour where $Margin(t_i) < 0$. The overall system
 \end{equation}
 
 \subsubsection{Operational Impact and Results}
-The Monte Carlo simulation outputs a Cumulative Distribution Function (CDF) of the link margin, showing the estimated risk profile over the year. This allows the designer to evaluate whether the selected static margin is sufficient under stochastic weather variations.
+The Monte Carlo simulation outputs a probability distribution of the link margin, illustrating the estimated risk profile over the simulated year. This allows the designer to evaluate whether the selected static margin is sufficient under stochastic weather variations.
+
+\textbf{Note:} This Monte Carlo model is an illustrative stochastic availability simulation based on assumed weather-state probabilities (light rain: 2.0\%, moderate rain: 0.6\%, heavy rain: 0.1\%), not a site-calibrated meteorological time-series model derived from measured annual precipitation data. Results should therefore be interpreted as \textit{estimated availability under the assumed stochastic weather-state model}, not as a prediction of actual annual availability.
 
 \begin{figure}[H]
     \centering
@@ -107,7 +109,7 @@ The Monte Carlo simulation outputs a Cumulative Distribution Function (CDF) of t
     \label{fig:mc_availability_histogram}
 \end{figure}
 
-\subsection[DVB-S2 ACM (Adaptive Coding \& Modulation)]{DVB-S2 ACM (Adaptive Coding \& Modulation)\textsuperscript{*}}
+\subsection[DVB-S2 ACM (Adaptive Coding \& Modulation)]{DVB-S2 ACM (Adaptive Coding \& Modulation)}
 
 \subsubsection{The Engineering Problem}
 Traditionally, satellite links are designed for the worst-case rain fade scenario using a fixed MODCOD. Because severe storms occur for less than $1\%$ of the year, this approach means that for over $99\%$ of the year the link operates with a large excess margin, wasting potential channel capacity.
@@ -134,7 +136,30 @@ Using the usable symbol rate $R_{\text{s}} = B / (1 + \alpha_{\text{rolloff}})$,
 \end{equation}
 
 \subsubsection{Operational Impact and Results}
-Under clear sky the link dynamically shifts to high-order modulations (e.g., 8PSK or 16APSK depending on available $E_s/N_0$), providing maximum data rates, and gracefully degrades to robust QPSK during a storm, attempting to preserve service at reduced throughput.
+Under clear-sky conditions, the ACM selector shifts to a higher-efficiency MODCOD than the robust rain-fade mode. The exact selected mode depends on the available $E_s/N_0$ and the implemented DVB-S2 threshold table. For a 36 MHz carrier with $\alpha=0.20$ ($R_s = 30$ Msps), the available $E_s/N_0$ allows for QPSK 3/4 in purely thermal-noise conditions, and degrades to QPSK 2/5 under heavy rain.
+
+Table~\ref{tab:acm_consistency} maps the specific operating points to their required thresholds, verifying the physical consistency between the link margin and the throughput claims.
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.2}
+    \caption{DVB-S2 ACM Consistency and Operating Point Verification}
+    \label{tab:acm_consistency}
+    \vspace{0.1cm}
+    \resizebox{\textwidth}{!}{
+      \begin{tabular}{l c c c c c}
+        \toprule
+        \textbf{Case} & \textbf{Avail. $E_s/N_0$} & \textbf{Selected MODCOD} & \textbf{Req. $E_s/N_0$} & \textbf{Efficiency ($\eta$)} & \textbf{Net Throughput ($\eta R_s$)} \\
+        \midrule
+        \textbf{Clear-Sky (Thermal)} & $\approx 5.38$ dB & QPSK 3/4 & 4.03 dB & 1.487 & $\approx 44.62$ Mbps \\
+        \textbf{With ASI \& IMD} & $\approx 5.01$ dB & QPSK 2/3 & 3.10 dB & 1.322 & $\approx 39.67$ Mbps \\
+        \textbf{99.9\% Rain Fade} & $\approx 1.12$ dB & QPSK 2/5 & -0.30 dB & 0.789 & $\approx 23.68$ Mbps \\
+        \bottomrule
+    \end{tabular}
+    }
+    \vspace{0.1cm}
+    \small\textit{Note: All points assume 1.0 dB implementation margin. Throughput is computed using $R_s = 30$ Msps.}\normalsize
+\end{table}
 
 \begin{figure}[H]
     \centering
@@ -143,10 +168,10 @@ Under clear sky the link dynamically shifts to high-order modulations (e.g., 8PS
     \label{fig:dvbs2_acm_availability}
 \end{figure}
 
-\subsection[Uplink Power Control (ULPC)]{Uplink Power Control (ULPC)\textsuperscript{*}}
+\subsection[Uplink Power Control (ULPC)]{Uplink Power Control (ULPC)}
 
-ULPC is discussed as a possible mitigation option, not as a fully implemented closed-loop control model. When heavy rain attenuates the uplink carrier, the satellite transponder input power drops below its optimal operating region. ULPC addresses this by dynamically increasing the ground station HPA transmit power:
+ULPC is discussed as a mitigation concept, not as a fully implemented closed-loop control model. When heavy rain attenuates the uplink carrier, the satellite transponder input power drops below its optimal operating region. ULPC addresses this by dynamically increasing the ground station HPA transmit power:
 \begin{equation}
     P_{\text{tx,dynamic}}(\text{dBW}) = P_{\text{tx,nominal}}(\text{dBW}) + A_{\text{rain,up}}(\text{dB})
 \end{equation}
-subject to $P_{\text{tx,dynamic}} \le P_{\text{tx,max}}$. This may provide several dB of fade compensation, depending on HPA headroom and regulatory EIRP limits, and can help stabilise the satellite input power during uplink rain events.
+subject to $P_{\text{tx,dynamic}} \le P_{\text{tx,max}}$. This expression represents ideal first-order fade compensation. In practice, ULPC is constrained by HPA headroom, regulatory EIRP limits, adjacent-satellite interference budgets, transponder input back-off requirements, and the finite loop latency of the measurement-and-correction cycle. Therefore, the full recovery of the uplink attenuation through power control alone cannot always be guaranteed, and ULPC is best treated as a complementary measure alongside DVB-S2 ACM.

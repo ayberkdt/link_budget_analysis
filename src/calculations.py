@@ -1,23 +1,9 @@
 # calculations.py
-"""Core calculations for the GEO link-budget analyzer.
+"""RF hat bütçesi ve geometri hesaplamaları.
 
-The functions in this module cover five areas:
-
-* RF and unit-conversion helpers,
-* geometry and antenna calculations,
-* the clear-sky static link budget, interference, and digital-performance,
-* the educational stochastic Monte-Carlo rain-outage simulation,
-* the standards-based deterministic ITU-R propagation and DVB-S2 ACM analysis.
-
-Two clearly separated availability models are provided and must not be mixed:
-
-* :func:`simulate_monte_carlo_rain_outage` / :func:`summarize_monte_carlo_availability`
-  -- an educational stochastic weather generator, and
-* :func:`calculate_scenario_with_itu` / :func:`calculate_itu_availability_curve`
-  -- the deterministic ITU-R P.618/P.676/P.840 method from ``itu_propagation.py``.
-
-The clear-sky static budget (:func:`calculate_scenario`) never applies rain or
-atmospheric fade; those belong only to the ITU-R pipeline.
+Serbest uzay yol kaybı (FSPL), anten kazancı, gürültü sıcaklıkları ve C/N oranlarını hesaplar.
+Ayrıca statik hat bütçesi haricindeki opsiyonel modüller (ITU-R, Monte-Carlo, Girişim vb.)
+için gereken fiziksel ve istatistiksel simülasyon algoritmalarını barındırır.
 """
 
 # ========================================================================

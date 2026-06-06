@@ -1,22 +1,10 @@
 # plotting.py
-"""Report-quality figure generation for the UZB451 GEO link-budget analyzer.
+"""Grafik ve görselleştirme fonksiyonları (Matplotlib).
 
-This module renders the figures used in the project report. It defines a single
-centralized style (typography, line/marker sizing, grid, colormaps, and figure
-sizes) so every figure shares one clean visual identity suitable for direct
-insertion into a PDF report.
-
-Conventions used throughout
----------------------------
-* Sequential scalar fields use a perceptually uniform colormap (viridis).
-* Signed margin fields use a diverging colormap centered on the 0 dB closure
-  line, with that line drawn in bold.
-* The baseline operating point is marked with a consistent ``X`` symbol.
-* Every figure is saved as both PNG (quick viewing) and PDF (report insertion)
-  with the same basename.
-
-The figure-generation entry points respect the scenario ``enabled`` flags and
-never draw a figure from placeholder data: disabled analyses produce no figure.
+Bu modül, proje raporunda kullanılacak yüksek kaliteli 2B kontur haritalarını
+ve ileri düzey (Monte-Carlo, yörünge hareketi vb.) simülasyon grafiklerini çizer.
+Çizimlerin raporlarda uyumlu durması için tek bir ortak format (font, renk vb.) 
+kullanılmıştır. Kapalı olan (enabled=False) analizlerin grafikleri çizilmez.
 """
 
 # ========================================================================
@@ -110,8 +98,10 @@ _RC_PARAMS = {
     "ytick.minor.size": 3,
     "xtick.direction": "in",
     "ytick.direction": "in",
-    "xtick.top": True,
-    "ytick.right": True,
+    "xtick.top": False,
+    "ytick.right": False,
+    "axes.spines.top": False,
+    "axes.spines.right": False,
     "legend.fontsize": LEGEND_FONTSIZE,
     "legend.framealpha": 0.95,
     "legend.edgecolor": "#dddddd",
@@ -697,8 +687,8 @@ def generate_availability_plots(samples: list[TimeVaryingSample], output_dir: Pa
 
     # 16 - annual margin distribution.
     fig, ax = plt.subplots(figsize=FIGSIZE_LINE)
-    ax.hist(margin, bins=55, color="#1f77b4", alpha=0.85, edgecolor="white", linewidth=0.3)
-    ax.axvline(0.0, linestyle="--", color=THRESHOLD_COLOR, linewidth=THIN_LINE_WIDTH, label="0 dB outage threshold")
+    ax.hist(margin, bins=55, color="#3498db", alpha=0.7, edgecolor="#2980b9", linewidth=1.2)
+    ax.axvline(0.0, linestyle="--", color="#e74c3c", linewidth=2.0, label="0 dB outage threshold")
     availability = 100.0 * float(np.mean(margin >= 0.0))
     ax.set_title("Annual Margin Distribution (Educational Monte-Carlo)")
     ax.set_xlabel("Combined Eb/N0 margin [dB]")
@@ -917,11 +907,12 @@ def plot_itu_attenuation_vs_availability(
     total = np.array([r.downlink_breakdown.total_db for r in itu_curve], dtype=float)
 
     fig, ax = plt.subplots(figsize=(8.6, 5.4))
-    ax.semilogx(p, total, linewidth=2.2, marker="o", markersize=MARKER_SIZE, color="#222222", label="total (P.618 Sec. 2.5)")
-    ax.semilogx(p, rain, linewidth=LINE_WIDTH, label="rain (P.618 / P.838)")
-    ax.semilogx(p, gas, linewidth=LINE_WIDTH, label="gaseous (P.676)")
-    ax.semilogx(p, cloud, linewidth=LINE_WIDTH, label="cloud (P.840)")
-    ax.semilogx(p, scint, linewidth=LINE_WIDTH, label="scintillation (P.618)")
+    ax.fill_between(p, total, color="#e0e0e0", alpha=0.5, label="_nolegend_")
+    ax.semilogx(p, total, linewidth=2.5, marker="o", markersize=MARKER_SIZE, color="#2c3e50", label="total (P.618 Sec. 2.5)")
+    ax.semilogx(p, rain, linewidth=LINE_WIDTH, linestyle="--", color="#2980b9", label="rain (P.618 / P.838)")
+    ax.semilogx(p, gas, linewidth=LINE_WIDTH, linestyle="-.", color="#27ae60", label="gaseous (P.676)")
+    ax.semilogx(p, cloud, linewidth=LINE_WIDTH, linestyle=":", color="#f39c12", label="cloud (P.840)")
+    ax.semilogx(p, scint, linewidth=LINE_WIDTH, linestyle="--", color="#8e44ad", label="scintillation (P.618)")
     ax.invert_xaxis()
     if design_exceedance_percent is not None:
         ax.axvline(design_exceedance_percent, linestyle="--", linewidth=THIN_LINE_WIDTH, color=BASELINE_COLOR,
@@ -946,9 +937,11 @@ def plot_itu_margin_vs_availability(
     margin_noise = np.array([r.faded_result.combined_margin_db for r in itu_curve], dtype=float)
 
     fig, ax = plt.subplots(figsize=FIGSIZE_LINE)
-    ax.plot(availability, margin_noise, linewidth=THIN_LINE_WIDTH, marker="s", markersize=MARKER_SIZE, label="noise-only")
-    ax.plot(availability, margin_ni, linewidth=LINE_WIDTH, marker="o", markersize=MARKER_SIZE, label="with ASI + IMD")
-    ax.axhline(0.0, linestyle="--", linewidth=THIN_LINE_WIDTH, color=THRESHOLD_COLOR, label="0 dB closure")
+    ax.fill_between(availability, margin_ni, 0, where=(margin_ni >= 0), color="#27ae60", alpha=0.15, label="_nolegend_", interpolate=True)
+    ax.fill_between(availability, margin_ni, 0, where=(margin_ni < 0), color="#e74c3c", alpha=0.15, label="_nolegend_", interpolate=True)
+    ax.plot(availability, margin_noise, linewidth=THIN_LINE_WIDTH, linestyle="--", marker="s", markersize=MARKER_SIZE, color="#7f8c8d", label="noise-only")
+    ax.plot(availability, margin_ni, linewidth=2.5, marker="o", markersize=MARKER_SIZE+1, color="#2c3e50", label="with ASI + IMD")
+    ax.axhline(0.0, linestyle="-", linewidth=1.5, color="#e74c3c", label="0 dB closure")
     if design_availability_percent is not None:
         design = [r for r in itu_curve if abs(r.design_availability_percent - design_availability_percent) < 1e-9]
         ax.axvline(design_availability_percent, linestyle=":", linewidth=1.6, color=BASELINE_COLOR,
@@ -977,9 +970,9 @@ def plot_itu_attenuation_breakdown_bar(scenario: ScenarioConfig, output_dir: Pat
     x = np.arange(len(mechanisms))
     width = 0.38
     fig, ax = plt.subplots(figsize=FIGSIZE_BAR)
-    bars_up = ax.bar(x - width / 2, up, width, color="#4c9f70", edgecolor="white",
+    bars_up = ax.bar(x - width / 2 - 0.02, up, width, color="#27ae60", edgecolor="#1e8449", hatch="////", alpha=0.85,
                      label=f"uplink {scenario.uplink.frequency_hz / GHZ:.1f} GHz")
-    bars_down = ax.bar(x + width / 2, down, width, color="#1f77b4", edgecolor="white",
+    bars_down = ax.bar(x + width / 2 + 0.02, down, width, color="#2980b9", edgecolor="#1a5276", hatch="\\\\\\\\", alpha=0.85,
                        label=f"downlink {scenario.downlink.frequency_hz / GHZ:.1f} GHz")
     for bars in (bars_up, bars_down):
         for bar in bars:
@@ -1015,7 +1008,8 @@ def plot_rain_attenuation_vs_frequency(scenario: ScenarioConfig, output_dir: Pat
     )
 
     fig, ax = plt.subplots(figsize=(8.6, 5.0))
-    ax.plot(freqs, a001, linewidth=LINE_WIDTH, color="#1f77b4")
+    ax.fill_between(freqs, a001, color="#3498db", alpha=0.2)
+    ax.plot(freqs, a001, linewidth=2.5, color="#2980b9")
     for band, f0 in (("C", 4.0), ("X", 8.0), ("Ku", 12.0), ("Ka", 20.0)):
         ax.axvline(f0, linestyle=":", linewidth=0.9, color="#999999", alpha=0.7)
         ax.text(f0, ax.get_ylim()[1] * 0.93, band, fontsize=ANNOTATION_FONTSIZE, ha="center", color="#666666")
@@ -1062,15 +1056,16 @@ def plot_dvbs2_modcod_ladder(scenario: ScenarioConfig, output_dir: Path) -> Path
     eff = np.array([m.spectral_efficiency_bps_hz for m in DVB_S2_MODCODS], dtype=float)
 
     fig, ax = plt.subplots(figsize=(8.8, 5.4))
-    ax.step(esn0, eff, where="post", linewidth=1.6, color="#1f77b4", alpha=0.85)
-    ax.scatter(esn0, eff, s=22, color="#1f77b4", label="DVB-S2 MODCODs")
+    ax.fill_between(esn0, eff, step="post", color="#3498db", alpha=0.2)
+    ax.step(esn0, eff, where="post", linewidth=2.0, color="#2980b9", alpha=0.9)
+    ax.scatter(esn0, eff, s=30, color="#2c3e50", zorder=4, label="DVB-S2 MODCODs")
 
     sel = design.downlink_modcod
     if sel is not None and sel.selected is not None:
-        ax.axvline(sel.available_esn0_db, linestyle="--", linewidth=THIN_LINE_WIDTH, color="#4c9f70",
+        ax.axvline(sel.available_esn0_db, linestyle="--", linewidth=1.5, color="#27ae60",
                    label=f"available Es/N0 = {sel.available_esn0_db:.2f} dB")
-        ax.scatter([sel.selected.required_esn0_db], [sel.spectral_efficiency_bps_hz], marker="*", s=260,
-                   color=BASELINE_COLOR, edgecolors="white", linewidths=0.6, zorder=6,
+        ax.scatter([sel.selected.required_esn0_db], [sel.spectral_efficiency_bps_hz], marker="*", s=350,
+                   color="#e74c3c", edgecolors="#c0392b", linewidths=1.2, zorder=6,
                    label=f"selected {sel.selected.name} ({sel.spectral_efficiency_bps_hz:.2f} bit/s/Hz)")
     ax.set_title("DVB-S2 ACM: Spectral Efficiency vs Required Es/N0")
     ax.set_xlabel("Required Es/N0 for QEF on AWGN [dB]")
@@ -1106,17 +1101,20 @@ def plot_dvbs2_acm_vs_availability(
     efficiency = np.array([_eff(r) for r in itu_curve], dtype=float)
 
     fig, ax = plt.subplots(figsize=FIGSIZE_LINE)
-    ax.plot(availability, throughput, linewidth=LINE_WIDTH, marker="o", markersize=MARKER_SIZE,
-            color="#1f77b4", label="net throughput")
+    ax.fill_between(availability, throughput, color="#3498db", alpha=0.15, label="_nolegend_")
+    ax.plot(availability, throughput, linewidth=2.5, marker="o", markersize=MARKER_SIZE+1,
+            color="#2980b9", label="net throughput")
     ax.set_xlabel("Availability [%]")
-    ax.set_ylabel("Net throughput [Mbit/s]", color="#1f77b4")
-    ax.tick_params(axis="y", labelcolor="#1f77b4")
+    ax.set_ylabel("Net throughput [Mbit/s]", color="#2980b9", fontweight="bold")
+    ax.tick_params(axis="y", labelcolor="#2980b9")
 
     ax2 = ax.twinx()
-    ax2.plot(availability, efficiency, linewidth=THIN_LINE_WIDTH, linestyle="--", marker="s", markersize=MARKER_SIZE,
-             color="#4c9f70", label="spectral efficiency")
-    ax2.set_ylabel("Spectral efficiency [bit/s/Hz]", color="#4c9f70")
-    ax2.tick_params(axis="y", labelcolor="#4c9f70")
+    ax2.plot(availability, efficiency, linewidth=2.0, linestyle="--", marker="s", markersize=MARKER_SIZE,
+             color="#27ae60", label="spectral efficiency")
+    ax2.set_ylabel("Spectral efficiency [bit/s/Hz]", color="#27ae60", fontweight="bold")
+    ax2.tick_params(axis="y", labelcolor="#27ae60")
+    ax2.spines["right"].set_visible(True)
+    ax2.spines["right"].set_color("#27ae60")
 
     if design_availability_percent is not None:
         ax.axvline(design_availability_percent, linestyle=":", linewidth=1.6, color=BASELINE_COLOR,

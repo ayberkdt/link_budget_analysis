@@ -55,7 +55,7 @@ The azimuth angle $Az$ is determined by projecting the line-of-sight vector onto
 \subsection{Antenna Parameters and Aperture Efficiency}
 For a circular parabolic dish antenna of physical diameter $D$ operating at carrier frequency $f$, the wavelength of the electromagnetic wave is $\lambda_w = c/f$, where $c$ is the speed of light in vacuum. The peak boresight gain $G$ in dBi is calculated as:
 \begin{equation}
-    G(dBi) = 10\log_{10}\left( \eta \left( \frac{\pi D}{\lambda_w} \right)^2 \right)
+    G(\text{dBi}) = 10\log_{10}\left( \eta \left( \frac{\pi D}{\lambda_w} \right)^2 \right)
 \end{equation}
 The parameter $\eta$ represents the overall aperture efficiency. While an ideal antenna has an efficiency of 1.0 ($100\%$), physical parabolic reflectors suffer from multiple combined electromagnetic losses:
 \begin{equation}
@@ -82,7 +82,7 @@ While Free-Space Path Loss dominates the attenuation budget, real-world operatio
 
 \textbf{Antenna Pointing Error Loss ($L_{point}$):} Even with precise mechanical installation, wind loading, thermal expansion, or satellite orbital drift can cause the ground antenna boresight to misalign with the satellite. For a small angular pointing error $\theta_{error}$ relative to the half-power beamwidth ($\theta_{HPBW}$), the attenuation can be approximated using a Gaussian beam envelope:
 \begin{equation}
-    L_{point}(dB) \approx 12 \left( \frac{\theta_{error}}{\theta_{HPBW}} \right)^2
+    L_{point}(\text{dB}) \approx 12 \left( \frac{\theta_{error}}{\theta_{HPBW}} \right)^2
 \end{equation}
 
 \textbf{Polarization Mismatch Loss ($L_{pol}$):} When the polarization of the incoming wave does not perfectly align with the receiving antenna feed, signal power is lost. For circular polarization, imperfections in the antenna structure lead to a finite Cross-Polarization Discrimination (XPD). A typical well-designed reflector maintains an XPD of about $30$~dB, representing the isolation between Right-Hand (RHCP) and Left-Hand (LHCP) states. Atmospheric depolarization, particularly during heavy rain (canting of raindrops), can further degrade XPD, introducing co-channel interference in frequency-reuse systems.
@@ -90,7 +90,7 @@ While Free-Space Path Loss dominates the attenuation budget, real-world operatio
 \subsection{RF Link Power Budget and Receiver Figure of Merit}
 For any link segment, the Equivalent Isotropically Radiated Power (EIRP) defines the total effective power radiated in the direction of the main beam. It effectively multiplies the raw amplifier power by the focusing gain of the antenna:
 \begin{equation}
-    EIRP(dBW) = P_{tx}(dBW) + G_{tx}(dBi) - L_{tx\_feeder}(dB)
+    EIRP(\text{dBW}) = P_{tx}(\text{dBW}) + G_{tx}(\text{dBi}) - L_{tx\_feeder}(\text{dB})
 \end{equation}
 
 At the receiving end, the ultimate metric of hardware quality is the Figure of Merit ($G/T$), measured in dB/K. This parameter elegantly isolates the receiver's performance from the incoming signal strength:
@@ -101,21 +101,21 @@ where $T_{\text{sys}}$ is the comprehensive system noise temperature in Kelvin. 
 \begin{equation}
     T_{\text{sys}} = T_{\text{ant}} + T_{\text{feeder}} + (F_{\text{LNA}} - 1)T_0
 \end{equation}
-where $T_{\text{ant}}$ is the antenna noise temperature (comprising cosmic sky noise and ground noise), $T_{\text{feeder}}$ is the physical feeder waveguide loss noise, $F_{\text{LNA}}$ is the noise factor of the Low-Noise Block amplifier, and $T_0 = 290$~K is the standard reference physical temperature.
+where $T_{\text{ant}}$ is the antenna noise temperature (comprising cosmic sky noise and ground noise), $T_{\text{feeder}}$ is the physical feeder waveguide loss noise, $F_{\text{LNA}}$ is the noise factor of the Low-Noise Block amplifier, and $T_0 = 290$~K is the standard reference physical temperature. All noise contributions are referred to the LNA input port, which serves as the common noise reference plane throughout this analysis. The GS2 system noise temperature of $150$~K is an input assumption representing the combined noise of a consumer-grade LNB at the Ankara terminal; the component breakdown ($T_{\text{ant}}$, $T_{\text{feeder}}$, $T_{\text{LNA}}$) is not independently specified as manufacturer noise data is not publicly available for this terminal class.
 
 The fundamental Carrier-to-Noise Density ratio $C/N_0$ at the receiver demodulator input is synthesized using the link budget equation:
 \begin{equation}
-    C/N_0(dB\text{-}Hz) = EIRP(dBW) + G/T(dB/K) - L_{total}(dB) - 10\log_{10}(k)
+    C/N_0(\text{dB-Hz}) = EIRP(\text{dBW}) + G/T(\text{dB/K}) - L_{total}(\text{dB}) - 10\log_{10}(k)
 \end{equation}
 where $L_{total}$ encompasses FSPL, pointing misalignments, polarization losses, and atmospheric clear-sky absorption. The term $-10\log_{10}(k) \approx 228.6$~dB represents Boltzmann's constant in decibels.
 
 Ultimately, the Energy-per-Bit to Noise-Density ratio $E_b/N_0$ acts as the core digital indicator of link viability:
 \begin{equation}
-    E_b/N_0(dB) = C/N_0(dB\text{-}Hz) - 10\log_{10}(R_b)
+    E_b/N_0(\text{dB}) = C/N_0(\text{dB-Hz}) - 10\log_{10}(R_b)
 \end{equation}
 where $R_b$ is the information transmission bit rate in bits per second (bps). The overall Link Margin, representing the system's safety cushion against fading events, is defined as:
 \begin{equation}
-    Margin(dB) = E_b/N_0(dB) - Required\ E_b/N_0(dB)
+    Margin(\text{dB}) = E_b/N_0(\text{dB}) - Required\ E_b/N_0(\text{dB})
 \end{equation}
 
 \subsection{Uplink-Downlink Coupling in Bent-Pipe Transponders}

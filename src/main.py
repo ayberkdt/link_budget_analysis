@@ -1,17 +1,16 @@
 # main.py
-"""Run the GEO link-budget workflow end to end.
+"""Ana çalıştırıcı dosya (Entry Point).
 
-This script builds the scenario from ``scenario_inputs.py``, validates it, prints
-the active analysis mode, runs every enabled analysis (always the clear-sky
-static baseline, plus the enabled advanced extensions), exports CSV files, and
-generates the report figures.
+Bu script, `scenario_inputs.py` dosyasından aldığı parametrelerle 
+hat bütçesi analizini baştan sona yürütür. İlgili hesaplamaları (RF bütçesi, 
+opsiyonel atmosferik kayıplar vb.) çağırır ve sonuçları CSV ve grafik 
+olarak kaydeder.
 
-Command-line interface
+Komut Satırı Kullanımı
 ----------------------
-``python main.py``                       Run enabled analyses and enabled plots.
-``python main.py --skip-plots``          Write enabled CSV outputs only, no plots.
-``python main.py --static-only``         Run only the clear-sky static baseline.
-``python main.py --static-only --skip-plots``  Static clear-sky CSV outputs only.
+`python main.py`                       Tüm aktif analizleri ve grafikleri çalıştırır.
+`python main.py --skip-plots`          Grafik çizimlerini atlayarak sadece CSV çıkarır.
+`python main.py --static-only`         Yalnızca açık hava (clear-sky) statik hat bütçesini çalıştırır.
 """
 
 # ========================================================================

@@ -5,29 +5,43 @@
 
 Satellite communication via geostationary orbit has been the backbone of intercontinental broadcasting, maritime connectivity, and VSAT business networks for over five decades. This term project presents an in-depth academic study of a modern Ku-band satellite link, mapping out the full physical layer from transmitter to receiver and quantifying the operational margins under realistic atmospheric conditions.
 
-\subsection{Geostationary Orbit Fundamentals}
+\subsection{System Architecture and Ku-Band Principles}
 Placing a satellite in a circular equatorial orbit at an altitude of approximately 35,786~km ensures its orbital period matches the Earth's sidereal rotation. To a ground observer the satellite appears fixed at a single longitude, enabling inexpensive, non-tracking parabolic dish antennas. The price of this convenience is the immense free-space path loss (FSPL)---often exceeding 200~dB---accumulated over the $\approx 37{,}000$~km slant range. Slight gravitational perturbations from the Sun and Moon also cause periodic station-keeping drifts that must be included in the system margin analysis.
 
-\subsection{Bent-Pipe Transponder Architecture}
 The satellite payload modeled in this project is a transparent, classic \textit{bent-pipe} transponder. Unlike regenerative payloads that demodulate and remodulate on-board, a bent-pipe satellite acts as an analog relay: it captures the weak uplink signal, filters, frequency-translates, amplifies via a TWTA or SSPA, and retransmits it.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{bent_pipe_transponder.png}
+    \includegraphics[width=\textwidth]{bent_pipe_transponder.png}
     \caption{Functional block diagram of a classic transparent bent-pipe satellite transponder payload architecture.}
     \label{fig:transponder_blocks}
 \end{figure} 
 
 This simplicity makes the satellite robust and format-agnostic but introduces a key challenge: uplink noise is amplified along with the desired signal, physically coupling the uplink and downlink budgets. The system engineer must ensure the combined end-to-end $(C/N_0)_{\text{total}}$ is sufficient for reliable demodulation.
 
-\subsection{Frequency Allocation and Ku-Band Propagation}
-This project uses a Ku-band link (uplink 14.0~GHz, downlink 12.0~GHz) with circular polarisation ($\tau = 45^\circ$). Ku-band is the commercial workhorse for DTH television and VSAT services, offering high antenna gain from compact dishes. Its main vulnerability is atmospheric hydrometeors: the signal wavelength ($\approx 2$~cm) is comparable to raindrop size, causing severe Mie scattering. This attenuation is rigorously modelled in Chapter~4 using the ITU-R propagation suite.
+To achieve this, the project uses a Ku-band link (uplink 14.0~GHz, downlink 12.0~GHz) with circular polarisation. The polarisation tilt angle $\tau = 45^\circ$ is used in the ITU-R P.838-3 rain specific attenuation calculation as the standard averaging convention for circular polarisation; it does not imply a physical polarisation tilt. Ku-band is the commercial workhorse for DTH television and VSAT services, offering high antenna gain from compact dishes. Its main vulnerability is atmospheric hydrometeors: the signal wavelength ($\approx 2$~cm) is comparable to raindrop size, causing severe Mie scattering. This attenuation is modelled in Chapter~4 using the ITU-R propagation suite.
 
 \subsection{Scenario Definition}
 To ground the study in a realistic commercial context, we model a one-way transparent link between Rome and Ankara via the commercial \textbf{Eutelsat Hotbird 13G} satellite:
-\begin{equation*}
-    \text{GS1 (Rome)} \xrightarrow{\text{Uplink: } 14.0\text{ GHz}} \text{Eutelsat Hotbird 13G (13E)} \xrightarrow{\text{Downlink: } 12.0\text{ GHz}} \text{GS2 (Ankara)}
-\end{equation*}
+\begin{figure}[H]
+    \centering
+    \resizebox{0.85\textwidth}{!}{
+    \begin{tikzpicture}[
+        font=\sffamily\small,
+        >=Stealth,
+        station/.style={draw=black, thick, fill=gray!10, rectangle, minimum height=1.2cm, minimum width=2.5cm, align=center, rounded corners=2pt},
+        satellite/.style={draw=black, thick, fill=blue!5, rectangle, minimum height=1.2cm, minimum width=3cm, align=center, rounded corners=2pt},
+        arrowLine/.style={->, draw=black, thick, dashed}
+    ]
+        \node [station] (gs1) {\textbf{GS1 (Rome)}\\Tx Earth Station};
+        \node [satellite, right=3.5cm of gs1] (sat) {\textbf{Hotbird 13G}\\Bent-Pipe Repeater};
+        \node [station, right=3.5cm of sat] (gs2) {\textbf{GS2 (Ankara)}\\Rx Earth Station};
+
+        \draw [arrowLine] (gs1.east) -- node[above, font=\footnotesize] {Uplink: 14.0 GHz} (sat.west);
+        \draw [arrowLine] (sat.east) -- node[above, font=\footnotesize] {Downlink: 12.0 GHz} (gs2.west);
+    \end{tikzpicture}
+    }
+\end{figure}
 
 \begin{figure}[H]
     \centering
@@ -44,13 +58,13 @@ To ground the study in a realistic commercial context, we model a one-way transp
 \end{figure}
 
 \begin{itemize}
-    \item \textbf{Ground Station 1 (GS1 Rome):} Located in Rome, Italy ($41.9028^\circ$ N, $12.4964^\circ$ E). It acts as the broadcasting terminal (uplink station), utilizing a \gsOneDish-meter parabolic dish antenna with a 20.0~Watt high-power amplifier (HPA) \cite{antenna}.
-    \item \textbf{GEO Satellite (Hotbird 13G):} Positioned at $13.0^\circ$ E longitude on the geostationary equatorial arc. The satellite downlink EIRP at Ankara is estimated as \satEIRP~dBW from the HOTBIRD footprint contour \cite{eutelsat}. The wider footprint range is approximately 46--53 dBW, and \satEIRP~dBW is used as a conservative baseline for the Ankara receiving site. Since the public HOTBIRD footprint brochure does not provide the selected transponder uplink receive G/T, a representative satellite receive G/T of \satGT~dB/K is assumed for the uplink budget.
-    \item \textbf{Ground Station 2 (GS2 Ankara):} Located in Ankara, Turkey ($39.9334^\circ$ N, $32.8597^\circ$ E). It acts as the receive-only downlink terminal, utilizing a \gsTwoDish-meter parabolic dish receiver with a typical consumer-grade noise temperature ($T_{sys}$) of 150.0~Kelvin \cite{antenna}.
+    \item \textbf{Ground Station 1 (GS1 Rome):} Located in Rome, Italy ($41.9028^\circ$ N, $12.4964^\circ$ E). It acts as the broadcasting terminal (uplink station), utilizing a \gsOneDish-meter parabolic dish antenna (datasheet-supported aperture \cite{skyware_24m}) with a 20.0~Watt high-power amplifier (HPA) assumed to represent a commercial Ku-band HPA at this power class.
+    \item \textbf{GEO Satellite (Hotbird 13G):} Positioned at $13.0^\circ$ E longitude on the geostationary equatorial arc. The satellite downlink EIRP at Ankara is estimated as \satEIRP~dBW from the HOTBIRD published footprint contour \cite{eutelsat, gunter_hotbird}. The wider contour range is approximately 46--53 dBW; \satEIRP~dBW is used as a conservative baseline for the Ankara receiving site. Since public HOTBIRD documentation does not provide the selected transponder uplink receive G/T, a representative satellite receive G/T of \satGT~dB/K is adopted as an engineering assumption for the uplink budget.
+    \item \textbf{Ground Station 2 (GS2 Ankara):} Located in Ankara, Turkey ($39.9334^\circ$ N, $32.8597^\circ$ E). It acts as the receive-only downlink terminal, utilizing a \gsTwoDish-meter parabolic dish (datasheet-supported aperture \cite{triax_td88}) with an assumed consumer-grade system noise temperature ($T_{\text{sys}}$) of 150~K. This value represents a typical outdoor unit (LNB + feed) performance for a Ku-band consumer terminal; no public Tsys measurement for this specific LNB/antenna combination is available.
 \end{itemize}
 
-\subsection{The Custom Python Software Suite}
-A major distinguishing feature of this project is the development of a fully custom, modular Python software suite to perform the link budget analysis. Rather than relying on static Excel spreadsheets, the project includes an object-oriented calculation engine capable of rendering 2-D contour maps and parametric sensitivity plots, running Monte-Carlo rain simulations, and calculating exact orbital geometries. The tool operates as a powerful command-line interface (CLI) workflow, allowing users to dynamically modify network topologies, test system sensitivities, and compute advanced atmospheric degradation models in an automated, reproducible manner.
+\subsection{Computational Methodology}
+Although the original project statement mentioned a MATLAB Satellite Link Budget Analyzer as a reference workflow, the instructor explicitly permitted implementation in any programming language or computational environment. Therefore, this project implements the complete static and extended link-budget workflow in a custom Python analysis suite. The baseline equations follow the Pratt link design procedure~\cite{pratt}, while the advanced layers extend the analysis with ITU-R atmospheric models (P.618, P.837, P.838, P.676, P.840), Monte Carlo rain-outage simulation, adjacent-satellite interference, dynamic system noise temperature, apparent GEO motion, and DVB-S2 ACM. This choice allows reproducible, parametric sensitivity studies and automated generation of contour plots directly from computed physical quantities.
 
-\subsection{Structure of the Report}
-This report provides a structured, comprehensive analysis of this geostationary link. Chapter 2 details the classical link budget equations based on Pratt's textbook to establish our open-sky baseline. Chapter 3 presents advanced optional modeling layers (such as adjacent satellite interference, intermodulation distortion, digital BER/FEC, dynamic system noise temperature, and apparent GEO orbital drift). Chapter 4 models the standards-based ITU-R P.618 atmospheric suite alongside a DVB-S2 Adaptive Coding and Modulation (ACM) selector. Chapter 5 discusses the numerical results and provides detailed physical interpretations of our generated 2D contour maps, followed by a concluding summary in Chapter 6.
+\subsection{Report Structure}
+Following this methodology, the report provides a structured, comprehensive analysis of the geostationary link. Chapter 2 details the classical link budget equations based on Pratt's textbook to establish our open-sky baseline. Chapter 3 presents advanced optional modeling layers (such as adjacent satellite interference, intermodulation distortion, digital BER/FEC, dynamic system noise temperature, and apparent GEO orbital drift). Chapter 4 models the standards-based ITU-R P.618 atmospheric suite alongside a DVB-S2 Adaptive Coding and Modulation (ACM) selector. Chapter 5 discusses the numerical results and provides detailed physical interpretations of our generated 2D contour maps, followed by a concluding summary in Chapter 6.

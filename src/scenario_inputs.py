@@ -1,14 +1,8 @@
-"""Editable scenario inputs for the GEO link-budget analyzer.
+"""Projenin ana girdi dosyası (Konfigürasyonlar).
 
-Update the values in this file when you want to analyze a different GS1, GS2,
-or satellite setup. ``main.py`` reads this module each time it runs, so any
-changes made here are applied automatically on the next execution.
- adds two new input blocks at the bottom:
-
-* ``ITU_PROPAGATION`` drives the standards-based ITU-R P.618/P.676/P.840 fade
-  model. Replace ``rain_rate_001_mm_per_h`` with the ITU-R P.837 value for your
-  site and set ``design_availability_percent`` to your link requirement.
-* ``MODCOD`` configures the DVB-S2 adaptive coding-and-modulation layer.
+Yer istasyonu koordinatları, uydu parametreleri, frekans değerleri ve 
+çalıştırılacak opsiyonel analizler (ITU-R, Monte-Carlo, Girişim vb.) buradan ayarlanır.
+Kod her çalıştığında güncel parametreleri bu dosyadan okur.
 """
 
 SCENARIO_NAME = "Rome to Ankara Link via Hotbird 13G "
@@ -159,11 +153,10 @@ DIGITAL = {
 # ========================================================================
 # 6.            ITU-R PROPAGATION (V5 standards-based fade model)
 # ========================================================================
-# This block enables the real ITU-R P.618/P.676/P.840 slant-path attenuation
-# suite. The base assignment runs the static MATLAB analyzer with P.618 losses
-# OFF; this layer is the deliberate professional extension that lets the link
-# be sized for a true availability target. Replace the example atmosphere with
-# values for your own site (ITU-R P.837 rain map, local pressure/humidity).
+# Not: MATLAB'deki varsayılan ödev isterlerinde P.618 sönümlemeleri kapalı varsayılmaktadır.
+# Bu blok, projeye gerçekçilik katan opsiyonel ITU-R P.618/P.676/P.840
+# atmosferik sönümleme (attenuation) modellerini konfigüre eder. İstasyonunuzun 
+# değerleriyle (örneğin P.837 yağış oranı) değiştirebilirsiniz.
 ITU_PROPAGATION = {
     "enabled": True,
     "rain_rate_001_mm_per_h": 42.0,   # R_0.01 from ITU-R P.837 for the site.

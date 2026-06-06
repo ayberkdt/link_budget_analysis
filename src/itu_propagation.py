@@ -1,55 +1,16 @@
 # itu_propagation.py
-"""ITU-R atmospheric propagation models for the GEO link-budget analyzer.
+"""ITU-R atmosferik yayılım (sönümleme) modelleri.
 
-[TURKISH / TÜRKÇE AÇIKLAMA]
-Bu modül, UZB451 Uzay Aracı Haberleşmesi dönem projesi için tamamen OPSİYONEL olan 
-gelişmiş atmosferik yayılım (slant-path attenuation) modellerini barındırır.
-Dönem projesinin zorunlu ana çıktısı olan açık hava statik hat bütçesi için bu modül 
-kullanılmamalıdır (MATLAB'de "Include P.618 Losses" kutucuğunun boş bırakılması isteri).
-Bu modül içindeki:
-*   YAĞIŞ SÖNÜMLEME modellemesi (Bölüm 1, 2, 3), Pratt kitabındaki (Bölüm 4) 
-    "yağış sönümlemesi ve kullanılabilirlik hesabı" isteri için temel müfredat 
-    uyumludur.
-*   GAZ, BULUT, SİNTİLASYON sönümlemeleri ile sönümlemelerin birleştirilmesinde 
-    kullanılan istatistiksel metotlar (Bölüm 4, 5, 6, 7) ise tamamen 
-    [EXTRA - OPSİYONEL] kapsamındadır ve profesyonel hat tasarımı eklentileridir.
+Not: Bu modül, UZB451 ödevindeki zorunlu statik hat bütçesine ekstra olarak
+gerçekçilik katmak amacıyla eklenmiştir (MATLAB'deki "Include P.618 Losses" 
+özelliğinin açık haline denk gelir). Statik açık hava ödevi için bu modülün 
+kapatılması gerekir.
 
-[ENGLISH OVERVIEW]
-This module provides the advanced slant-path attenuation analysis. The base
-course assignment asks students *not* to tick the "Include P.618 Losses"
-checkbox in the MATLAB analyzer, because the required static run is meant to be
-a clean clear-sky link budget. keeps that clean static run, and adds this
-transparent, standards-based slant-path attenuation suite as a *separate*
-availability/fade-margin study (rain fade, gaseous absorption, clouds, and
-scintillation).
-
-Of this module:
-*   RAIN ATTENUATION models (Sections 1, 2, 3) map to the core course curriculum
-    outage and path attenuation calculations.
-*   GASEOUS, CLOUD, and SCINTILLATION models (Sections 4, 5, 6, 7) are advanced 
-    professional engineering extensions labeled as **[EXTRA - OPTIONAL]**.
-
-================  =======================================================
-Recommendation    Quantity implemented here
-================  =======================================================
-ITU-R P.838-3     Specific rain attenuation coefficients k and alpha
-ITU-R P.839-4     Mean rain height (0 deg C isotherm + 0.36 km)
-ITU-R P.618-13    Slant-path rain attenuation A(p) for a given availability
-ITU-R P.676-12    Oxygen + water-vapour gaseous attenuation (Annex 2) [EXTRA]
-    ITU-R P.840-8     Cloud liquid-water attenuation (Rayleigh) [EXTRA]
-    ITU-R P.618-13    Tropospheric scintillation fade depth A_scint(p) [EXTRA]
-    ITU-R P.453       Wet-term radio refractivity N_wet (scintillation) [EXTRA]
-================  =======================================================
-
-References
-----------
-* ITU-R P.618-13 (2017): Propagation data and prediction methods required for
-  the design of Earth-space telecommunication systems.
-* ITU-R P.838-3 (2005): Specific attenuation model for rain.
-* ITU-R P.839-4 (2013): Rain height model for prediction methods.
-* ITU-R P.676-12 (2019): Attenuation by atmospheric gases and related effects.
-* ITU-R P.840-8 (2019): Attenuation due to clouds and fog.
-* ITU-R P.453-14 (2019): The radio refractive index.
+İçerdiği standartlar:
+*   ITU-R P.838 / P.839: Spesifik yağış zayıflama katsayıları ve yağış yüksekliği
+*   ITU-R P.618: İstenen kesinti (outage) süresine göre eğik yol yağış sönümlemesi ve sintilasyon
+*   ITU-R P.676: Oksijen ve su buharından kaynaklanan gaz sönümlemesi
+*   ITU-R P.840: Bulut ve sis kaynaklı sinyal zayıflaması
 """
 
 # ========================================================================

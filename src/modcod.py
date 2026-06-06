@@ -1,16 +1,9 @@
 # modcod.py
-"""DVB-S2 adaptive coding and modulation (ACM) support for the analyzer.
+"""DVB-S2 Adaptif Kodlama ve Modülasyon (ACM) hesaplamaları.
 
-A real broadcast/VSAT bent-pipe link rarely runs a single fixed modulation. The
-DVB-S2 standard (ETSI EN 302 307) defines a ladder of modulation-and-coding
-points (MODCODs). The receiver continuously reports its measured carrier-to-
-noise ratio, and the gateway selects the most spectrally efficient MODCOD that
-still closes the link with margin. This module provides:
-
-* the standard DVB-S2 MODCOD table (modulation, code rate, spectral efficiency,
-  and the required Es/N0 for quasi-error-free reception on an AWGN channel),
-* a selector that picks the best MODCOD for a measured C/N,
-* a net-throughput estimate for the selected MODCOD.
+Bu modül, DVB-S2 (ETSI EN 302 307) standartlarına uygun olarak
+mevcut sinyal-gürültü oranına (Es/N0) göre kullanılabilecek en verimli 
+MODCOD değerini dinamik olarak seçen fonksiyonları ve referans tablosunu içerir.
 
 The required Es/N0 values are the published EN 302 307 reference figures for the
 normal FECFRAME (64 800 bits) at quasi-error-free (QEF) operation, defined as a

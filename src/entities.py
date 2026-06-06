@@ -1,14 +1,9 @@
 # entities.py
-"""Data models used by the UZB451 GEO link-budget analyzer.
+"""Veri yapıları ve sınıf tanımlamaları.
 
-The dataclasses in this module separate scenario inputs, modeling assumptions,
-and calculated outputs. Most fields map directly to quantities that students can
-replace later with datasheet or footprint values.
- additions
-------------
-* :class:`ITUPropagationConfig` and :class:`ITUPropagationResult` expose the
-  standards-based ITU-R P.618/P.676/P.840 slant-path attenuation suite.
-* :class:`ModcodConfig` enables the DVB-S2 adaptive coding-and-modulation layer.
+Girdi ve çıktı parametrelerini Dataclass yapısında tutar.
+Böylece konfigürasyon girdileri, analiz sonuçları ve opsiyonel modüllerin 
+(ITU-R, DVB-S2 ACM vb.) taşıdığı değişkenler düzenli bir şekilde sistem içerisinde aktarılır.
 """
 
 # ========================================================================
