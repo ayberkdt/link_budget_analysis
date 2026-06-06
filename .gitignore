@@ -1,0 +1,48 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+# Project outputs
+outputs/*
+!outputs/.gitkeep
+!outputs/parameter_sources.csv
+!outputs/mode_definitions.csv
+!outputs/geometry_static.csv
+!outputs/link_budget_static.csv
+!outputs/scenario_summary_static.csv
+!outputs/digital_metrics_static.csv
+!outputs/interference_summary.csv
+
+outputs/plots/*
+!outputs/plots/.gitkeep
+
+# Editor/OS settings
+.vscode/
+.idea/
+.vs/
+Thumbs.db
+Desktop.ini
+
+# Zip files / backups
+*.zip
+*.tar.gz
+*.rar
+
+# LaTeX build artifacts
+LaTeX Rapor/*.aux
+LaTeX Rapor/*.log
+LaTeX Rapor/*.out
+LaTeX Rapor/*.toc
+LaTeX Rapor/*.lof
+LaTeX Rapor/*.lot
+LaTeX Rapor/*.bbl
+LaTeX Rapor/*.blg
+LaTeX Rapor/*.fls
+LaTeX Rapor/*.fdb_latexmk
+LaTeX Rapor/*.synctex.gz
+LaTeX Rapor/*.pdf
+
+

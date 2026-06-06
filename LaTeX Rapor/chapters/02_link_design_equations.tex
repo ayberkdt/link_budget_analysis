@@ -1,0 +1,128 @@
+% 02_link_design_equations.tex
+% Chapter 2: Link Design Equations
+
+\section{Link Design Equations}
+
+This chapter details the fundamental RF engineering equations and geometric transformations used to design the clear-sky static link budget. These models are derived based on the link design procedure outlined in \textit{Chapter 4} of the reference textbook by Pratt, Bostian, and Allnutt~\cite{pratt}. The equations form the mathematical engine of our custom Python simulation suite.
+
+\subsection{Slant-Path Geometry and Coordinate Transformations}
+Calculating the pointing parameters (slant range, elevation angle, and azimuth angle) between a terrestrial ground station and a geostationary satellite requires robust transformations between spherical Earth coordinates and the Earth-Centered, Earth-Fixed (ECEF) Cartesian coordinate system. 
+
+Before locating the satellite, its nominal radius must be defined. According to Kepler's Third Law of Planetary Motion, the orbital radius $r_{sat}$ for a geosynchronous orbit with period $T$ (one sidereal day, $\approx 86164$ seconds) is given by:
+\begin{equation}
+    r_{sat} = \sqrt[3]{\frac{\mu \cdot T^2}{4\pi^2}} \approx 42164.0\text{ km}
+\end{equation}
+where $\mu \approx 3.986 \times 10^5 \text{ km}^3/\text{s}^2$ is the Earth's standard gravitational parameter. Given the Earth's equatorial radius $R_e = 6378.137$~km, the satellite's altitude above the equator is approximately $35786$~km.
+
+For a ground station located at latitude $\phi$, longitude $\lambda$, and altitude $h$ above mean sea level, the ECEF position vector $\vec{R}_{ground}$ is:
+\begin{equation}
+    \vec{R}_{ground} = \begin{bmatrix} (R_e + h)\cos\phi\cos\lambda \\ (R_e + h)\cos\phi\sin\lambda \\ (R_e + h)\sin\phi \end{bmatrix}
+\end{equation}
+The geostationary satellite, stationed perfectly in the equatorial plane ($\phi_{sat} = 0^\circ$) at longitude $\lambda_{sat}$, has the Cartesian position vector:
+\begin{equation}
+    \vec{R}_{sat} = \begin{bmatrix} r_{sat}\cos\lambda_{sat} \\ r_{sat}\sin\lambda_{sat} \\ 0 \end{bmatrix}
+\end{equation}
+The slant-range vector $\vec{\rho}$ pointing directly from the ground station to the satellite is computed via vector subtraction:
+\begin{equation}
+    \vec{\rho} = \vec{R}_{sat} - \vec{R}_{ground}
+\end{equation}
+The absolute physical distance (slant range) $d$, representing the electromagnetic wave's travel path, is the Euclidean norm of this vector:
+\begin{equation}
+    d = \|\vec{\rho}\| = \sqrt{\rho_x^2 + \rho_y^2 + \rho_z^2}
+\end{equation}
+
+It is worth noting that while this spherical Earth model offers exceptional simplicity, a highly precise geodetic-to-ECEF transformation would employ the WGS-84 ellipsoid parameters:
+\begin{align}
+    x &= (N(\phi) + h)\cos\phi\cos\lambda \\
+    y &= (N(\phi) + h)\cos\phi\sin\lambda \\
+    z &= (N(\phi)(1-e^2) + h)\sin\phi
+\end{align}
+where $e^2 = 2f - f^2$ is the first eccentricity squared ($f \approx 1/298.257$ is the flattening), and $N(\phi) = R_e / \sqrt{1 - e^2\sin^2\phi}$ is the prime vertical radius of curvature. However, for a satellite at geostationary altitude, the spherical approximation with $R_e \approx 6378.137$~km introduces a slant-range error of less than $0.1\%$, which is well within our system design margins.
+
+To determine the pointing elevation angle $\theta$, we project the unit line-of-sight vector $\vec{a}_{\rho} = \vec{\rho}/d$ onto the local topocentric unit vector pointing vertically Up ($\vec{u}_{up}$). The unit Up vector at the ground station coordinates is:
+\begin{equation}
+    \vec{u}_{up} = \begin{bmatrix} \cos\phi\cos\lambda \\ \cos\phi\sin\lambda \\ \sin\phi \end{bmatrix}
+\end{equation}
+The local elevation angle $\theta$, critical for calculating atmospheric attenuation path lengths, is then calculated as:
+\begin{equation}
+    \theta = \arcsin\left( \vec{a}_{\rho} \cdot \vec{u}_{up} \right) = \arcsin\left( \frac{\vec{\rho} \cdot \vec{u}_{up}}{d} \right)
+\end{equation}
+The azimuth angle $Az$ is determined by projecting the line-of-sight vector onto the local East ($\vec{u}_{east}$) and North ($\vec{u}_{north}$) unit vectors, yielding the azimuth angle relative to true North:
+\begin{equation}
+    Az = \arctan_2\left( \vec{a}_{\rho} \cdot \vec{u}_{east},\ \vec{a}_{\rho} \cdot \vec{u}_{north} \right)
+\end{equation}
+
+\subsection{Antenna Parameters and Aperture Efficiency}
+For a circular parabolic dish antenna of physical diameter $D$ operating at carrier frequency $f$, the wavelength of the electromagnetic wave is $\lambda_w = c/f$, where $c$ is the speed of light in vacuum. The peak boresight gain $G$ in dBi is calculated as:
+\begin{equation}
+    G(\text{dBi}) = 10\log_{10}\left( \eta \left( \frac{\pi D}{\lambda_w} \right)^2 \right)
+\end{equation}
+The parameter $\eta$ represents the overall aperture efficiency. While an ideal antenna has an efficiency of 1.0 ($100\%$), physical parabolic reflectors suffer from multiple combined electromagnetic losses:
+\begin{equation}
+    \eta = \eta_{sub} \cdot \eta_{spill} \cdot \eta_{taper} \cdot \eta_{surface}
+\end{equation}
+where $\eta_{sub}$ represents sub-reflector blockage, $\eta_{spill}$ is the spillover efficiency (fraction of feed power intercepted by the dish), $\eta_{taper}$ is the amplitude illumination taper, and $\eta_{surface}$ is the surface roughness tolerance efficiency modeled by Ruze's rule. For our commercial baseline, a standard engineering efficiency of $\eta = 0.62$ ($62\%$) is utilized.
+
+The Half-Power Beamwidth ($\theta_{HPBW}$), which dictates how tightly the antenna focuses its energy and dictates adjacent satellite interference susceptibility, is approximated by:
+\begin{equation}
+    \theta_{HPBW} \approx 70^\circ \frac{\lambda_w}{D}
+\end{equation}
+
+\subsection{Free-Space Path Loss (FSPL) and Signal Spreading}
+The Free-Space Path Loss (FSPL) is often misunderstood as a resistive "loss" of energy to the vacuum. In reality, it is a purely geometric phenomenon resulting from the spherical spreading of the wavefront over the vast distance $d$. As the wave expands, its power density (Watts per square meter) drops proportionally to the surface area of the expanding sphere ($4\pi d^2$). 
+
+Derived directly from the Friis Transmission Equation, the free-space path loss $L_{\text{FSPL}}$ in decibel terms is expressed as:
+\begin{equation}
+    L_{\text{FSPL}}(\text{dB}) = 20\log_{10}\left( \frac{4\pi d}{\lambda_w} \right) = 92.45 + 20\log_{10}(f_{\text{GHz}}) + 20\log_{10}(d_{\text{km}})
+\end{equation}
+For a geostationary link, this term overwhelmingly dominates the power budget, typically ranging from $205$ to $210$~dB.
+
+\subsection{Additional System Losses: Pointing Error and Polarization Mismatch}
+While Free-Space Path Loss dominates the attenuation budget, real-world operational links suffer from additional impairments that must be strictly accounted for in $L_{total}$.
+
+\textbf{Antenna Pointing Error Loss ($L_{point}$):} Even with precise mechanical installation, wind loading, thermal expansion, or satellite orbital drift can cause the ground antenna boresight to misalign with the satellite. For a small angular pointing error $\theta_{error}$ relative to the half-power beamwidth ($\theta_{HPBW}$), the attenuation can be approximated using a Gaussian beam envelope:
+\begin{equation}
+    L_{point}(\text{dB}) \approx 12 \left( \frac{\theta_{error}}{\theta_{HPBW}} \right)^2
+\end{equation}
+
+\textbf{Polarization Mismatch Loss ($L_{pol}$):} When the polarization of the incoming wave does not perfectly align with the receiving antenna feed, signal power is lost. For the present study, linear polarization (vertical) is assumed, which is the standard convention for Ku-band DTH broadcast transponders such as those on Hotbird. In practice, the finite Cross-Polarization Discrimination (XPD) of a well-designed reflector is typically about $30$~dB, representing the isolation between the co-polar (e.g.\ vertical) and cross-polar (horizontal) states. Atmospheric depolarization, particularly during heavy rain (canting of raindrops), can further degrade XPD, introducing co-channel interference in frequency-reuse systems.
+
+\subsection{RF Link Power Budget and Receiver Figure of Merit}
+For any link segment, the Equivalent Isotropically Radiated Power (EIRP) defines the total effective power radiated in the direction of the main beam. It effectively multiplies the raw amplifier power by the focusing gain of the antenna:
+\begin{equation}
+    EIRP(\text{dBW}) = P_{tx}(\text{dBW}) + G_{tx}(\text{dBi}) - L_{tx\_feeder}(\text{dB})
+\end{equation}
+
+At the receiving end, a useful receiver performance metric is the Figure of Merit ($G/T$), measured in dB/K. This parameter combines antenna gain and receiver noise temperature into a single figure of merit:
+\begin{equation}
+    G/T(\text{dB/K}) = G_{\text{rx}}(\text{dBi}) - L_{\text{rx,feeder}}(\text{dB}) - 10\log_{10}(T_{\text{sys}})
+\end{equation}
+where $T_{\text{sys}}$ is the comprehensive system noise temperature in Kelvin. The system noise temperature referred to the LNA input is modeled as:
+\begin{equation}
+    T_{\text{sys}} = T_{\text{ant}} + T_{\text{feeder}} + (F_{\text{LNA}} - 1)T_0
+\end{equation}
+where $T_{\text{ant}}$ is the antenna noise temperature (comprising cosmic sky noise and ground noise), $T_{\text{feeder}}$ is the physical feeder waveguide loss noise, $F_{\text{LNA}}$ is the noise factor of the Low-Noise Block amplifier, and $T_0 = 290$~K is the standard reference physical temperature. All noise contributions are referred to the LNA input port, which serves as the common noise reference plane throughout this analysis. The GS2 system noise temperature of $150$~K is an input assumption representing the combined noise of a consumer-grade LNB at the Ankara terminal; the component breakdown ($T_{\text{ant}}$, $T_{\text{feeder}}$, $T_{\text{LNA}}$) is not independently specified as manufacturer noise data is not publicly available for this terminal class.
+
+The fundamental Carrier-to-Noise Density ratio $C/N_0$ at the receiver demodulator input is synthesized using the link budget equation:
+\begin{equation}
+    C/N_0(\text{dB-Hz}) = EIRP(\text{dBW}) + G/T(\text{dB/K}) - L_{total}(\text{dB}) - 10\log_{10}(k)
+\end{equation}
+where $L_{total}$ encompasses FSPL, pointing misalignments, polarization losses, and atmospheric clear-sky absorption. The term $-10\log_{10}(k) \approx 228.6$~dB represents Boltzmann's constant in decibels.
+
+Ultimately, the Energy-per-Bit to Noise-Density ratio $E_b/N_0$ acts as the core digital indicator of link viability:
+\begin{equation}
+    E_b/N_0(\text{dB}) = C/N_0(\text{dB-Hz}) - 10\log_{10}(R_b)
+\end{equation}
+where $R_b$ is the information transmission bit rate in bits per second (bps). The overall Link Margin, representing the system's safety cushion against fading events, is defined as:
+\begin{equation}
+    Margin(\text{dB}) = E_b/N_0(\text{dB}) - Required\ E_b/N_0(\text{dB})
+\end{equation}
+
+\subsection{Uplink-Downlink Coupling in Bent-Pipe Transponders}
+Because a transparent geostationary bent-pipe transponder acts merely as an analog frequency-translating amplifier, it lacks the ability to distinguish between signal and noise. Any thermal noise, interference, or distortion captured by the satellite's receiving antenna on the uplink is indiscriminately amplified and retransmitted on the downlink.
+
+Consequently, the end-to-end total Carrier-to-Noise Density ratio $(C/N_0)_{total}$ is mathematically coupled. It must be calculated via the inverse-linear addition of the individual uplink and downlink ratios (converted out of decibels into linear power ratios):
+\begin{equation}
+    \left( \frac{C}{N_0} \right)_{total}^{-1} = \left( \frac{C}{N_0} \right)_{uplink}^{-1} + \left( \frac{C}{N_0} \right)_{downlink}^{-1}
+\end{equation}
+This harmonic-like summation dictates that the combined link margin will always be strictly lower than the margin of the weakest individual link. For instance, if a massive rainstorm attenuates the uplink ($C/N_{up} \ll C/N_{down}$), the uplink becomes the system bottleneck, driving the total $(C/N_0)_{total}$ down asymptotically toward the uplink value. This physical coupling is a defining challenge of bent-pipe satellite engineering.

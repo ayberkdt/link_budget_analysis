@@ -1,0 +1,307 @@
+% 05_numerical_results.tex
+% Chapter 5: Numerical Results and Discussion
+
+\section{Numerical Results and Discussion}
+
+This section presents the numerical outputs computed by the structured Python analyzer and provides an engineering evaluation of the system performance.
+
+\subsection{Static Clear-Sky Link Budget Results}
+The clear-sky static link budget has been evaluated for the transparent Ku-band bent-pipe link between GS1 (Rome) and GS2 (Ankara) through the Eutelsat Hotbird 13G satellite at $13^\circ$E. 
+
+Before presenting the numerical outcomes, Table~\ref{tab:assumptions} explicitly categorizes the key design parameters by their source and level of confidence. This distinction is critical to justify the engineering assumptions against actual hardware capabilities.
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.2}
+    \caption{Key Parameter Sources and Assumptions.}
+    \label{tab:assumptions}
+    \vspace{0.15cm}
+    \begin{tabular}{l l}
+        \toprule
+        \textbf{Parameter} & \textbf{Status / Source} \\
+        \midrule
+        GS1 2.4 m antenna & Datasheet-supported \cite{skyware_24m} \\
+        GS1 20 W HPA & Assumed \\
+        Hotbird 13G EIRP = 46 dBW & Estimated from footprint \cite{eutelsat} \\
+        Satellite receive G/T = 3 dB/K & Assumed \\
+        GS2 0.9 m dish & Datasheet-supported \cite{triax_td88} \\
+        GS2 $T_{\text{sys}} = 150$~K & Assumed \\
+        Required $E_b/N_0$ = 7 dB & Design assumption \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Table~\ref{tab:static_budget} presents the parameter values and intermediate results computed by the software, matching the academic Pratt-style hand calculations \cite{pratt}.
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.2}
+    \caption{Static Clear-Sky Link Budget Results (Rome - Ankara).}
+    \label{tab:static_budget}
+    \vspace{0.15cm}
+    {\small
+    \setlength{\tabcolsep}{5pt}
+    \begin{tabular}{l l c c c}
+        \toprule
+        \textbf{Link Segment} & \textbf{Parameter} & \textbf{Uplink} & \textbf{Downlink} & \textbf{Unit} \\
+        \midrule
+        \multirow{6}{*}{\textbf{Geometry}} 
+        & Coordinates & $41.90^\circ$N, $12.50^\circ$E & $39.93^\circ$N, $32.86^\circ$E & -- \\
+        & Satellite Longitude & $13.00^\circ$E & $13.00^\circ$E & -- \\
+        & Slant Range ($d$) & $37,658.79$ & $37,823.12$ & km \\
+        & Elevation Angle ($\theta$) & $41.60$ & $39.44$ & deg \\
+        & Azimuth Angle ($Az$) & $179.25$ & $209.37$ & deg \\
+        & Central Angle & $41.91$ & $43.85$ & deg \\
+        \midrule
+        \multirow{5}{*}{\textbf{Transmitter}} 
+        & Frequency ($f$) & $14.00$ & $12.00$ & GHz \\
+        & Antenna Diameter & $2.40$ & -- & m \\
+        & Antenna Gain & $48.86$ & -- & dBi \\
+        & Transmitter Power & $13.01$ ($20.0$ W) & -- & dBW \\
+        & EIRP & $60.87$ & $46.00$ (Override) & dBW \\
+        \midrule
+        \multirow{6}{*}{\textbf{Path Losses}} 
+        & Free Space Path Loss (FSPL) & $206.89$ & $205.59$ & dB \\
+        & Pointing Loss & $0.50$ & $0.50$ & dB \\
+        & Polarization Loss & $0.30$ & $0.30$ & dB \\
+        & Clear-Sky Atmospheric Loss & $0.50$ & $0.50$ & dB \\
+        & Misc Loss & $0.20$ & $0.20$ & dB \\
+        & Total Link Loss ($L_{\text{total}}$) & $208.39$ & $207.09$ & dB \\
+        \midrule
+        \multirow{4}{*}{\textbf{Receiver}} 
+        & Antenna Diameter & -- & $0.90$ & m \\
+        & Antenna Gain & -- & $39.00$ & dBi \\
+        & Noise Temperature ($T_{\text{sys}}$) & -- & $150.00$ & K \\
+        & Quality Factor ($G/T$) & $3.00$ (Override) & $16.74$ & dB/K \\
+        \midrule
+        \multirow{5}{*}{\textbf{Performance}} 
+        & Carrier-to-Noise Density ($C/N_0$) & $84.08$ & $84.25$ & dB-Hz \\
+        & Carrier-to-Noise Ratio ($C/N$) & $8.51$ & $8.69$ & dB \\
+        & Energy-per-Bit to Noise ($E_b/N_0$) & $14.08$ & $14.25$ & dB \\
+        & Required $E_b/N_0$ & $7.00$ & $7.00$ & dB \\
+        & Link Margin & $7.08$ & $7.25$ & dB \\
+        \bottomrule
+    \end{tabular}
+      }
+\end{table}
+
+The end-to-end combined carrier-to-noise density ratio is computed using inverse-linear addition:
+\begin{equation}
+    \left( \frac{C}{N_0} \right)_{\text{total,linear}} = \left( 10^{-84.08 / 10} + 10^{-84.25 / 10} \right)^{-1}
+\end{equation}
+\begin{equation}
+    \left( \frac{C}{N_0} \right)_{\text{total,dBHz}} = 10\log_{10}\left( \left( \frac{C}{N_0} \right)_{\text{total,linear}} \right) = \cnTotal\ \text{dB-Hz}
+\end{equation}
+yielding a combined $E_b/N_0$ of $\ebnoTotal$ dB and a combined open-air link margin of \textbf{\marginClear~dB}. The combined end-to-end fixed-rate margin is evaluated using a separate required end-to-end $E_b/N_0$ threshold of $7$ dB. This margin closes the link above the required digital threshold of $7.0$ dB under clear-sky conditions.
+
+To explicitly verify the software's accuracy, Table~\ref{tab:pratt_comparison} compares the Python analyzer outputs with standard manual hand-calculations using Pratt's fundamental satellite communications equations.
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.2}
+    \caption{Validation: Manual Pratt Calculation vs. Python Output.}
+    \label{tab:pratt_comparison}
+    \vspace{0.15cm}
+    \begin{tabular}{l c c c}
+        \toprule
+        \textbf{Quantity} & \textbf{Hand calculation} & \textbf{Python output} & \textbf{Difference} \\
+        \midrule
+        Uplink FSPL & $206.89$ dB & $206.89$ dB & $0.00$ dB \\
+        Uplink EIRP & $60.87$ dBW & $60.87$ dBW & $0.00$ dB \\
+        Uplink $C/N_0$ & $84.08$ dB-Hz & $84.08$ dB-Hz & $0.00$ dB \\
+        Combined $C/N_0$ & $81.15$ dB-Hz & $81.15$ dB-Hz & $0.00$ dB \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Parametric Sensitivity and 2D Contour Map Analysis}
+The custom Python analyzer generates five distinct contour maps to study static system sensitivities, parameter trade-offs, and design boundaries. Each figure is analyzed below using a structured evaluation.
+
+\subsubsection{Downlink C/N0 vs. GS2 Dish Diameter and Frequency}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{01_downlink_cn0_dish_vs_frequency.png}
+    \caption{Downlink C/N0 vs GS2 Dish Diameter and Frequency.}
+    \label{fig:contour01}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{System Setup / Objective:} Investigate how the receiving antenna aperture size ($0.5$~m to $2.4$~m) and the downlink carrier frequency ($10.7$~GHz to $12.75$~GHz) jointly dictate the signal power density ($C/N_0$) at the receiver demodulator.
+    \item \textbf{Numerical Observations:} The $C/N_0$ value scales from a minimum of approximately $81.5$~dB-Hz (small dish, lower end of the band) to a maximum of approximately $91.5$~dB-Hz (large dish, upper end of the band). The contour lines are nearly vertical, indicating that dish diameter is the dominant variable.
+    \item \textbf{Physical / Engineering Interpretation:} For a fixed physical aperture and fixed satellite EIRP, receive antenna gain scales as $G_{\text{rx}} \propto (D f)^2$, while free-space path loss scales as $\text{FSPL} \propto f^2$. These two frequency-squared dependencies largely cancel, so the net $C/N_0$ is nearly independent of frequency when all other parameters are held constant. The nearly vertical contours in the figure confirm this expected cancellation. Frequency becomes a meaningful design driver only when atmospheric attenuation, antenna efficiency variation, satellite footprint EIRP variation, or band-dependent hardware assumptions are included.
+    \item \textbf{Design Guidelines:} Ground station terminal designers utilize this map to size the minimum dish diameter required for specific satellite transponder bands, ensuring that the receiver $G/T$ remains high enough to close the link without paying for oversized hardware.
+\end{itemize}
+
+\subsubsection{Downlink Margin vs. Satellite EIRP and GS2 Tsys}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{02_downlink_margin_eirp_vs_tsys.png}
+    \caption{Combined Effective Margin vs Satellite EIRP and GS2 Tsys.}
+    \label{fig:contour02}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{System Setup / Objective:} Map the combined end-to-end link margin boundary ($0$~dB limit) by trading off satellite transmit power (downlink EIRP, $42$~dBW to $58$~dBW) against the receiver noise performance ($T_{\text{sys}}$, $90$~K to $330$~K). The plotted metric is the combined Eb/(N0+I0) margin, which includes both thermal noise and the ASI/IMD interference budget active in the advanced analysis.
+    \item \textbf{Numerical Observations:} A bold diverging-color boundary splits the parameter space at the $0$~dB margin line. Any combination in the positive-margin region represents successful link closure. For instance, at a high receiver noise temperature ($T_{\text{sys}} = 300$~K), the link requires a minimum satellite EIRP of approximately $45.5$~dBW to close. The operating point marker at EIRP $= 46$~dBW and $T_{\text{sys}} = 150$~K confirms the effective margin of approximately $\marginASI$~dB, consistent with the advanced-impaired result summarized in Table~\ref{tab:comparison_summary}.
+    \item \textbf{Physical / Engineering Interpretation:} The combined margin varies linearly with satellite power in dB, but scales inversely with the logarithm of system noise temperature ($G/T \propto -10\log_{10} T_{\text{sys}}$). Higher thermal noise in the receiver LNB directly degrades the signal-to-noise ratio, requiring a compensating increase in transponder power.
+    \item \textbf{Design Guidelines:} This trade-off is critical for cost optimization. Satellite operators can decide whether to spend capital on highly powerful satellites (high EIRP) or to invest in high-performance ground terminals (low $T_{\text{sys}}$ LNBs) to maintain a target link margin.
+\end{itemize}
+
+\subsubsection{Uplink C/N vs. HPA Power and GS1 Dish Diameter}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{03_uplink_cn_power_vs_dish.png}
+    \caption{Uplink C/N vs HPA Power and GS1 Dish Diameter.}
+    \label{fig:contour03}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{System Setup / Objective:} Evaluate the trade-off between the uplink ground station High-Power Amplifier (HPA) wattage ($2$~W to $80$~W) and the uplink transmit antenna diameter ($0.8$~m to $4.5$~m) to achieve a target transponder Carrier-to-Noise ratio.
+    \item \textbf{Numerical Observations:} At the baseline operating point of $2.4$~m dish and $20$~W HPA, the uplink $C/N$ is approximately $8.51$~dB. Reaching a $12$~dB uplink $C/N$ target with the same $2.4$~m dish would require approximately $45$~W of HPA power ($3.49$~dB additional gain). Reducing the dish to $1.2$~m introduces a further $6$~dB transmit-gain penalty, requiring approximately $180$~W, which lies outside the plotted range. Therefore, the contour map demonstrates that high uplink $C/N$ targets are much more efficiently achieved by increasing antenna aperture than by increasing HPA power alone.
+    \item \textbf{Physical / Engineering Interpretation:} Transmit gain increases by $6$~dB for every doubling of the antenna diameter. This focusing gain multiplies the raw HPA wattage, allowing a major reduction in actual transmitter power to achieve the same equivalent radiated power (EIRP).
+    \item \textbf{Design Guidelines:} HPA hardware costs scale steeply with output power. Ground terminal designers use this trade-off to minimize capital costs by choosing larger dish antennas, which also narrows the beamwidth and reduces sidelobe interference to adjacent satellites.
+\end{itemize}
+
+\subsubsection{Combined Eb/N0 vs. Information Bit Rate and Bandwidth}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{04_total_ebn0_bitrate_vs_bandwidth.png}
+    \caption{Effective End-to-End Eb/(N0+I0) vs Information Bit Rate and Bandwidth.}
+    \label{fig:contour04}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{System Setup / Objective:} Analyze how the combined end-to-end signal energy-per-bit ($E_b/N_0$) is affected by changes in the information data transmission rate ($2$~Mbps to $60$~Mbps) and the allocated noise bandwidth ($6$~MHz to $72$~MHz).
+    \item \textbf{Numerical Observations:} The $E_b/N_0$ is determined primarily by bit rate. For the clear-sky combined $C/N_0$ of approximately $81.15$~dB-Hz, $E_b/N_0$ decreases from approximately $18.1$~dB at $2$~Mbps down to approximately $4.2$~dB at $50$~Mbps. At the nominal $10$~Mbps operating point, the clear-sky noise-only $E_b/N_0$ is approximately $11.15$~dB. Including adjacent-satellite interference and IMD reduces the effective value to approximately $10.69$~dB. The bandwidth axis does not independently change $E_b/N_0$ for a fixed $C/N_0$ and bit rate; rather, it constrains the feasible symbol rate, occupied bandwidth, and MODCOD selection. The operating-point marker confirms the effective result consistent with the ASI/IMD-included effective result summarized in Table~\ref{tab:comparison_summary}.
+    \item \textbf{Physical / Engineering Interpretation:} Since $E_b/N_0 = C/N_0 - 10\log_{10}(R_b)$, sharing a finite carrier power $C$ over a higher number of bits per second ($R_b$) directly reduces the energy allocated to each individual bit. Bandwidth determines the maximum symbol rate and occupied spectrum, but does not alter the $E_b/N_0$ value at fixed $C/N_0$ and $R_b$.
+    \item \textbf{Design Guidelines:} System engineers use this chart to select the maximum data rate that can be supported without dropping the $E_b/N_0$ below the required FEC threshold. For data rates beyond approximately $20$~Mbps, the link requires either additional satellite EIRP or a more efficient MODCOD to maintain positive margin.
+\end{itemize}
+
+\subsubsection{GS2 Elevation Angle vs. Latitude and Longitude Separation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{05_gs2_elevation_latitude_vs_longitude.png}
+    \caption{GS2 Elevation Angle vs Latitude and Longitude Separation.}
+    \label{fig:contour05}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{System Setup / Objective:} Map the elevation pointing angle from the ground station to the geostationary satellite as a function of the station's latitude ($0^\circ$ to $70^\circ$N) and its longitude separation from the satellite orbit position ($-60^\circ$ to $+60^\circ$).
+    \item \textbf{Numerical Observations:} Concentric contour rings illustrate the elevation angle dropping rapidly as latitude and longitude separations increase, falling below the standard $10^\circ$ and $5^\circ$ elevation engineering limits near the edges of the map.
+    \item \textbf{Physical / Engineering Interpretation:} Due to the curvature of the Earth, moving away from the equatorial sub-satellite point pushes the ground terminal towards the horizon, flattening the line-of-sight pointing angle and increasing the physical slant-path distance through the atmosphere.
+    \item \textbf{Design Guidelines:} This map defines the geographic service coverage boundaries. For terminals operating in high-latitude zones (e.g., Northern Europe), system designers must allocate extra margins in the link budget to account for the severe path lengths and high tropospheric scintillation that occur at low elevation angles.
+\end{itemize}
+
+\subsection{Advanced Impairment and Dynamic Analysis}
+This section introduces real-world atmospheric, orbital, and non-linear impairments to evaluate the system under worst-case operational conditions.
+\subsubsection[Interference (ASI and IMD)]{Interference (ASI and IMD)}
+\begin{itemize}
+    \item \textbf{System Setup / Objective:} Evaluate the combined link degradation when Adjacent-Satellite Interference (ASI) and Traveling-Wave Tube Amplifier (TWTA) Intermodulation Distortion (IMD) are enabled. Adjacent satellites are modeled at $11.0^\circ$E and $15.0^\circ$E longitudes relative to our target satellite at $13.0^\circ$E.
+    \item \textbf{Numerical Observations:} Enabling ASI and IMD drives the combined Carrier-to-Noise-and-Interference ratio down, reducing the total operating margin from the clear-sky baseline of $\marginClear$~dB down to \textbf{\marginASI~dB}, a penalty of approximately $0.46$~dB.
+    \item \textbf{Physical / Engineering Interpretation:} Co-channel power leakage from the adjacent satellites and non-linear intermodulation products generated within the satellite's multicarrier transponder act as extra noise sources, imposing a $0.46$~dB power penalty on the link for this specific geometry. The penalty is relatively modest here because of the $2^\circ$ GEO spacing and the well-sized 2.4~m uplink dish that provides strong off-axis rejection. In denser arcs or with smaller ground dishes, this penalty can be several dB.
+    \item \textbf{Design Guidelines:} This result demonstrates that satellite operators cannot design links in isolation. Proper antenna sidelobe roll-off (to suppress ASI) and sufficient TWTA Output Back-Off (OBO $\approx 2.5$~dB to suppress IMD) must be strictly implemented to protect the link.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{06_downlink_asi_ci_spacing_vs_dish.png}
+    \caption{Downlink Adjacent Satellite Interference (ASI) $C/I$ ratio as a function of orbital spacing and receiving antenna diameter.}
+    \label{fig:downlink_asi}
+\end{figure}
+
+\subsubsection[Time-Varying Orbital Dynamics]{Time-Varying Orbital Dynamics}
+\begin{itemize}
+    \item \textbf{System Setup / Objective:} Simulate the impact of the satellite's geostationary three-axis station-keeping drift on the path loss and link margin over a continuous 48-hour window.
+    \item \textbf{Numerical Observations:} The sub-satellite point drift introduces a $0.02$~dB peak-to-peak oscillation in the total link margin over a 48-hour period.
+    \item \textbf{Physical / Engineering Interpretation:} Even nominally "geostationary" satellites drift within their assigned orbital station-keeping boxes due to lunar-solar gravitational perturbations and solar radiation pressure. This causes periodic variations in slant range (FSPL) and ground station elevation angles (atmospheric path length).
+    \item \textbf{Design Guidelines:} While the $0.02$~dB variation is negligible for this robust link, it validates that the software is capable of accurately tracking dynamic physical effects, which becomes critical for LEO/MEO non-geostationary orbits.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{07_time_varying_combined_margin.png}
+    \caption{Time-varying combined link margin demonstrating the periodic effects of satellite apparent motion.}
+    \label{fig:time_varying_margin}
+\end{figure}
+
+\subsubsection[ITU-R Rain Fade and Atmospheric Impairments]{ITU-R Rain Fade and Atmospheric Impairments}
+\begin{itemize}
+    \item \textbf{System Setup / Objective:} Compute the excess atmospheric attenuation along the slant path under a $99.9\%$ link availability requirement (annual exceedance probability $p = 0.1\%$) using the ITU-R propagation standards.
+    \item \textbf{Numerical Observations:}
+    \begin{itemize}
+        \item \textbf{Uplink Attenuation (14.0 GHz):} Total combined atmospheric fade of \upRainAtten~dB.
+        \item \textbf{Downlink Attenuation (12.0 GHz):} Total combined atmospheric fade of \downRainAtten~dB.
+    \end{itemize}
+    \item \textbf{Physical / Engineering Interpretation:} Rain is the dominant cause of attenuation in the Ku-band, contributing to over $90\%$ of the total fade depth. Scintillation and cloud losses represent secondary effects, while gaseous absorption is relatively static.
+    \item \textbf{Design Guidelines:} At the $99.9\%$ availability design point, the combined link margin falls to a negative \textbf{\marginRain~dB} (with interference enabled). The baseline design does not achieve link closure at this fixed-threshold operating point. This indicates that Ku-band networks in Southern Europe and Anatolia require dynamic fade mitigation strategies such as DVB-S2 ACM, ULPC, or hardware upgrades (larger GS2 dish or higher satellite EIRP) to approach a strict 99.9\% fixed-rate availability target.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{14_rain_double_hit_margin_timeseries.png}
+    \caption{Time-series response of the link margin during a severe 'double-hit' weather event (simultaneous heavy rain at both the transmitter and receiver).}
+    \label{fig:rain_double_hit}
+\end{figure}
+
+\subsubsection[DVB-S2 ACM Throughput Performance]{DVB-S2 ACM Throughput Performance}
+\begin{itemize}
+    \item \textbf{System Setup / Objective:} Evaluate how the DVB-S2 Adaptive Coding and Modulation (ACM) selector changes the transmission format during the $99.9\%$ rain-fade case and attempts degraded-mode operation when the fixed-rate margin becomes negative.
+    \item \textbf{Numerical Observations:} In clear-sky conditions, the link supports high-order spectral efficiencies. However, during the peak rain event, the ACM selector dynamically downshifts the MODCOD to highly robust \textbf{QPSK 1/2} (which requires a threshold $E_s/N_0$ of $1.00$~dB), attempting to maintain link closure with a reduced net throughput of \textbf{\throughputRain~Mbps}.
+    \item \textbf{Physical / Engineering Interpretation:} By moving from QPSK 3/4 to the more robust QPSK 1/2 mode, the receiver operates at a lower required $E_s/N_0$ and accepts a reduced net throughput of \throughputRain~Mbps under the selected rain-fade case.
+    \item \textbf{Design Guidelines:} This result shows why ACM is useful during fades: the link can trade throughput for a lower required $E_s/N_0$ and attempt degraded-mode operation when the fixed-rate margin is no longer positive, improving throughput during favorable link conditions while reducing outage risk during fades.
+\end{itemize}
+
+\subsection{Performance Comparison and Engineering Synthesis}
+To fully understand the robustness of the designed spacecraft communication link, it is critical to compare the static theoretical baseline against the advanced operational model. 
+
+\begin{tcolorbox}[colback=blue!5,colframe=blue!40!black,title=Assumptions and Metric Definitions]
+\small
+\textbf{Fixed-rate metric:} $E_b/N_0 = C/N_0 - 10\log_{10}(R_b)$ \\
+\textbf{ACM metric:} $E_s/N_0 = C/N_0 - 10\log_{10}(R_s)$ \\
+\textbf{Symbol rate:} $R_s = B / (1 + \alpha)$ \\
+\textbf{Effective impaired metric:} Thermal noise and interference are combined using inverse-linear summation.
+
+\vspace{0.2cm}
+\textbf{Important Clarification on Throughput:} The fixed-rate 10 Mbps case and the DVB-S2 ACM throughput case are not evaluated with the same closure criterion. The fixed-rate case uses a conservative required $E_b/N_0 = 7$ dB design threshold. The ACM case instead converts the available end-to-end $C/(N+I)_0$ into $E_s/N_0$ at the DVB-S2 symbol rate and checks closure against MODCOD-specific DVB-S2 thresholds plus implementation margin. Therefore, the ACM throughput values should be interpreted as estimated variable-rate DVB-S2 carrier capacity under the selected MODCOD, not as a direct continuation of the fixed 10 Mbps operating mode.
+\end{tcolorbox}
+
+Table~\ref{tab:comparison_summary} summarizes the key performance indicators across different simulation states.
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.3}
+    \caption{Performance Comparison: Static Baseline vs. Advanced Impaired Conditions.}
+    \label{tab:comparison_summary}
+    \vspace{0.15cm}
+    \resizebox{\textwidth}{!}{
+      \begin{tabular}{l c c c}
+        \toprule
+        \textbf{Metric} & \textbf{Clear-Sky (Noise Only)} & \textbf{With ASI \& IMD} & \textbf{With 99.9\% Rain Fade} \\
+        \midrule
+        \textbf{Link Margin} & \marginClear~dB & \marginASI~dB & \marginRain~dB \\
+        \textbf{Available $E_b/N_0$ at 10 Mbps} & $\approx 11.15$ dB & $\approx 10.69$ dB & $\approx 6.98$ dB \\
+        \textbf{Available $E_s/N_0$ for ACM} & $\approx 6.38$ dB & $\approx 5.92$ dB & $\approx 2.20$ dB \\
+        \textbf{Supported MODCOD} & QPSK 3/4 & QPSK 3/4 & QPSK 1/2 \\
+        \textbf{System Availability} & 100\% (Theoretical) & 100\% (Clear) & 99.9\% (Target) \\
+        \textbf{Fixed-rate 10 Mbps closure} & Closed & Closed & Not closed \\
+        \textbf{ACM Net Throughput} & $\approx 44.6$ Mbps & $\approx 44.6$ Mbps & \throughputRain~Mbps \\
+        \bottomrule
+    \end{tabular}
+      }
+  \end{table}
+
+  \small\textit{Note: The throughput values in Table~\ref{tab:comparison_summary} represent the achievable DVB-S2 ACM net throughput for the allocated 36 MHz carrier, not the baseline 10 Mbps information-rate setting used in the fixed-rate calculations.}\normalsize
+
+  \textbf{Interpretation of the Comparison:}
+\begin{enumerate}
+    \item \textbf{The Impact of Non-Linearities and Congestion:} Moving from a purely thermal-noise limited system to an interference-limited system (ASI + IMD) imposes an immediate $\approx 0.46$ dB power penalty. This demonstrates that simple static calculations may lead to optimistic margin estimates if adjacent orbital slots are congested or if the transponder is driven near saturation.
+    \item \textbf{The Dominance of Atmospheric Fade:} The introduction of ITU-R rain fade models drastically alters the system state. The severe attenuation in the Ku-band consumes the available \marginASI~dB margin, reducing the margin to a \marginRain~dB margin deficit at 99.9\% availability. This indicates that the current hardware sizing is technically insufficient for a strict 99.9\% SLA, requiring either more satellite EIRP, a larger GS2 dish, or relaxing the availability target.
+    \item \textbf{Dynamic Compensation Strategy:} When the physical margin runs out during deep fade, the DVB-S2 ACM selector downshifts to the more robust QPSK 1/2 MODCOD, allowing operation at reduced throughput under lower $E_s/N_0$ conditions. This reduces the net throughput to \throughputRain~Mbps and attempts degraded-mode operation when the fixed-rate 10 Mbps margin is no longer positive.
+\end{enumerate}
+
+In synthesis, the staged analysis shows that the baseline link has positive clear-sky margin and can tolerate the selected moderate impairment cases. The static phase confirms that the link closes under clear-sky assumptions, while the advanced phase shows where the margin becomes insufficient under the 99.9\% rain-fade design point. ACM can then be interpreted as a degraded-mode mitigation, but not as proof of guaranteed fixed-rate service availability. However, strict 99.9\% fixed-rate link closure is not achieved by the baseline configuration (the fixed-rate margin falls to \marginRain~dB) and requires additional RF margin, larger receive aperture, or higher EIRP.

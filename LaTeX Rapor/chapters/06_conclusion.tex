@@ -1,0 +1,16 @@
+% 06_conclusion.tex
+% Chapter 6: Conclusion
+
+\section{Conclusion}
+
+This project developed and evaluated a Ku-band GEO bent-pipe link from Rome to Ankara through Hotbird 13G. The clear-sky part of the study follows the standard link-budget procedure and was implemented in a Python analysis tool. Additional modules were then used to examine interference, atmospheric attenuation, dynamic receiver noise, Monte Carlo rain states, apparent GEO motion, and DVB-S2 ACM.
+
+The static link closes in clear-sky conditions with a combined $C/N_0$ of $\cnTotal$ dB-Hz, corresponding to $E_b/N_0 = \ebnoTotal$ dB at 10 Mbps and a $\marginClear$ dB fixed-rate margin. Including the selected ASI/IMD assumptions reduces the effective margin to $\marginASI$ dB. At the 99.9\% rain-fade design point, the ITU-R-based attenuation case reduces the fixed-rate margin to $\marginRain$ dB, so the baseline hardware does not meet strict 99.9\% fixed-rate closure without additional margin.
+
+The ACM analysis shows that the link can trade throughput for a lower required $E_s/N_0$. For the 36 MHz carrier and 0.20 roll-off factor, the selector moves from QPSK 3/4 in clear-sky conditions to QPSK 1/2 in the rain-fade case, giving an estimated net throughput of \throughputRain~Mbps if the selected MODCOD still closes. This should be interpreted as a degraded-mode mitigation rather than proof of guaranteed service availability.
+
+Based on these results, the most direct improvements are increasing the GS2 receive dish diameter, increasing available downlink EIRP, adding uplink power-control headroom, or reducing the fixed-rate data-rate requirement during severe fades. A more detailed design would also use exact site-specific P.837 rainfall data, measured receiver noise temperature, and real transponder coordination data.
+
+\vspace{1em}
+\noindent \textbf{Source Code Availability:} \\
+The complete custom Python simulation framework, including the Monte-Carlo and ITU-R propagation models developed for this project, is open-source and publicly available at: \url{https://github.com/ayberkdt/link_budget_analysis}.

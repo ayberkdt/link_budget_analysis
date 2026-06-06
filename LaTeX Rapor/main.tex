@@ -1,0 +1,101 @@
+% main.tex
+% Main LaTeX file for UZB451E Spacecraft Communications Term Project Report
+
+\documentclass[12pt, a4paper]{article}
+
+% Input the packages and custom styling from preamble
+\input{preamble}
+\input{parameters}
+
+\begin{document}
+
+% ========================================================================
+%                               COVER PAGE
+% ========================================================================
+\begin{titlepage}
+    \centering
+    \vspace*{-0.5cm}
+    
+    {\large\bfseries ISTANBUL TECHNICAL UNIVERSITY}\\[0.15cm]
+    {\large\bfseries FACULTY OF AERONAUTICS AND ASTRONAUTICS}\\[0.15cm]
+    {\large\bfseries DEPARTMENT OF ASTRONAUTICAL ENGINEERING}\\[0.5cm]
+    
+    \rule{\linewidth}{1.2pt}\\[0.4cm]
+    {\large\bfseries GEOSTATIONARY BENT-PIPE SATELLITE LINK BUDGET ANALYSIS \& ATMOSPHERIC PROPAGATION STUDY}\\[0.4cm]
+    \rule{\linewidth}{1.2pt}\\[0.5cm]
+    
+    \includegraphics[width=0.6\textwidth]{itu_logo.png}\\[0.5cm]
+    
+    {\large\bfseries UZB451E -- SPACECRAFT COMMUNICATIONS}\\[0.2cm]
+    {\large\bfseries TERM PROJECT REPORT}\\[0.6cm]
+    
+    \vfill
+    
+    \begin{minipage}[t]{0.45\textwidth}
+        \centering
+        \normalsize\bfseries Prepared By:\\[0.15cm]
+        \rule{0.6\linewidth}{0.5pt}\\[0.15cm]
+        \normalsize\itshape
+        Ayberk Demirkanat\\
+        (110210121)\\[0.15cm]
+        Rabia Nur Toprak\\
+        (110220142)
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.02\textwidth}
+        \centering
+        \vrule height 2.6cm width 0.8pt
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.45\textwidth}
+        \centering
+        \normalsize\bfseries Submitted To:\\[0.15cm]
+        \rule{0.6\linewidth}{0.5pt}\\[0.15cm]
+        \normalsize\itshape
+        Assoc. Prof. Dr. Erdem Onur Özyurt\\[0.15cm]
+        \small\normalfont Faculty of Aeronautics and Astronautics\\ Istanbul Technical University
+    \end{minipage}
+    
+    \vspace*{0.3cm}
+\end{titlepage}
+
+\newpage
+
+% ========================================================================
+%                           TABLE OF CONTENTS
+% ========================================================================
+\tableofcontents
+\newpage
+
+\listoffigures
+\listoftables
+\newpage
+
+% ========================================================================
+%                               CHAPTERS
+% ========================================================================
+\input{chapters/01_introduction}
+\newpage
+
+\input{chapters/02_link_design_equations}
+\newpage
+
+\input{chapters/03_advanced_models}
+\newpage
+
+\input{chapters/04_propagation_and_acm}
+\newpage
+
+\input{chapters/05_numerical_results}
+\newpage
+
+\input{chapters/06_conclusion}
+\newpage
+
+% ========================================================================
+%                             BIBLIOGRAPHY
+% ========================================================================
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
