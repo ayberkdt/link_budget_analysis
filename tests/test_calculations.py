@@ -1,5 +1,6 @@
 import pytest
-from src.calculations import free_space_path_loss_db, combine_inverse_db, dish_gain_dbi
+from src.calculations import free_space_path_loss_db, combine_inverse_db, dish_gain_dbi, calculate_scenario
+from src.main import build_scenario_from_inputs
 
 def test_free_space_path_loss():
     # Test typical Ku-band FSPL
@@ -21,3 +22,15 @@ def test_dish_gain_dbi():
 def test_invalid_fspl():
     with pytest.raises(ValueError):
         free_space_path_loss_db(frequency_hz=0.0, range_km=38000.0)
+
+def test_full_static_scenario_regression():
+    # End-to-end regression test to ensure core numerical results from the report remain stable
+    scenario = build_scenario_from_inputs()
+    result = calculate_scenario(scenario)
+
+    assert result.combined_cn0_dbhz == pytest.approx(80.15, abs=0.05)
+    assert result.combined_ebn0_db == pytest.approx(10.15, abs=0.05)
+    assert result.combined_margin_db == pytest.approx(3.15, abs=0.05)
+    
+    if result.combined_margin_ni_db is not None:
+        assert result.combined_margin_ni_db == pytest.approx(2.78, abs=0.1)
