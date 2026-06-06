@@ -10,7 +10,7 @@
 ## 🛰️ Project Overview
 This repository contains the complete custom Python-based simulation framework and the corresponding LaTeX source code for the **UZB451E Spacecraft Communications** term project report at Istanbul Technical University. 
 
-The project analyzes a geostationary (GEO) bent-pipe Ku-band satellite communication link between **GS1 Rome** (uplink/broadcasting station at 14 GHz) and **GS2 Ankara** (receive-only station at 12 GHz) via the **Eutelsat Hotbird 13G** satellite. The framework models both the static clear-sky baseline (consistent with classical Pratt-style hand calculations) and advanced propagation and system impairments under realistic meteorological conditions.
+The project analyzes a geostationary (GEO) bent-pipe Ku-band satellite communication link between **GS1 Rome** (uplink/broadcasting station at 14 GHz) and **GS2 Ankara** (receive-only station at 12 GHz) via the **Eutelsat Hotbird 13G** satellite. The framework models both the static clear-sky baseline (consistent with classical Pratt-style hand calculations) and advanced propagation and system impairments based on ITU-R meteorological models.
 
 ---
 
@@ -27,7 +27,7 @@ The framework is organized into modular engineering components that can be confi
 | **Interference & IMD Analysis** | `INTERFERENCE` | Computes Adjacent Satellite Interference (ASI) based on orbital spacing and antenna patterns, as well as transponder Intermodulation Distortion (IMD) from multi-carrier backing-off. | **Advanced Feature** |
 | **Dynamic System Noise** | `DYNAMIC_NOISE` | Models the dynamic variation of the ground station receiver noise temperature ($T_{sys}$) as a function of the path elevation angle and atmospheric rain attenuation. | **Advanced Feature** |
 | **GEO Apparent Orbit Motion** | `APPARENT_MOTION` | Simulates periodic satellite apparent motion due to orbital inclination/eccentricity station-keeping tolerances, showing tracking loss variations over a 24-hour cycle. | **Advanced Feature** |
-| **DVB-S2 Adaptive Coding & Modulation (ACM)** | `MODCOD` | Automates the dynamic selection of the optimal DVB-S2 modulation and coding scheme (MODCOD) under time-varying rain fades to maximize link throughput. | **Advanced Feature** |
+| **DVB-S2 Adaptive Coding & Modulation (ACM)** | `MODCOD` | Automates the dynamic selection of the DVB-S2 modulation and coding scheme (MODCOD) under time-varying rain fades to attempt degraded-mode operation. | **Advanced Feature** |
 
 ---
 
@@ -105,11 +105,11 @@ All input parameters (e.g., coordinates, HPA power, frequencies, bandwidth, nois
 # Example snippet from src/scenario_inputs.py
 GS1_Rome = {
     "site_name": "GS1 Rome",
-    "latitude_deg": 41.8902,
-    "longitude_deg": 12.4922,
+    "latitude_deg": 41.9028,
+    "longitude_deg": 12.4964,
     "antenna_diameter_m": 2.4,        # Earth station dish diameter (m)
     "tx_power_w": 20.0,               # High Power Amplifier (HPA) saturated output power (W)
-    "antenna_efficiency": 0.65,        # Dish aperture efficiency
+    "antenna_efficiency": 0.62,       # Dish aperture efficiency
     ...
 }
 ```
@@ -140,3 +140,5 @@ Upon running the code, all tabular calculations are exported to the `outputs/` f
 - This simulation tool was developed for the term project of **UZB451E Spacecraft Communications** at ITU.
 - Academic methodology for basic RF link parameters is based on **Pratt, Bostian, and Allnutt - Satellite Communications (2nd Edition)**, Chapter 4.
 - Atmospheric propagation models follow **ITU-R P.618-13 (Rain attenuation on slant paths)** and related recommendations.
+
+> **Disclaimer:** This repository provides a standards-based engineering implementation for an academic link-budget study. It is not a regulatory-grade coordination tool and does not automatically extract ITU digital map values. For operational design, replace representative parameters with site-specific meteorological data and exact transponder datasheet values.
