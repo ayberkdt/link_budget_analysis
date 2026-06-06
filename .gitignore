@@ -45,4 +45,6 @@ LaTeX Rapor/*.fdb_latexmk
 LaTeX Rapor/*.synctex.gz
 LaTeX Rapor/*.pdf
 
-
+# Project report PDF and ZIP archives
+UZB451E Proje.pdf
+UZB451E Proje.zip
