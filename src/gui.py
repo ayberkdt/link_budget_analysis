@@ -254,7 +254,7 @@ class MainWindow(QMainWindow):
         for page in PAGES:
             for mod in page["modules"]:
                 mod_id = mod["id"]
-                # First try matching dictionary pattern: MOD_ID = { ... }
+                # Match dictionary pattern: MOD_ID = { ... }
                 pattern_dict = rf"{mod_id}\s*=\s*{{(.*?)\}}"
                 match_dict = re.search(pattern_dict, content, re.DOTALL)
                 
@@ -262,8 +262,8 @@ class MainWindow(QMainWindow):
                     mod_body = match_dict.group(1)
                     for param in mod["params"]:
                         k = param["key"]
-                        if "['enabled']" in k:
-                            k_clean = "enabled"
+                        if "['" in k:
+                            k_clean = k.split("['")[1].replace("']", "")
                         else:
                             k_clean = k
                         
@@ -271,33 +271,20 @@ class MainWindow(QMainWindow):
                         v_match = re.search(v_pattern, mod_body)
                         if v_match:
                             val_str = v_match.group(1).split("#")[0].strip()
-                            if param["type"] == "bool":
-                                self.config_state[f"{mod_id}.{k_clean}"] = (val_str == "True")
-                            elif param["type"] == "float":
-                                try:
-                                    self.config_state[f"{mod_id}.{k_clean}"] = float(val_str)
-                                except: pass
+                            
+                            if "['" in k and mod_id not in ["ITU_PROPAGATION", "RAIN_OUTAGE", "MODCOD", "INTERFERENCE", "DYNAMIC_NOISE", "APPARENT_MOTION"]:
+                                store_key = k
+                            else:
+                                store_key = f"{mod_id}.{k_clean}"
                                 
-                # Also try matching specific dictionary keys directly for Topology (GS1['name'] = ...)
-                for param in mod["params"]:
-                    key = param["key"]
-                    if "['" in key and mod_id not in ["ITU_PROPAGATION", "RAIN_OUTAGE", "MODCOD", "INTERFERENCE", "DYNAMIC_NOISE", "APPARENT_MOTION"]:
-                        dict_part, key_part = key.split("['")
-                        key_part = key_part.replace("']", "")
-                        
-                        pattern = rf"{dict_part}\s*\[\s*['\"]{key_part}['\"]\s*\]\s*=\s*(.*)"
-                        match = re.search(pattern, content)
-                        if match:
-                            val_str = match.group(1).split(",")[0].split("#")[0].strip()
                             if param["type"] == "str":
-                                val = val_str.strip("'\"")
-                                self.config_state[key] = val
+                                self.config_state[store_key] = val_str.strip("'\"")
+                            elif param["type"] == "bool":
+                                self.config_state[store_key] = (val_str == "True")
                             elif param["type"] == "float":
                                 try:
-                                    self.config_state[key] = float(val_str)
+                                    self.config_state[store_key] = float(val_str)
                                 except: pass
-                            elif param["type"] == "bool":
-                                self.config_state[key] = (val_str == "True")
 
     def init_ui(self):
         centralRoot = QWidget()
@@ -649,14 +636,14 @@ class MainWindow(QMainWindow):
             <table width="100%" cellspacing="0" cellpadding="6">
                 <tr>
                     <td style="color: {THEME['accent']}; font-weight: bold; font-size: 15px;">GS1 (Uplink) - {site1}</td>
-                    <td style="color: {THEME['fg_muted']};">Slant Range:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{{s1:.2f}} km</b></td>
-                    <td style="color: {THEME['fg_muted']};">Elevation:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{{e1:.2f}}&deg;</b></td>
+                    <td style="color: {THEME['fg_muted']};">Slant Range:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{s1:.2f} km</b></td>
+                    <td style="color: {THEME['fg_muted']};">Elevation:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{e1:.2f}&deg;</b></td>
                 </tr>
                 <tr><td colspan="3"><hr style="background-color:{THEME['border']}; border: none; height: 1px;"></td></tr>
                 <tr>
                     <td style="color: {THEME['accent']}; font-weight: bold; font-size: 15px;">GS2 (Downlink) - {site2}</td>
-                    <td style="color: {THEME['fg_muted']};">Slant Range:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{{s2:.2f}} km</b></td>
-                    <td style="color: {THEME['fg_muted']};">Elevation:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{{e2:.2f}}&deg;</b></td>
+                    <td style="color: {THEME['fg_muted']};">Slant Range:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{s2:.2f} km</b></td>
+                    <td style="color: {THEME['fg_muted']};">Elevation:<br><b style="color: {THEME['fg_main']}; font-size:16px;">{e2:.2f}&deg;</b></td>
                 </tr>
             </table>
             """
@@ -674,39 +661,41 @@ class MainWindow(QMainWindow):
         with open(SCENARIO_FILE, "r", encoding="utf-8") as f:
             content = f.read()
 
-        # Update dictionary-based modules
-        for mod_id in ["ITU_PROPAGATION", "RAIN_OUTAGE", "MODCOD", "INTERFERENCE", "DYNAMIC_NOISE", "APPARENT_MOTION"]:
-            pattern = rf"({mod_id}\s*=\s*{{)(.*?)(\}})"
-            match = re.search(pattern, content, re.DOTALL)
-            if match:
-                mod_body = match.group(2)
-                
-                for k, w in self.widget_map.items():
-                    if k.startswith(f"{mod_id}."):
-                        param_key = k.split(".")[1]
-                        
+        for page in PAGES:
+            for mod in page["modules"]:
+                mod_id = mod["id"]
+                pattern = rf"({mod_id}\s*=\s*{{)(.*?)(\}})"
+                match = re.search(pattern, content, re.DOTALL)
+                if match:
+                    mod_body = match.group(2)
+                    
+                    for param in mod["params"]:
+                        k = param["key"]
+                        if "['" in k:
+                            k_clean = k.split("['")[1].replace("']", "")
+                        else:
+                            k_clean = k
+                            
+                        if "['" in k and mod_id not in ["ITU_PROPAGATION", "RAIN_OUTAGE", "MODCOD", "INTERFERENCE", "DYNAMIC_NOISE", "APPARENT_MOTION"]:
+                            widget_key = k
+                        else:
+                            widget_key = f"{mod_id}.{k_clean}"
+                            
+                        w = self.widget_map.get(widget_key)
+                        if w is None:
+                            continue
+                            
                         if isinstance(w, ToggleSwitch):
                             val_str = "True" if w.isChecked() else "False"
+                        elif isinstance(w, QLineEdit):
+                            val_str = f'"{w.text()}"'
                         else:
                             val_str = str(w.value())
                         
-                        v_pattern = rf"(\"{param_key}\"\s*:\s*)[^,\n]+"
+                        v_pattern = rf"(\"{k_clean}\"\s*:\s*)[^,\n]+"
                         mod_body = re.sub(v_pattern, rf"\g<1>{val_str}", mod_body)
                         
-                content = content[:match.start(2)] + mod_body + content[match.end(2):]
-
-        # Update Topology parameters
-        for k, w in self.widget_map.items():
-            if "['" in k and not any(k.startswith(m) for m in ["ITU_PROPAGATION", "RAIN_OUTAGE", "MODCOD", "INTERFERENCE", "DYNAMIC_NOISE", "APPARENT_MOTION"]):
-                if isinstance(w, QDoubleSpinBox):
-                    val = str(w.value())
-                elif isinstance(w, QLineEdit):
-                    val = f'"{w.text()}"'
-                    
-                dict_part, key_part = k.split("['")
-                key_part = key_part.replace("']", "")
-                pattern = rf"({dict_part}\s*\[\s*['\"]{key_part}['\"]\s*\]\s*=\s*)([^,#\n]*)"
-                content = re.sub(pattern, rf"\g<1>{val}", content)
+                    content = content[:match.start(2)] + mod_body + content[match.end(2):]
 
         with open(SCENARIO_FILE, "w", encoding="utf-8") as f:
             f.write(content)
