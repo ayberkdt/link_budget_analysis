@@ -4,6 +4,11 @@
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Standards](https://img.shields.io/badge/standards-ITU--R%20P.618%20%7C%20P.837%20%7C%20P.838%20%7C%20P.676%20%7C%20P.840-orange.svg)](https://www.itu.int/)
 [![Academic Baseline](https://img.shields.io/badge/ITU-Aeronautics%20%26%20Astronautics-darkblue.svg)](https://uubf.itu.edu.tr/en)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-View_Repository-black?logo=github)](https://github.com/ayberkdt/link_budget_analysis)
+
+---
+
+**Source Code & Repository:** [https://github.com/ayberkdt/link_budget_analysis](https://github.com/ayberkdt/link_budget_analysis)
 
 ---
 

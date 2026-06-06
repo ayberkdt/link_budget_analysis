@@ -1,4 +1,16 @@
-numpy
-matplotlib
-PyQt6
-pytest
+# =========================================================
+# UZB451E Spacecraft Communications - Simulation Framework
+# Dependency Requirements
+# =========================================================
+
+# Core numerical and scientific calculations
+numpy>=1.24.0
+
+# Publication-quality plotting and visualization
+matplotlib>=3.7.0
+
+# Interactive User Interface
+PyQt6>=6.5.0
+
+# Automated unit testing and validation
+pytest>=7.4.0
