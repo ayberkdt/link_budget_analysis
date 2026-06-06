@@ -798,7 +798,7 @@ def calculate_scenario(
     combined_cn0 = combine_inverse_db([uplink.cn0_dbhz, downlink.cn0_dbhz])
     combined_cn = combine_inverse_db([uplink.cn_db, downlink.cn_db])
     combined_ebn0 = combined_cn0 - 10.0 * log10(scenario.uplink.bit_rate_bps)
-    combined_margin = combined_ebn0 - scenario.uplink.required_ebn0_db
+    combined_margin = combined_ebn0 - scenario.required_end_to_end_ebn0_db
 
     interference = calculate_interference(scenario, satellite)
     combined_cni = combine_inverse_db(
@@ -811,7 +811,7 @@ def calculate_scenario(
         ]
     )
     combined_ebn0_ni = cn_to_ebn0_db(combined_cni, scenario.uplink.bandwidth_hz, scenario.uplink.bit_rate_bps)
-    combined_margin_ni = combined_ebn0_ni - scenario.uplink.required_ebn0_db
+    combined_margin_ni = combined_ebn0_ni - scenario.required_end_to_end_ebn0_db
 
     digital_metrics = calculate_digital_metrics(
         scenario,

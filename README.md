@@ -100,6 +100,18 @@ python src/main.py --static-only
 python src/main.py --static-only --skip-plots
 ```
 
+### Running Tests
+
+To verify the calculations against baseline test cases, run the test suite from the repository root:
+
+```bash
+# On Linux / macOS
+PYTHONPATH=src pytest -q
+
+# On Windows PowerShell
+$env:PYTHONPATH="src"; pytest -q
+```
+
 ---
 
 ## 📝 Customizing Input Parameters
@@ -126,6 +138,7 @@ GS1_Rome = {
 Upon running the code, all tabular calculations are exported to the `outputs/` folder in CSV format. Graphics are saved in both high-resolution **PNG** (for web/doc previewing) and vector **PDF** (for LaTeX insertion) in the `outputs/plots/` subdirectory.
 
 ### Static Baseline Outputs
+*   `outputs/parameter_sources.csv` — Documented sources and assumptions for all key input parameters.
 *   `outputs/geometry_static.csv` — Calculated slant-paths, elevation angles, azimuths, and range distances.
 *   `outputs/link_budget_static.csv` — Point-by-point gains, losses, noise powers, and carrier-to-noise ratios.
 *   `outputs/scenario_summary_static.csv` — Unified end-to-end performance metrics ($C/(N+I)$, margins, spectral efficiencies).

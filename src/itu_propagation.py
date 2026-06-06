@@ -92,7 +92,7 @@ def _p838_sum(table: dict[str, object], log_f: float) -> float:
 def rain_coefficients_p838(
     frequency_ghz: float,
     elevation_deg: float,
-    polarization_tilt_deg: float = 45.0,
+    polarization_tilt_deg: float = 90.0,
 ) -> tuple[float, float]:
     """Return the rain power-law coefficients ``(k, alpha)`` per ITU-R P.838-3.
 
@@ -111,8 +111,8 @@ def rain_coefficients_p838(
         Path elevation angle in degrees.
     polarization_tilt_deg:
         Polarization tilt angle relative to the horizontal. Use 0 deg for
-        horizontal, 90 deg for vertical, and 45 deg for circular polarization
-        (the default, since most VSAT/DTH Ku links are circularly polarized).
+        horizontal, 90 deg for vertical, and 45 deg for circular polarization.
+        Most VSAT/DTH Ku links are linearly polarized; defaulting to 90 deg (vertical).
 
     Returns
     -------
@@ -196,7 +196,7 @@ def rain_attenuation_001_db(
     latitude_deg: float,
     station_height_km: float,
     rain_rate_001_mm_per_h: float,
-    polarization_tilt_deg: float = 45.0,
+    polarization_tilt_deg: float = 90.0,
     rain_height_override_km: float | None = None,
 ) -> float:
     """Return rain attenuation exceeded 0.01% of an average year, ``A_0.01`` [dB].
@@ -219,7 +219,7 @@ def rain_attenuation_001_db(
         (mm/h). Take this from ITU-R P.837 maps for the site, or use a regional
         value (e.g. ~30-50 mm/h for temperate climates).
     polarization_tilt_deg:
-        Polarization tilt angle (45 deg for circular polarization).
+        Polarization tilt angle (90 deg for vertical linear polarization).
     rain_height_override_km:
         Optional 0 deg C isotherm height ``h0`` override (see :func:`rain_height_km`).
     """
@@ -288,7 +288,7 @@ def rain_attenuation_db(
     station_height_km: float,
     rain_rate_001_mm_per_h: float,
     exceedance_percent: float,
-    polarization_tilt_deg: float = 45.0,
+    polarization_tilt_deg: float = 90.0,
     rain_height_override_km: float | None = None,
 ) -> float:
     """Return rain attenuation exceeded ``exceedance_percent`` % of the year [dB].
@@ -670,7 +670,7 @@ def total_slant_path_attenuation(
     station_height_km: float,
     exceedance_percent: float,
     rain_rate_001_mm_per_h: float,
-    polarization_tilt_deg: float = 45.0,
+    polarization_tilt_deg: float = 90.0,
     rain_height_override_km: float | None = None,
     pressure_hpa: float = 1013.25,
     temperature_c: float = 15.0,

@@ -28,9 +28,9 @@ def test_full_static_scenario_regression():
     scenario = build_scenario_from_inputs()
     result = calculate_scenario(scenario)
 
-    assert result.combined_cn0_dbhz == pytest.approx(80.15, abs=0.05)
-    assert result.combined_ebn0_db == pytest.approx(10.15, abs=0.05)
-    assert result.combined_margin_db == pytest.approx(3.15, abs=0.05)
+    assert result.combined_cn0_dbhz == pytest.approx(81.15, abs=0.05)
+    assert result.combined_ebn0_db == pytest.approx(11.15, abs=0.05)
+    assert result.combined_margin_db == pytest.approx(4.15, abs=0.05)
     
     if result.combined_margin_ni_db is not None:
-        assert result.combined_margin_ni_db == pytest.approx(2.78, abs=0.1)
+        assert result.combined_margin_ni_db == pytest.approx(3.69, abs=0.1)

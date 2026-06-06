@@ -13,8 +13,8 @@ def test_rain_height_km():
     assert hr_equator == 5.36
 
 def test_rain_coefficients_p838():
-    # Evaluate at 12 GHz, 40 deg elevation, circular (45 deg tilt)
-    k, alpha = rain_coefficients_p838(frequency_ghz=12.0, elevation_deg=40.0, polarization_tilt_deg=45.0)
+    # Evaluate at 12 GHz, 40 deg elevation, linear (90 deg tilt)
+    k, alpha = rain_coefficients_p838(frequency_ghz=12.0, elevation_deg=40.0, polarization_tilt_deg=90.0)
     # k and alpha should be positive real numbers
     assert k > 0.0
     assert alpha > 0.0

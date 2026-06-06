@@ -132,7 +132,7 @@ class LinkLosses:
     pointing_loss_db: float = 0.5
     polarization_loss_db: float = 0.3
     atmospheric_loss_db: float = 0.5
-    implementation_loss_db: float = 1.0
+    implementation_loss_db: float = 0.0
     misc_loss_db: float = 0.0
 
     @property
@@ -250,7 +250,7 @@ class ITUPropagationConfig:
 
     # --- Rain (ITU-R P.618 / P.837 / P.838 / P.839) ---
     rain_rate_001_mm_per_h: float = 42.0  # R_0.01 for the site (ITU-R P.837 map).
-    polarization_tilt_deg: float = 45.0  # 45 deg = circular polarization.
+    polarization_tilt_deg: float = 90.0  # 90 deg = vertical linear polarization.
     rain_height_h0_override_km: Optional[float] = None  # Measured 0 deg C isotherm.
 
     # --- Atmosphere (ITU-R P.676 / P.840 / P.453) ---
@@ -326,6 +326,7 @@ class ScenarioConfig:
     satellite: GeoSatellite
     uplink: LinkConfig
     downlink: LinkConfig
+    required_end_to_end_ebn0_db: float = 7.0
     apparent_motion: GeoApparentMotion = field(default_factory=GeoApparentMotion)
     interference: InterferenceConfig = field(default_factory=InterferenceConfig)
     dynamic_noise: DynamicNoiseConfig = field(default_factory=DynamicNoiseConfig)

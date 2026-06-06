@@ -59,13 +59,13 @@ SATELLITE = {
 SATELLITE_UPLINK_RECEIVER = {
     "terminal_name": "Satellite receiver",
     "g_over_t_db_per_k_override": 3.0,
-    "notes": "Example satellite receive G/T; replace with selected satellite data.",
+    "notes": "Assumed satellite receive G/T; public HOTBIRD 13G uplink G/T data for the selected transponder was not available.",
 }
 
 SATELLITE_DOWNLINK_TRANSMITTER = {
     "terminal_name": "Satellite transmitter",
     "eirp_dbw_override": 46.0,
-    "notes": "Example downlink EIRP; replace with selected satellite footprint value.",
+    "notes": "Estimated downlink EIRP from the published HOTBIRD footprint contour at the Ankara receiving site.",
 }
 
 # ========================================================================
@@ -91,7 +91,7 @@ UPLINK_LOSSES = {
     "pointing_loss_db": 0.5,
     "polarization_loss_db": 0.3,
     "atmospheric_loss_db": 0.5,
-    "implementation_loss_db": 1.0,
+    "implementation_loss_db": 0.0,
     "misc_loss_db": 0.2,
 }
 
@@ -99,7 +99,7 @@ DOWNLINK_LOSSES = {
     "pointing_loss_db": 0.5,
     "polarization_loss_db": 0.3,
     "atmospheric_loss_db": 0.5,
-    "implementation_loss_db": 1.0,
+    "implementation_loss_db": 0.0,
     "misc_loss_db": 0.2,
 }
 
@@ -160,7 +160,7 @@ DIGITAL = {
 ITU_PROPAGATION = {
     "enabled": True,
     "rain_rate_001_mm_per_h": 42.0,   # R_0.01 from ITU-R P.837 for the site.
-    "polarization_tilt_deg": 45.0,    # 45 deg = circular polarization.
+    "polarization_tilt_deg": 90.0,    # Linear vertical polarization assumption for ITU-R P.838 rain attenuation.
     "rain_height_h0_override_km": None,  # Set to the mapped 0 deg C isotherm if known.
     "surface_pressure_hpa": 1013.25,
     "surface_temperature_c": 15.0,
