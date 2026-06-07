@@ -1,14 +1,18 @@
 \section*{Nomenclature and Abbreviations}
 \addcontentsline{toc}{section}{Nomenclature and Abbreviations}
 
-\renewcommand{\arraystretch}{1.15}
-\begin{longtable}{p{0.20\textwidth} p{0.72\textwidth}}
-    \toprule
-    \textbf{Term} & \textbf{Definition} \\
+\newcounter{nomenclatureSavedTable}
+\setcounter{nomenclatureSavedTable}{\value{table}}
+\small
+\renewcommand{\arraystretch}{1.18}
+\setlength{\tabcolsep}{5pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.70\textwidth}@{}}
+    \rowcolor{tableHeader}
+    \color{white}\textbf{Term} & \color{white}\textbf{Definition} \\
     \midrule
     \endfirsthead
-    \toprule
-    \textbf{Term} & \textbf{Definition} \\
+    \rowcolor{tableHeader}
+    \color{white}\textbf{Term} & \color{white}\textbf{Definition} \\
     \midrule
     \endhead
     ACM & Adaptive Coding and Modulation \\
@@ -18,9 +22,9 @@
     BCH & Bose--Chaudhuri--Hocquenghem error-correction code \\
     BPF & Band-Pass Filter \\
     BUC & Block Upconverter \\
-    $(C/N)$ & Carrier-to-Noise Ratio \\
-    $(C/N_0)$ & Carrier-to-Noise Density Ratio \\
-    $(C/I)$ & Carrier-to-Interference Ratio \\
+    $\displaystyle \frac{C}{N}$ & Carrier-to-noise ratio \\
+    $\displaystyle \frac{C}{N_0}$ & Carrier-to-noise-density ratio \\
+    $\displaystyle \frac{C}{I}$ & Carrier-to-interference ratio \\
     dB & Decibel \\
     dBHz & Decibel-Hertz \\
     dBW & Decibels referenced to one watt \\
@@ -28,14 +32,14 @@
     DVB-S2 & Digital Video Broadcasting--Satellite--Second Generation \\
     ECEF & Earth-Centered, Earth-Fixed coordinate frame \\
     EIRP & Equivalent Isotropically Radiated Power \\
-    $(E_s/N_0)$ & Symbol Energy to Noise Density Ratio \\
-    $(E_b/N_0)$ & Bit Energy to Noise Density Ratio \\
+    $\displaystyle \frac{E_s}{N_0}$ & Symbol-energy-to-noise-density ratio \\
+    $\displaystyle \frac{E_b}{N_0}$ & Bit-energy-to-noise-density ratio \\
     FEC & Forward Error Correction \\
     FSPL & Free-Space Path Loss \\
     GEO & Geostationary Earth Orbit \\
     GS1 & Ground Station 1, Rome uplink station \\
     GS2 & Ground Station 2, Ankara downlink station \\
-    $(G/T)$ & Antenna Gain-to-System Noise Temperature Ratio \\
+    $\displaystyle \frac{G}{T}$ & Antenna gain-to-system-noise-temperature ratio \\
     HPA & High-Power Amplifier \\
     HPBW & Half-Power Beamwidth \\
     IF & Intermediate Frequency \\
@@ -46,12 +50,12 @@
     LNB & Low-Noise Block Downconverter \\
     MODCOD & Modulation and Coding Scheme \\
     OBO & Output Back-Off \\
-    P1dB & One-decibel compression output-power point \\
+    $P_{1\mathrm{dB}}$ & One-decibel compression output-power point \\
     QPSK & Quadrature Phase Shift Keying \\
     RF & Radio Frequency \\
     SNR & Signal-to-Noise Ratio \\
     SSPA & Solid-State Power Amplifier \\
-    $T_{\mathrm{sys}}$ & System Noise Temperature \\
+    $T_{\mathrm{sys}}$ & System noise temperature \\
     TWTA & Traveling-Wave Tube Amplifier \\
     ULPC & Uplink Power Control \\
     VSAT & Very Small Aperture Terminal \\
@@ -59,3 +63,5 @@
     \bottomrule
 \end{longtable}
 \renewcommand{\arraystretch}{1.0}
+\normalsize
+\setcounter{table}{\value{nomenclatureSavedTable}}

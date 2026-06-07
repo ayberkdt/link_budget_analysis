@@ -8,15 +8,30 @@ This chapter defines the optional impairment and diagnostic models added to the 
 \subsection{Adjacent-Satellite Interference (ASI) and IMD}
 Finite earth-station beamwidth permits energy from adjacent orbital slots to enter the receive chain and allows an uplink antenna to illuminate neighboring spacecraft. The resulting adjacent-satellite interference (ASI) depends on orbital spacing, antenna pattern, polarization, carrier loading, and relative EIRP. A multicarrier TWTA also generates intermodulation distortion (IMD) when operated close to saturation.
 
-ASI and IMD are included as additional $C/I$ terms so that the clear-sky result is not treated as purely thermal-noise limited.
+ASI and IMD are included as additional $\frac{C}{I}$ terms so that the clear-sky result is not treated as purely thermal-noise limited.
 
-The off-axis discrimination angle $\theta_{\text{off}}$ between the target satellite and the adjacent interferer is calculated using their respective ECEF position vectors. The off-axis gain $G_{\text{off}}(\theta_{\text{off}})$ in the direction of the interferer is estimated using a simplified ITU-R-style off-axis antenna envelope approximation:
+The off-axis discrimination angle $\theta_{\mathrm{off}}$ between the target satellite and the adjacent interferer is calculated using their respective ECEF position vectors. The off-axis gain $G_{\mathrm{off}}(\theta_{\mathrm{off}})$ in the direction of the interferer is estimated using a simplified ITU-R-style off-axis antenna envelope approximation:
 \begin{equation}
-    G_{\text{off}}(\theta_{\text{off}}) = \min\left( G_{\text{max}} - 3.0,\ 32.0 - 25\log_{10}(\theta_{\text{off}}) \right)
+    G_{\mathrm{off}}(\theta_{\mathrm{off}})
+    =
+    \min\left[
+    G_{\mathrm{max}} - 3.0,\,
+    32.0 - 25\log_{10}(\theta_{\mathrm{off}})
+    \right]
 \end{equation}
-This envelope is used for sensitivity analysis, not regulatory coordination. The uplink, downlink, and IMD $C/I$ terms are combined with the thermal $C/N$ terms by inverse-linear addition:
+This envelope is used for sensitivity analysis, not regulatory coordination. The uplink, downlink, and IMD $\frac{C}{I}$ terms are combined with the thermal $\frac{C}{N}$ terms by inverse-linear addition:
 \begin{equation}
-    \left( \frac{C}{N+I} \right)_{\text{total}}^{-1} = \left( \frac{C}{N} \right)_{\text{uplink}}^{-1} + \left( \frac{C}{N} \right)_{\text{downlink}}^{-1} + \left( \frac{C}{I_{\text{ASI,up}}} \right)^{-1} + \left( \frac{C}{I_{\text{ASI,down}}} \right)^{-1} + \left( \frac{C}{I_{\text{IMD}}} \right)^{-1}
+    \left(\frac{C}{N+I}\right)_{\mathrm{total}}^{-1}
+    =
+    \left(\frac{C}{N}\right)_{\mathrm{uplink}}^{-1}
+    +
+    \left(\frac{C}{N}\right)_{\mathrm{downlink}}^{-1}
+    +
+    \left(\frac{C}{I_{\mathrm{ASI,up}}}\right)^{-1}
+    +
+    \left(\frac{C}{I_{\mathrm{ASI,down}}}\right)^{-1}
+    +
+    \left(\frac{C}{I_{\mathrm{IMD}}}\right)^{-1}
 \end{equation}
 
 In this project, the ASI/IMD analysis is used as a parametric impairment estimate rather than a regulatory coordination calculation. The adjacent satellites are modeled at $11.0^\circ$E and $15.0^\circ$E, corresponding to a nominal $2.0^\circ$ orbital separation from the target $13.0^\circ$E slot. The adjacent-carrier activity factor is set to $-3.0$~dB, the antenna off-axis rejection follows the simplified envelope above, and the representative transponder IMD term is modeled as $C/I_{\mathrm{IMD}} = 30$~dB. A formal coordination study would require operator-specific carrier plans, measured antenna radiation patterns, polarization reuse information, and transponder loading data.
@@ -28,23 +43,37 @@ The transponder is not an ideal linear amplifier. TWTA compression, AM/PM conver
 \begin{itemize}
     \item \textbf{Output Back-Off (OBO):} A deliberate reduction of the operating point below saturation to suppress non-linear distortion:
     \begin{equation}
-        \mathrm{EIRP}_{\mathrm{active}}\,[\mathrm{dBW}] = \mathrm{EIRP}_{\mathrm{sat}}\,[\mathrm{dBW}] - \mathrm{OBO}\,[\mathrm{dB}]
+        \mathrm{EIRP}_{\mathrm{active}}
+        =
+        \mathrm{EIRP}_{\mathrm{sat}}
+        -
+        \mathrm{OBO}
+        \qquad [\mathrm{dBW}]
     \end{equation}
-    \item \textbf{Implementation Margin ($M_{\text{impl}}$):} In this study, modem implementation effects are not included as a static RF path loss. Instead, a 1.0~\text{dB} DVB-S2 implementation margin is applied only during MODCOD threshold selection:
+    \item \textbf{Implementation Margin ($M_{\mathrm{impl}}$):} In this study, modem implementation effects are not included as a static RF path loss. Instead, a 1.0~dB DVB-S2 implementation margin is applied only during MODCOD threshold selection:
     \begin{equation}
-        (E_s/N_0)_{\text{usable}} = (E_s/N_0)_{\text{available}} - M_{\text{impl}}
+        \left(\frac{E_s}{N_0}\right)_{\mathrm{usable}}
+        =
+        \left(\frac{E_s}{N_0}\right)_{\mathrm{available}}
+        -
+        M_{\mathrm{impl}}
     \end{equation}
 \end{itemize}
-An OBO value of 2.5~dB is discussed as a representative operating concept \cite{pratt}, but it is not subtracted separately from the published footprint EIRP: the 46~dBW downlink input is treated as the active contour value. Non-linear degradation in the numerical budget is represented by the assumed $C/I_{\mathrm{IMD}}=30$~dB term. A 1.0~dB modem implementation margin is applied only during DVB-S2 MODCOD selection, and the static RF implementation-loss field is set to 0~dB to avoid double counting.
+An OBO value of 2.5~dB is discussed as a representative operating concept \cite{pratt}, but it is not subtracted separately from the published footprint EIRP: the 46~dBW downlink input is treated as the active contour value. Non-linear degradation in the numerical budget is represented by the assumed $\frac{C}{I_{\mathrm{IMD}}}=30$~dB term. A 1.0~dB modem implementation margin is applied only during DVB-S2 MODCOD selection, and the static RF implementation-loss field is set to 0~dB to avoid double counting.
 
 \subsection{Digital Baseband Performance Metrics}
 For coherent QPSK over AWGN, the uncoded bit-error probability is:
 \begin{equation}
-    P_{b,\text{uncoded}} = \frac{1}{2} \text{erfc}\left( \sqrt{\frac{E_b}{N_0}} \right)
+    P_{b,\mathrm{uncoded}}
+    =
+    \frac{1}{2}\operatorname{erfc}\left(\sqrt{\frac{E_b}{N_0}}\right)
 \end{equation}
-The report's generic digital-metrics layer applies a 3~dB equivalent coding-gain assumption for sensitivity calculations. The separate ACM calculation does not use this shortcut; it compares the available $E_s/N_0$ directly with the selected DVB-S2 threshold table. Shannon capacity is reported as an upper bound:
+The report's generic digital-metrics layer applies a 3~dB equivalent coding-gain assumption for sensitivity calculations. The separate ACM calculation does not use this shortcut; it compares the available $\frac{E_s}{N_0}$ directly with the selected DVB-S2 threshold table. Shannon capacity is reported as an upper bound:
 \begin{equation}
-    C(\text{bps}) = B \log_{2}\left( 1 + SNR \right)
+    C
+    =
+    B\log_{2}\left(1+\mathrm{SNR}\right)
+    \qquad [\mathrm{bps}]
 \end{equation}
 This coding framework is the foundation for the DVB-S2 MODCOD ladder used by the ACM selector in Chapter~4.
 
@@ -68,8 +97,8 @@ For example, 10~dB of absorptive loss gives $T_{\mathrm{rain}}\approx247.5$~K fo
 \subsection{Apparent GEO Orbit Motion}
 The apparent spacecraft position is allowed to vary within a simplified station-keeping box:
 \begin{align}
-    \Delta \lambda(t) &= A_{\text{ew}} \sin\left(\frac{2\pi t}{T_{\text{sidereal}}} + \phi_{\text{ew}}\right) \\
-    \Delta \phi(t) &= A_{\text{ns}} \sin\left(\frac{2\pi t}{T_{\text{sidereal}}} + \phi_{\text{ns}}\right) \\
-    \Delta r(t) &= A_{\text{r}} \sin\left(\frac{2\pi t}{T_{\text{sidereal}}} + \phi_{\text{r}}\right)
+    \Delta \lambda(t) &= A_{\mathrm{ew}} \sin\left(\frac{2\pi t}{T_{\mathrm{sidereal}}} + \phi_{\mathrm{ew}}\right) \\
+    \Delta \phi(t) &= A_{\mathrm{ns}} \sin\left(\frac{2\pi t}{T_{\mathrm{sidereal}}} + \phi_{\mathrm{ns}}\right) \\
+    \Delta r(t) &= A_{\mathrm{r}} \sin\left(\frac{2\pi t}{T_{\mathrm{sidereal}}} + \phi_{\mathrm{r}}\right)
 \end{align}
 These offsets update the slant-range vector $\vec{\rho}(t)$. The model is intended to test sensitivity to a controlled GEO station-keeping box; it does not establish a tracking requirement, which would depend on the measured antenna pattern, pointing tolerance, and operator practice.

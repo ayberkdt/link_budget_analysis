@@ -50,11 +50,14 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage[table]{xcolor}
+\makeatletter
+\@ifundefined{insert@pcolumn}{\let\insert@pcolumn\insert@column}{}
+\makeatother
 
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, shadows}
 \usepackage{tcolorbox}
-\tcbuselibrary{skins}
+\tcbuselibrary{skins,breakable}
 
 % ========================================================================
 % 5.                     HYPERLINKS & COLORS
@@ -66,6 +69,7 @@
 \definecolor{tableSelected}{RGB}{232, 243, 250}
 \definecolor{repoBackground}{RGB}{238, 247, 251}
 \definecolor{repoAccent}{RGB}{0, 105, 148}
+\definecolor{repoStripe}{RGB}{218, 236, 246}
 \usepackage[colorlinks=true,
             linkcolor=ituBlue,
             citecolor=ituBlue,

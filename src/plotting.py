@@ -702,19 +702,70 @@ def generate_availability_plots(samples: list[TimeVaryingSample], output_dir: Pa
         )
     )
 
-    # 16 - annual margin distribution.
-    fig, ax = plt.subplots(figsize=FIGSIZE_LINE)
-    ax.hist(margin, bins=55, color="#3498db", alpha=0.7, edgecolor="#2980b9", linewidth=1.2)
-    ax.axvline(0.0, linestyle="--", color="#e74c3c", linewidth=2.0, label="0 dB outage threshold")
+    # 16 - annual margin distribution and empirical outage tail.
     availability = 100.0 * float(np.mean(margin >= 0.0))
+    outage_probability = 100.0 - availability
+    outage_hours = float(np.sum(margin < 0.0))
+    p01, p05, median_margin = np.percentile(margin, [1.0, 5.0, 50.0])
+    x_min = float(np.floor(np.min(margin) - 0.5))
+    x_max = float(np.ceil(np.max(margin) + 0.5))
+    bins = np.linspace(x_min, x_max, 72)
 
-    ax.set_xlabel(r"Combined $E_b/N_0$ margin [dB]")
-    ax.set_ylabel("Number of hourly samples")
-    ax.text(0.02, 0.95, f"availability = {availability:.3f}%", transform=ax.transAxes,
-            fontsize=ANNOTATION_FONTSIZE, va="top",
-            bbox={"boxstyle": "round", "facecolor": "white", "edgecolor": "#bbbbbb", "alpha": 0.9})
-    ax.grid(True, axis="y", alpha=GRID_ALPHA)
-    ax.legend(loc="best")
+    fig, (ax_hist, ax_cdf) = plt.subplots(
+        1,
+        2,
+        figsize=(10.0, 4.8),
+        gridspec_kw={"width_ratios": [1.35, 1.0]},
+    )
+
+    ax_hist.hist(
+        margin,
+        bins=bins,
+        density=True,
+        color="#2f78b7",
+        alpha=0.78,
+        edgecolor="white",
+        linewidth=0.45,
+        log=True,
+    )
+    ax_hist.axvline(0.0, linestyle="--", color="#c0392b", linewidth=2.0, label="0 dB outage threshold")
+    ax_hist.axvline(median_margin, linestyle="-", color="#2c3e50", linewidth=1.4, label="median margin")
+    ax_hist.axvline(p01, linestyle=":", color=WARNING_COLOR, linewidth=1.8, label="1st percentile")
+    ax_hist.set_title("Margin Probability Density")
+    ax_hist.set_xlabel(r"Combined $\frac{E_b}{N_0}$ margin [dB]")
+    ax_hist.set_ylabel("Probability density [1/dB], log scale")
+    ax_hist.grid(True, axis="both", alpha=GRID_ALPHA)
+    ax_hist.legend(loc="upper left")
+
+    sorted_margin = np.sort(margin)
+    empirical_cdf = 100.0 * (np.arange(1, sorted_margin.size + 1) / sorted_margin.size)
+    ax_cdf.plot(sorted_margin, empirical_cdf, color="#2c3e50", linewidth=2.1)
+    ax_cdf.axvline(0.0, linestyle="--", color="#c0392b", linewidth=1.8)
+    ax_cdf.axhline(outage_probability, linestyle=":", color="#c0392b", linewidth=1.3)
+    ax_cdf.axhline(1.0, linestyle=":", color=WARNING_COLOR, linewidth=1.2)
+    ax_cdf.axhline(5.0, linestyle=":", color="#7f8c8d", linewidth=1.1)
+    ax_cdf.fill_betweenx([0.0, 8.0], x_min, 0.0, color="#c0392b", alpha=0.08)
+    ax_cdf.set_title("Empirical Outage Tail")
+    ax_cdf.set_xlim(x_min, x_max)
+    ax_cdf.set_ylim(0.0, 8.0)
+    ax_cdf.set_xlabel(r"Combined $\frac{E_b}{N_0}$ margin [dB]")
+    ax_cdf.set_ylabel("Lower-tail empirical CDF [%]")
+    ax_cdf.grid(True, axis="both", alpha=GRID_ALPHA)
+    ax_cdf.text(
+        0.05,
+        0.95,
+        "\n".join([
+            f"availability = {availability:.3f}%",
+            f"outage samples = {outage_hours:.0f} h",
+            f"1% margin = {p01:.2f} dB",
+            f"5% margin = {p05:.2f} dB",
+        ]),
+        transform=ax_cdf.transAxes,
+        fontsize=ANNOTATION_FONTSIZE,
+        va="top",
+        bbox={"boxstyle": "round,pad=0.35", "facecolor": "white", "edgecolor": "#bbbbbb", "alpha": 0.94},
+    )
+
     paths.append(_save_figure(fig, output_dir / "16_availability_margin_histogram.png"))
 
     # 17 - outage timeline.

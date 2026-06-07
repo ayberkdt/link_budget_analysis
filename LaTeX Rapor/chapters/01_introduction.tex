@@ -17,7 +17,7 @@ The payload is modeled as a transparent \textit{bent-pipe} transponder. It filte
     \label{fig:transponder_blocks}
 \end{figure} 
 
-Because the uplink waveform is not regenerated, uplink noise and interference are relayed with the wanted carrier. The uplink and downlink contributions must therefore be combined to obtain the end-to-end $(C/N_0)_{\text{total}}$.
+Because the uplink waveform is not regenerated, uplink noise and interference are relayed with the wanted carrier. The uplink and downlink contributions must therefore be combined to obtain the end-to-end $\left(\frac{C}{N_0}\right)_{\mathrm{total}}$.
 
 The selected frequencies are 14.0~GHz for the uplink and 12.0~GHz for the downlink. A vertical linear-polarization case is used in the rain model, so ITU-R P.838-3 is evaluated with $\tau = 90^\circ$; a horizontal assignment would require $\tau = 0^\circ$. Ku-band permits useful antenna gain with relatively small apertures, but rain scattering and absorption are significant enough to require an explicit availability analysis.
 
@@ -53,19 +53,20 @@ HOTBIRD 13G was selected for this Rome--Ankara broadcast case, not as a general 
     \caption{Candidate satellite comparison for the Rome--Ankara bent-pipe scenario.}
     \label{tab:satellite_selection}
     \vspace{0.12cm}
-    {\footnotesize
-    \setlength{\tabcolsep}{5pt}
-    \renewcommand{\arraystretch}{1.28}
-    \begin{tabularx}{\textwidth}{
-        >{\raggedright\arraybackslash}p{0.18\textwidth}
-        >{\raggedright\arraybackslash}p{0.21\textwidth}
-        >{\raggedright\arraybackslash}X
-        >{\raggedright\arraybackslash}p{0.27\textwidth}}
+    {\scriptsize
+    \setlength{\tabcolsep}{3.5pt}
+    \renewcommand{\arraystretch}{1.24}
+    \begin{tabularx}{\textwidth}{@{}
+        >{\raggedright\arraybackslash}p{0.19\textwidth}
+        >{\raggedright\arraybackslash}p{0.22\textwidth}
+        >{\raggedright\arraybackslash}p{0.30\textwidth}
+        >{\raggedright\arraybackslash}X@{}}
         \rowcolor{tableHeader}
         \color{white}\textbf{Candidate} &
         \color{white}\textbf{Computed Geometry} &
         \color{white}\textbf{Service and Evidence} &
         \color{white}\textbf{Assessment for This Study} \\
+        \midrule
         \rowcolor{tableSelected}
         \textbf{HOTBIRD 13G}\\Eutelsat, $13^\circ$E &
         Rome: $41.60^\circ$, 37,659~km\\
@@ -89,7 +90,7 @@ HOTBIRD 13G was selected for this Rome--Ankara broadcast case, not as a general 
     }
 \end{table}
 
-ASTRA 1P demonstrates that geometry alone does not uniquely determine the baseline: at $19.2^\circ$E it is also well balanced for Rome and Ankara. HOTBIRD 13G is retained because its operator brochure supplies a directly usable widebeam EIRP contour and its service context matches the modeled broadcast link. Conversely, ``Intelsat'' denotes a fleet rather than one design point. Any Intelsat alternative would still require a named spacecraft, beam, polarization, EIRP contour, transponder plan, and receive G/T before a fair end-to-end comparison could be made.
+ASTRA 1P demonstrates that geometry alone does not uniquely determine the baseline: at $19.2^\circ$E it is also well balanced for Rome and Ankara. HOTBIRD 13G is retained because its operator brochure supplies a directly usable widebeam EIRP contour and its service context matches the modeled broadcast link. Conversely, ``Intelsat'' denotes a fleet rather than one design point. Any Intelsat alternative would still require a named spacecraft, beam, polarization, EIRP contour, transponder plan, and receive $(G/T)$ before a fair end-to-end comparison could be made.
 
 \begin{figure}[H]
     \centering
@@ -106,7 +107,7 @@ ASTRA 1P demonstrates that geometry alone does not uniquely determine the baseli
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.75\textwidth]{hotbird_satellite.png}
-    \caption{Conceptual illustration of HOTBIRD 13G used to represent the transparent orbital repeater.}
+    \caption{Author-created conceptual illustration of HOTBIRD 13G used to represent the transparent orbital repeater.}
     \label{fig:hotbird_satellite}
 \end{figure}
 
@@ -118,9 +119,9 @@ ASTRA 1P demonstrates that geometry alone does not uniquely determine the baseli
 \end{figure}
 
 \begin{itemize}
-    \item \textbf{GS1 Rome:} The uplink site is at $41.9028^\circ$ N, $12.4964^\circ$ E. The antenna model uses a 2.4~m aperture, consistent with the Andrew Type 243 datasheet, which specifies 48.9~dBi gain at 14.3~GHz \cite{skyware_24m}. The transmitter is represented by the Norsat ATOMBKU020; its datasheet specifies $P_{\mathrm{1dB}} \ge 43$~dBm and a standard 14.0--14.5~GHz transmit range \cite{norsat_atombku}. The link budget uses 20~W as the nominal amplifier output.
-    \item \textbf{HOTBIRD 13G:} The spacecraft is modeled at $13.0^\circ$E. Eutelsat's published widebeam map contains 40--53~dBW contours; the Ankara downlink is assigned \satEIRP~dBW as a conservative contour-based estimate \cite{eutelsat}. The selected transponder receive G/T is not published in the available operator material, so \satGT~dB/K remains an explicit engineering assumption.
-    \item \textbf{GS2 Ankara:} The receive site is at $39.9334^\circ$ N, $32.8597^\circ$ E and 0.94~km altitude. The Triax TD88 sheet specifies a 95~cm by 85~cm offset reflector and 38.8~dBi gain at 11.7~GHz \cite{triax_td88}. The calculation represents this aperture by an equivalent 0.9~m circular dish and obtains approximately 39.0~dBi at 12~GHz. The 150~K system noise temperature is an assumption because no LNB-specific noise-temperature measurement is available for the modeled terminal.
+    \item \textbf{GS1 Rome:} The uplink site is at $41.9028^\circ$ N, $12.4964^\circ$ E. The antenna model uses a 2.4~m aperture, consistent with the Andrew Type 243 datasheet, which specifies 48.9~dBi gain at 14.3~GHz \cite{skyware_24m}. The uplink transmitter is modeled as a 20~W-class Ku-band BUC using the Norsat ATOMBKU020 $P_{1\mathrm{dB}}\ge43$~dBm rating as the rated boundary point \cite{norsat_atombku}. Additional linear-output back-off is not credited separately in the uplink budget, and the model applies $L_{\mathrm{tx,feeder}}=1.0\,\mathrm{dB}$.
+    \item \textbf{HOTBIRD 13G:} The spacecraft is modeled at $13.0^\circ$E. Eutelsat's published widebeam map contains 40--53~dBW contours; the Ankara downlink is assigned \satEIRP~dBW as a conservative contour-based estimate \cite{eutelsat}. The selected transponder receive $(G/T)$ is not published in the available operator material, so \satGT~dB/K remains an explicit engineering assumption.
+    \item \textbf{GS2 Ankara:} The receive site is at $39.9334^\circ$ N, $32.8597^\circ$ E and 0.94~km altitude. The Triax TD88 sheet specifies a 95~cm by 85~cm offset reflector and 38.8~dBi gain at 11.7~GHz \cite{triax_td88}. The calculation represents this aperture by an equivalent 0.9~m circular dish and obtains approximately 39.0~dBi at 12~GHz. The 150~K system noise temperature is an assumption because no LNB-specific noise-temperature measurement is available for the modeled terminal, and the receive feeder loss is modeled as $L_{\mathrm{rx,feeder}}=0.5\,\mathrm{dB}$.
 \end{itemize}
 
 \subsection{Computational Methodology}
@@ -134,12 +135,20 @@ The project brief used MATLAB's Satellite Link Budget Analyzer as a reference wo
     coltitle=white,
     title=Reproducible Analysis Package,
     fonttitle=\bfseries,
-    boxrule=0.7pt,
-    leftrule=2.4pt,
-    arc=1.5pt
+    boxrule=0.75pt,
+    leftrule=3.0pt,
+    arc=1.8pt,
+    drop fuzzy shadow,
+    left=6pt,
+    right=6pt,
+    top=5pt,
+    bottom=5pt
 ]
-The Python model, regression tests, generated CSV files, and plotting workflow are maintained at
-\href{https://github.com/ayberkdt/link_budget_analysis}{\textbf{\texttt{github.com/ayberkdt/link\_budget\_analysis}}}.
+\small
+The Python model, regression tests, generated CSV files, and plotting workflow are maintained in the public analysis repository:
+\begin{center}
+    \href{https://github.com/ayberkdt/link_budget_analysis}{\textbf{\texttt{github.com/ayberkdt/link\_budget\_analysis}}}
+\end{center}
 \end{tcolorbox}
 
 \subsection{Report Structure}

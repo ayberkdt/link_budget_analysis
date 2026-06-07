@@ -8,23 +8,26 @@ This chapter defines the geometry, antenna, propagation, and noise equations use
 \subsection{Slant-Path Geometry and Coordinate Transformations}
 Slant range, elevation, and azimuth are calculated by expressing the ground station and satellite positions in an Earth-Centered, Earth-Fixed (ECEF) frame.
 
-From Kepler's third law, the orbital radius $r_{sat}$ for a geosynchronous period $T$ (one sidereal day, approximately 86,164~s) is:
+From Kepler's third law, the orbital radius $r_{\mathrm{sat}}$ for a geosynchronous period $T$ (one sidereal day, approximately 86,164~s) is:
 \begin{equation}
-    r_{sat} = \sqrt[3]{\frac{\mu \cdot T^2}{4\pi^2}} \approx 42164.0\text{ km}
+    r_{\mathrm{sat}}
+    =
+    \sqrt[3]{\frac{\mu T^2}{4\pi^2}}
+    \approx 42164.0\,\mathrm{km}
 \end{equation}
-where $\mu \approx 3.986 \times 10^5 \text{ km}^3/\text{s}^2$ is the Earth's standard gravitational parameter. Given the Earth's equatorial radius $R_e = 6378.137$~km, the satellite's altitude above the equator is approximately $35786$~km.
+where $\mu \approx 3.986 \times 10^5\,\mathrm{km^3/s^2}$ is the Earth's standard gravitational parameter. Given the Earth's equatorial radius $R_e = 6378.137$~km, the satellite's altitude above the equator is approximately $35786$~km.
 
-For a ground station located at latitude $\phi$, longitude $\lambda$, and altitude $h$ above mean sea level, the ECEF position vector $\vec{R}_{ground}$ is:
+For a ground station located at latitude $\phi$, longitude $\lambda$, and altitude $h$ above mean sea level, the ECEF position vector $\vec{R}_{\mathrm{ground}}$ is:
 \begin{equation}
-    \vec{R}_{ground} = \begin{bmatrix} (R_e + h)\cos\phi\cos\lambda \\ (R_e + h)\cos\phi\sin\lambda \\ (R_e + h)\sin\phi \end{bmatrix}
+    \vec{R}_{\mathrm{ground}} = \begin{bmatrix} (R_e + h)\cos\phi\cos\lambda \\ (R_e + h)\cos\phi\sin\lambda \\ (R_e + h)\sin\phi \end{bmatrix}
 \end{equation}
-The geostationary satellite is modeled in the equatorial plane ($\phi_{sat} = 0^\circ$) at longitude $\lambda_{sat}$, with Cartesian position vector:
+The geostationary satellite is modeled in the equatorial plane ($\phi_{\mathrm{sat}} = 0^\circ$) at longitude $\lambda_{\mathrm{sat}}$, with Cartesian position vector:
 \begin{equation}
-    \vec{R}_{sat} = \begin{bmatrix} r_{sat}\cos\lambda_{sat} \\ r_{sat}\sin\lambda_{sat} \\ 0 \end{bmatrix}
+    \vec{R}_{\mathrm{sat}} = \begin{bmatrix} r_{\mathrm{sat}}\cos\lambda_{\mathrm{sat}} \\ r_{\mathrm{sat}}\sin\lambda_{\mathrm{sat}} \\ 0 \end{bmatrix}
 \end{equation}
 The line-of-sight vector from the ground station to the satellite is:
 \begin{equation}
-    \vec{\rho} = \vec{R}_{sat} - \vec{R}_{ground}
+    \vec{\rho} = \vec{R}_{\mathrm{sat}} - \vec{R}_{\mathrm{ground}}
 \end{equation}
 The slant range $d$ is the Euclidean norm of this vector:
 \begin{equation}
@@ -41,21 +44,24 @@ where $e^2 = 2f - f^2$, $f \approx 1/298.257$, and $N(\phi) = R_e / \sqrt{1 - e^
 
 The elevation angle is obtained by projecting the unit line-of-sight vector $\vec{a}_{\rho} = \vec{\rho}/d$ onto the local upward unit vector:
 \begin{equation}
-    \vec{u}_{up} = \begin{bmatrix} \cos\phi\cos\lambda \\ \cos\phi\sin\lambda \\ \sin\phi \end{bmatrix}
+    \vec{u}_{\mathrm{up}} = \begin{bmatrix} \cos\phi\cos\lambda \\ \cos\phi\sin\lambda \\ \sin\phi \end{bmatrix}
 \end{equation}
 The elevation angle is therefore:
 \begin{equation}
-    \theta = \arcsin\left( \vec{a}_{\rho} \cdot \vec{u}_{up} \right) = \arcsin\left( \frac{\vec{\rho} \cdot \vec{u}_{up}}{d} \right)
+    \theta = \arcsin\left( \vec{a}_{\rho} \cdot \vec{u}_{\mathrm{up}} \right) = \arcsin\left( \frac{\vec{\rho} \cdot \vec{u}_{\mathrm{up}}}{d} \right)
 \end{equation}
 Azimuth is calculated from the local east and north components and is measured clockwise from true north:
 \begin{equation}
-    Az = \arctan_2\left( \vec{a}_{\rho} \cdot \vec{u}_{east},\ \vec{a}_{\rho} \cdot \vec{u}_{north} \right)
+    Az = \arctan_2\left( \vec{a}_{\rho} \cdot \vec{u}_{\mathrm{east}},\ \vec{a}_{\rho} \cdot \vec{u}_{\mathrm{north}} \right)
 \end{equation}
 
 \subsection{Antenna Parameters and Aperture Efficiency}
 For a circular parabolic dish antenna of physical diameter $D$ operating at carrier frequency $f$, the wavelength of the electromagnetic wave is $\lambda_w = c/f$, where $c$ is the speed of light in vacuum. The peak boresight gain $G$ in dBi is calculated as:
 \begin{equation}
-    G(\text{dBi}) = 10\log_{10}\left( \eta \left( \frac{\pi D}{\lambda_w} \right)^2 \right)
+    G
+    =
+    10\log_{10}\left[\eta\left(\frac{\pi D}{\lambda_w}\right)^2\right]
+    \qquad [\mathrm{dBi}]
 \end{equation}
 The aperture efficiency $\eta$ collects the principal feed, illumination, blockage, and surface-error effects:
 \begin{equation}
@@ -73,7 +79,16 @@ Free-space path loss represents the reduction in power density caused by spheric
 
 Derived directly from the Friis Transmission Equation, the free-space path loss $L_{\mathrm{FSPL}}$ in decibel terms is expressed as:
 \begin{equation}
-    L_{\mathrm{FSPL}}\,[\mathrm{dB}] = 20\log_{10}\left( \frac{4\pi d}{\lambda_w} \right) = 92.45 + 20\log_{10}(f_{\mathrm{GHz}}) + 20\log_{10}(d_{\mathrm{km}})
+    L_{\mathrm{FSPL}}
+    =
+    20\log_{10}\left( \frac{4\pi d}{\lambda_w} \right)
+    =
+    92.45
+    +
+    20\log_{10}(f_{\mathrm{GHz}})
+    +
+    20\log_{10}(d_{\mathrm{km}})
+    \qquad [\mathrm{dB}]
 \end{equation}
 For the present GEO geometry, FSPL is approximately 206--207~dB.
 
@@ -82,7 +97,11 @@ The clear-sky budget also includes fixed allowances for pointing, polarization m
 
 \textbf{Antenna Pointing Error Loss ($L_{\mathrm{point}}$):} Wind, installation tolerance, structural deformation, and orbital motion can offset the antenna boresight. For a small pointing error $\theta_{\mathrm{error}}$, a Gaussian main-beam approximation gives:
 \begin{equation}
-    L_{\mathrm{point}}\,[\mathrm{dB}] \approx 12 \left( \frac{\theta_{\mathrm{error}}}{\theta_{\mathrm{HPBW}}} \right)^2
+    L_{\mathrm{point}}
+    \approx
+    12
+    \left( \frac{\theta_{\mathrm{error}}}{\theta_{\mathrm{HPBW}}} \right)^2
+    \qquad [\mathrm{dB}]
 \end{equation}
 
 \textbf{Polarization Mismatch Loss ($L_{\mathrm{pol}}$):} A fixed 0.3~dB allowance is used for residual feed alignment and polarization mismatch. Vertical linear polarization is selected for the representative P.838 calculation, but an operational link would use the polarization assigned to the leased transponder. The Type 243 datasheet specifies 30~dB on-axis cross-polarization discrimination \cite{skyware_24m}; rain depolarization and imperfect alignment can reduce this isolation.
@@ -90,12 +109,27 @@ The clear-sky budget also includes fixed allowances for pointing, polarization m
 \subsection{RF Link Power Budget and Receiver Figure of Merit}
 For each link segment, EIRP combines transmitter output power, antenna gain, and feeder loss:
 \begin{equation}
-    \mathrm{EIRP}\,[\mathrm{dBW}] = P_{\mathrm{tx}}\,[\mathrm{dBW}] + G_{\mathrm{tx}}\,[\mathrm{dBi}] - L_{\mathrm{tx,feeder}}\,[\mathrm{dB}]
+    \mathrm{EIRP}
+    =
+    P_{\mathrm{tx}}
+    +
+    G_{\mathrm{tx}}
+    -
+    L_{\mathrm{tx,feeder}}
+    \qquad [\mathrm{dBW}]
 \end{equation}
+where $P_{\mathrm{tx}}$ is expressed in dBW, $G_{\mathrm{tx}}$ in dBi, and $L_{\mathrm{tx,feeder}}$ in dB.
 
-Receiver performance is represented by $G/T$:
+Receiver performance is represented by $\frac{G}{T}$:
 \begin{equation}
-    G/T\,[\mathrm{dB/K}] = G_{\mathrm{rx}}\,[\mathrm{dBi}] - L_{\mathrm{rx,feeder}}\,[\mathrm{dB}] - 10\log_{10}\left(T_{\mathrm{sys}}\right)
+    \left(\frac{G}{T}\right)
+    =
+    G_{\mathrm{rx}}
+    -
+    L_{\mathrm{rx,feeder}}
+    -
+    10\log_{10}\left(T_{\mathrm{sys}}\right)
+    \qquad [\mathrm{dB/K}]
 \end{equation}
 where $T_{\mathrm{sys}}$ is the system noise temperature referred to the LNA input:
 \begin{equation}
@@ -105,24 +139,43 @@ Here $T_{\mathrm{ant}}$ includes sky and spillover contributions, $T_{\mathrm{fe
 
 The carrier-to-noise-density ratio at the receiver is:
 \begin{equation}
-    \left( C/N_0 \right)\,[\mathrm{dBHz}] = \mathrm{EIRP}\,[\mathrm{dBW}] + G/T\,[\mathrm{dB/K}] - L_{\mathrm{total}}\,[\mathrm{dB}] - 10\log_{10}(k)
+    \left(\frac{C}{N_0}\right)
+    =
+    \mathrm{EIRP}
+    +
+    \left(\frac{G}{T}\right)
+    -
+    L_{\mathrm{total}}
+    -
+    10\log_{10}(k)
+    \qquad [\mathrm{dBHz}]
 \end{equation}
 where $L_{\mathrm{total}}$ encompasses FSPL, pointing misalignments, polarization losses, and atmospheric clear-sky absorption. The term $-10\log_{10}(k) \approx 228.6$~dB represents Boltzmann's constant in decibels.
 
 For a fixed information bit rate $R_b$:
 \begin{equation}
-    \left( E_b/N_0 \right)\,[\mathrm{dB}] = \left( C/N_0 \right)\,[\mathrm{dBHz}] - 10\log_{10}(R_b)
+    \left(\frac{E_b}{N_0}\right)
+    =
+    \left(\frac{C}{N_0}\right)
+    -
+    10\log_{10}(R_b)
+    \qquad [\mathrm{dB}]
 \end{equation}
-The fixed-rate margin is the difference between the available and required $E_b/N_0$:
+The fixed-rate margin is the difference between the available and required $\frac{E_b}{N_0}$:
 \begin{equation}
-    M\,[\mathrm{dB}] = \left( E_b/N_0 \right)\,[\mathrm{dB}] - \left( E_b/N_0 \right)_{\mathrm{req}}\,[\mathrm{dB}]
+    M
+    =
+    \left(\frac{E_b}{N_0}\right)
+    -
+    \left(\frac{E_b}{N_0}\right)_{\mathrm{req}}
+    \qquad [\mathrm{dB}]
 \end{equation}
 
 \subsection{Uplink-Downlink Coupling in Bent-Pipe Transponders}
 A transparent transponder does not regenerate the baseband signal. Uplink noise and interference therefore remain part of the retransmitted waveform.
 
-The end-to-end $(C/N_0)_{\mathrm{total}}$ is obtained by inverse-linear addition of the uplink and downlink terms:
+The end-to-end $\left(\frac{C}{N_0}\right)_{\mathrm{total}}$ is obtained by inverse-linear addition of the uplink and downlink terms:
 \begin{equation}
     \left( \frac{C}{N_0} \right)_{\mathrm{total}}^{-1} = \left( \frac{C}{N_0} \right)_{\mathrm{uplink}}^{-1} + \left( \frac{C}{N_0} \right)_{\mathrm{downlink}}^{-1}
 \end{equation}
-The combined $C/N_0$ is lower than either individual contribution. When one segment is much weaker than the other, the end-to-end result approaches the weaker segment and that path becomes the effective bottleneck.
+The combined $\frac{C}{N_0}$ is lower than either individual contribution. When one segment is much weaker than the other, the end-to-end result approaches the weaker segment and that path becomes the effective bottleneck.

@@ -18,37 +18,49 @@ The Earth--space path crosses the troposphere, where gases, cloud liquid water, 
 The advanced branch calculates an absolute atmospheric attenuation for each path. When this branch is active, it \emph{replaces} the 0.5~dB static atmospheric allowance on that path; the two quantities are not added. Uplink and downlink attenuation are evaluated separately because their frequencies, elevations, and terminal apertures differ.
 
 \subsubsection{Mathematical Formulation}
-The total atmospheric attenuation $A_{\text{total}}(p)$ in dB exceeded for an annual time percentage $p$ ($0.001\% \le p \le 5\%$) is calculated by combining gaseous absorption ($A_{\text{gaseous}}$), cloud attenuation ($A_{\text{cloud}}$), tropospheric scintillation ($A_{\text{scintillation}}$), and rain attenuation ($A_{\text{rain}}$) according to \textit{ITU-R P.618-13} \cite{itu618}:
+The total atmospheric attenuation $A_{\mathrm{total}}(p)$ in dB exceeded for an annual time percentage $p$ ($0.001\% \le p \le 5\%$) is calculated by combining gaseous absorption ($A_{\mathrm{gaseous}}$), cloud attenuation ($A_{\mathrm{cloud}}$), tropospheric scintillation ($A_{\mathrm{scintillation}}$), and rain attenuation ($A_{\mathrm{rain}}$) according to \textit{ITU-R P.618-13} \cite{itu618}:
 \begin{equation}
-    A_{\text{total}}(p) = A_{\text{gaseous}} + \sqrt{ \left( A_{\text{rain}}(p) + A_{\text{cloud}} \right)^2 + A_{\text{scintillation}}(p)^2 }
+    A_{\mathrm{total}}(p)
+    =
+    A_{\mathrm{gaseous}}
+    +
+    \sqrt{
+    \left[A_{\mathrm{rain}}(p)+A_{\mathrm{cloud}}\right]^2
+    +
+    A_{\mathrm{scintillation}}^2(p)
+    }
 \end{equation}
 
 The point rainfall rate $R_{0.01}$ is a representative P.837-based input \cite{itu837}. The same $R_{0.01}=42$~mm/h value is used at both terminals; a site-specific study would use separate mapped values for Rome and Ankara. P.839-4 defines rain height from a digital $0^\circ$C-isotherm map \cite{itu839}; because that grid is not bundled with the project, the code uses a documented latitude approximation unless a mapped $h_0$ override is supplied. The frequency- and polarization-dependent $k$ and $\alpha$ coefficients follow P.838-3 \cite{itu838}. The specific attenuation is:
 \begin{equation}
-    \gamma_{\text{R}} = k R_{0.01}^\alpha
+    \gamma_{\mathrm{R}} = k R_{0.01}^{\alpha}
 \end{equation}
 The effective path length through the rain cell accounts for spatial localisation:
 \begin{equation}
-    L_{\text{eff}} = L_{\text{s}} \cdot r_{0.01} \cdot v_{0.01}
+    L_{\mathrm{eff}} = L_{\mathrm{s}}\,r_{0.01}\,v_{0.01}
 \end{equation}
-where $r_{0.01}$ is the horizontal path reduction factor and $v_{0.01}$ is the vertical adjustment factor. The attenuation exceeded for $0.01\%$ of the year is $A_{0.01} = \gamma_{\text{R}} L_{\text{eff}}$. For other time percentages $p$:
+where $r_{0.01}$ is the horizontal path reduction factor and $v_{0.01}$ is the vertical adjustment factor. The attenuation exceeded for $0.01\%$ of the year is $A_{0.01} = \gamma_{\mathrm{R}} L_{\mathrm{eff}}$. For other time percentages $p$:
 \begin{equation}
     A_p = A_{0.01} \left( \frac{p}{0.01} \right)^{-\left[0.655 + 0.033\ln p - 0.045\ln A_{0.01} - \beta(1-p)\sin\theta\right]}
 \end{equation}
 
 Gaseous attenuation uses dry air and water vapor specific zenith attenuations scaled by the slant-path elevation angle (\textit{ITU-R P.676-12} \cite{itu676}):
 \begin{equation}
-    A_{\text{gaseous}} = \frac{\gamma_{\text{o}} h_{\text{o}} + \gamma_{\text{w}} h_{\text{w}}}{\sin\theta}
+    A_{\mathrm{gaseous}}
+    =
+    \frac{\gamma_{\mathrm{o}}h_{\mathrm{o}}+\gamma_{\mathrm{w}}h_{\mathrm{w}}}{\sin\theta}
 \end{equation}
 
-Cloud liquid water attenuation uses columnar liquid water $M$ and specific attenuation $K_{\text{l}}$ (\textit{ITU-R P.840-8} \cite{itu840}):
+Cloud liquid water attenuation uses columnar liquid water $M$ and specific attenuation $K_{\mathrm{l}}$ (\textit{ITU-R P.840-8} \cite{itu840}):
 \begin{equation}
-    A_{\text{cloud}} = \frac{M \cdot K_{\text{l}}}{\sin\theta}
+    A_{\mathrm{cloud}}
+    =
+    \frac{M K_{\mathrm{l}}}{\sin\theta}
 \end{equation}
 
 Scintillation uses the P.618-13 procedure with refractivity-related inputs consistent with P.453-14 \cite{itu618,itu453}:
 \begin{equation}
-    A_{\text{scintillation}}(p) = a(p) \sigma
+    A_{\mathrm{scintillation}}(p) = a(p)\sigma
 \end{equation}
 
 \subsubsection{Operational Impact and Results}
@@ -126,8 +138,8 @@ The output is a distribution of link margin under the assumed states and random 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.75\textwidth]{16_availability_margin_histogram.png}
-    \caption{Probability density distribution of the dynamic link margin over $8{,}760$ simulated hours of the meteorological year (Monte Carlo stochastic analysis).}
+    \includegraphics[width=0.96\textwidth]{16_availability_margin_histogram.png}
+    \caption{Monte Carlo annual margin distribution and outage-tail summary over $8{,}760$ simulated hourly samples.}
     \label{fig:mc_availability_histogram}
 \end{figure}
 
@@ -137,14 +149,18 @@ The output is a distribution of link margin under the assumed states and random 
 A fixed MODCOD must be selected to meet its target availability with adequate margin. When channel conditions improve, that fixed operating point may leave capacity unused.
 
 \subsubsection{Fixed-Rate and ACM Metrics}
-The fixed-rate link margin and the ACM throughput analysis are treated as separate performance views. The former evaluates closure against a prescribed $(E_b/N_0)$ threshold, whereas the latter maps the available $(E_s/N_0)$ to DVB-S2 MODCOD thresholds and net throughput for a specified carrier bandwidth and roll-off factor. The two metrics should not be interpreted as the same quantity.
+The fixed-rate link margin and the ACM throughput analysis are treated as separate performance views. The former evaluates closure against a prescribed $\frac{E_b}{N_0}$ threshold, whereas the latter maps the available $\frac{E_s}{N_0}$ to DVB-S2 MODCOD thresholds and net throughput for a specified carrier bandwidth and roll-off factor. The two metrics should not be interpreted as the same quantity.
 
-ACM maps the measured $E_s/N_0$ to a modulation and code rate. Higher-efficiency modes are selected when margin is available; more robust modes are selected during fades.
+ACM maps the measured $\frac{E_s}{N_0}$ to a modulation and code rate. Higher-efficiency modes are selected when margin is available; more robust modes are selected during fades.
 
 \subsubsection{Mathematical Formulation}
-The receiver continuously monitors $(E_s/N_0)_{\mathrm{available}}$ and dynamically selects the highest spectral efficiency $\eta$ (in bits/symbol) from the DVB-S2 \cite{dvbs2} MODCOD ladder that satisfies:
+The receiver continuously monitors $\left(\frac{E_s}{N_0}\right)_{\mathrm{available}}$ and dynamically selects the highest spectral efficiency $\eta$ (in bits/symbol) from the DVB-S2 \cite{dvbs2} MODCOD ladder that satisfies:
 \begin{equation}
-    (E_s/N_0)_{\mathrm{available}} \ge (E_s/N_0)_{\mathrm{MODCOD,req}} + M_{\mathrm{impl}}
+    \left(\frac{E_s}{N_0}\right)_{\mathrm{available}}
+    \ge
+    \left(\frac{E_s}{N_0}\right)_{\mathrm{MODCOD,req}}
+    +
+    M_{\mathrm{impl}}
 \end{equation}
 
 \begin{figure}[H]
@@ -156,13 +172,16 @@ The receiver continuously monitors $(E_s/N_0)_{\mathrm{available}}$ and dynamica
 
 Using the usable symbol rate $R_{\mathrm{s}} = B / (1 + \alpha_{\mathrm{rolloff}})$, the active net throughput is:
 \begin{equation}
-    R_{\mathrm{net}}\,[\mathrm{Mbps}] = \eta \cdot R_{\mathrm{s}}
+    R_{\mathrm{net}}
+    =
+    \eta R_{\mathrm{s}}
+    \qquad [\mathrm{Mbps}]
 \end{equation}
 
 \subsubsection{Operational Impact and Results}
 For a 36~MHz carrier with $\alpha=0.20$, the symbol rate is 30~Msps. The implemented threshold table selects QPSK 3/4 for the clear-sky thermal and interference cases and QPSK 1/2 for the coincident dual-site $p=0.1\%$ stress point.
 
-Table~\ref{tab:acm_consistency} lists the available and required $E_s/N_0$ values used by the selector.
+Table~\ref{tab:acm_consistency} lists the available and required $\frac{E_s}{N_0}$ values used by the selector.
 
 \begin{table}[H]
     \centering
@@ -173,7 +192,7 @@ Table~\ref{tab:acm_consistency} lists the available and required $E_s/N_0$ value
     \resizebox{\textwidth}{!}{
       \begin{tabular}{l c c c c c}
         \toprule
-        \textbf{Case} & \textbf{Avail. $E_s/N_0$} & \textbf{Selected MODCOD} & \textbf{Req. $E_s/N_0$} & \textbf{Efficiency ($\eta$)} & \textbf{Net Throughput ($\eta R_{\mathrm{s}}$)} \\
+        \textbf{Case} & \textbf{Avail. $\frac{E_s}{N_0}$} & \textbf{Selected MODCOD} & \textbf{Req. $\frac{E_s}{N_0}$} & \textbf{Efficiency ($\eta$)} & \textbf{Net Throughput ($\eta R_{\mathrm{s}}$)} \\
         \midrule
         \textbf{Clear-Sky (Thermal)} & $\approx 6.38$ dB & QPSK 3/4 & 4.03 dB & 1.487 & $\approx 44.61$ Mbps \\
         \textbf{With ASI \& IMD} & $\approx 5.92$ dB & QPSK 3/4 & 4.03 dB & 1.487 & $\approx 44.61$ Mbps \\
@@ -196,6 +215,11 @@ Table~\ref{tab:acm_consistency} lists the available and required $E_s/N_0$ value
 
 Uplink power control is discussed as a mitigation option but is not implemented as a closed-loop simulation. An ideal first-order controller would increase earth-station transmit power by the estimated uplink fade:
 \begin{equation}
-    P_{\mathrm{tx,dynamic}}\,[\mathrm{dBW}] = P_{\mathrm{tx,nominal}}\,[\mathrm{dBW}] + A_{\mathrm{rain,up}}\,[\mathrm{dB}]
+    P_{\mathrm{tx,dynamic}}
+    =
+    P_{\mathrm{tx,nominal}}
+    +
+    A_{\mathrm{rain,up}}
+    \qquad [\mathrm{dBW}]
 \end{equation}
 subject to $P_{\mathrm{tx,dynamic}} \le P_{\mathrm{tx,max}}$. Available HPA headroom, EIRP limits, ASI constraints, transponder loading, and control-loop delay limit the recoverable fade. No ULPC gain is credited in the reported margins.
