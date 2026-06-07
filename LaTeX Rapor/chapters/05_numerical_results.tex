@@ -21,11 +21,11 @@ Before presenting the numerical outcomes, Table~\ref{tab:assumptions} explicitly
         \textbf{Parameter} & \textbf{Status / Source} \\
         \midrule
         GS1 2.4 m antenna & Datasheet-supported \cite{skyware_24m} \\
-        GS1 20 W HPA & Assumed \\
+        GS1 20 W-class Ku-band BUC/HPA & Datasheet-supported ATOMBKU020 power class \cite{norsat_atombku} \\
         Hotbird 13G EIRP = 46 dBW & Estimated from footprint \cite{eutelsat} \\
         Satellite receive G/T = 3 dB/K & Assumed \\
         GS2 0.9 m dish & Datasheet-supported \cite{triax_td88} \\
-        GS2 $T_{\text{sys}} = 150$~K & Assumed \\
+        GS2 $T_{\mathrm{sys}} = 150$~K & Assumed \\
         Required $E_b/N_0$ = 7 dB & Design assumption \\
         \bottomrule
     \end{tabular}
@@ -71,7 +71,7 @@ Table~\ref{tab:static_budget} presents the parameter values and intermediate res
         \multirow{4}{*}{\textbf{Receiver}} 
         & Antenna Diameter & -- & $0.90$ & m \\
         & Antenna Gain & -- & $39.00$ & dBi \\
-        & Noise Temperature ($T_{\text{sys}}$) & -- & $150.00$ & K \\
+        & Noise Temperature ($T_{\mathrm{sys}}$) & -- & $150.00$ & K \\
         & Quality Factor ($G/T$) & $3.00$ (Override) & $16.74$ & dB/K \\
         \midrule
         \multirow{5}{*}{\textbf{Performance}} 
@@ -107,8 +107,13 @@ To explicitly verify the software's accuracy, Table~\ref{tab:pratt_comparison} c
         \textbf{Quantity} & \textbf{Hand calculation} & \textbf{Python output} & \textbf{Difference} \\
         \midrule
         Uplink FSPL & $206.89$ dB & $206.89$ dB & $0.00$ dB \\
+        Downlink FSPL & $205.59$ dB & $205.59$ dB & $0.00$ dB \\
         Uplink EIRP & $60.87$ dBW & $60.87$ dBW & $0.00$ dB \\
+        Downlink $G/T$ & $16.74$ dB/K & $16.74$ dB/K & $0.00$ dB \\
         Uplink $C/N_0$ & $84.08$ dB-Hz & $84.08$ dB-Hz & $0.00$ dB \\
+        Downlink $C/N_0$ & $84.25$ dB-Hz & $84.25$ dB-Hz & $0.00$ dB \\
+        Uplink $C/N$ & $8.51$ dB & $8.51$ dB & $0.00$ dB \\
+        Downlink $C/N$ & $8.69$ dB & $8.69$ dB & $0.00$ dB \\
         Combined $C/N_0$ & $81.15$ dB-Hz & $81.15$ dB-Hz & $0.00$ dB \\
         Combined $E_b/N_0$ & $11.15$ dB & $11.15$ dB & $0.00$ dB \\
         Combined margin & $4.15$ dB & $4.15$ dB & $0.00$ dB \\
@@ -119,12 +124,12 @@ To explicitly verify the software's accuracy, Table~\ref{tab:pratt_comparison} c
 \subsubsection{Parametric Sensitivity and 2D Contour Map Analysis}
 The custom Python analyzer generates five distinct contour maps to study static system sensitivities, parameter trade-offs, and design boundaries. Each figure is analyzed below using a structured evaluation.
 
-\subsubsection{Downlink C/N0 vs. GS2 Dish Diameter and Frequency}
+\subsubsection{Downlink $(C/N_0)$ vs. GS2 Dish Diameter and Frequency}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{01_downlink_cn0_dish_vs_frequency.png}
-    \caption{Downlink C/N0 vs GS2 Dish Diameter and Frequency.}
+    \caption{Downlink $(C/N_0)$ vs. GS2 dish diameter and frequency.}
     \label{fig:contour01}
 \end{figure}
 
@@ -135,20 +140,20 @@ The custom Python analyzer generates five distinct contour maps to study static 
     \item \textbf{Design Guidelines:} Ground station terminal designers utilize this map to size the minimum dish diameter required for specific satellite transponder bands, ensuring that the receiver $G/T$ remains high enough to close the link without paying for oversized hardware.
 \end{itemize}
 
-\subsubsection{Downlink Margin vs. Satellite EIRP and GS2 Tsys}
+\subsubsection{Downlink Margin vs. Satellite EIRP and GS2 $T_{\mathrm{sys}}$}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{02_downlink_margin_eirp_vs_tsys.png}
-    \caption{Combined Effective Margin vs Satellite EIRP and GS2 Tsys.}
+    \caption{Combined effective margin vs. satellite EIRP and GS2 $T_{\mathrm{sys}}$.}
     \label{fig:contour02}
 \end{figure}
 
 \begin{itemize}
-    \item \textbf{System Setup / Objective:} Map the combined end-to-end link margin boundary ($0$~dB limit) by trading off satellite transmit power (downlink EIRP, $42$~dBW to $58$~dBW) against the receiver noise performance ($T_{\text{sys}}$, $90$~K to $330$~K). The plotted metric is the combined Eb/(N0+I0) margin, which includes both thermal noise and the ASI/IMD interference budget active in the advanced analysis.
-    \item \textbf{Numerical Observations:} A bold diverging-color boundary splits the parameter space at the $0$~dB margin line. Any combination in the positive-margin region represents successful link closure. For instance, at a high receiver noise temperature ($T_{\text{sys}} = 300$~K), the link requires a minimum satellite EIRP of approximately $45.5$~dBW to close. The operating point marker at EIRP $= 46$~dBW and $T_{\text{sys}} = 150$~K confirms the effective margin of approximately $\marginASI$~dB, consistent with the advanced-impaired result summarized in Table~\ref{tab:comparison_summary}.
-    \item \textbf{Physical / Engineering Interpretation:} The combined margin varies linearly with satellite power in dB, but scales inversely with the logarithm of system noise temperature ($G/T \propto -10\log_{10} T_{\text{sys}}$). Higher thermal noise in the receiver LNB directly degrades the signal-to-noise ratio, requiring a compensating increase in transponder power.
-    \item \textbf{Design Guidelines:} This trade-off is critical for cost optimization. Satellite operators can decide whether to spend capital on highly powerful satellites (high EIRP) or to invest in high-performance ground terminals (low $T_{\text{sys}}$ LNBs) to maintain a target link margin.
+    \item \textbf{System Setup / Objective:} Map the combined end-to-end link margin boundary ($0$~dB limit) by trading off satellite transmit power (downlink EIRP, $42$~dBW to $58$~dBW) against the receiver noise performance ($T_{\mathrm{sys}}$, $90$~K to $330$~K). The plotted metric is the combined $E_b/(N_0+I_0)$ margin, which includes both thermal noise and the ASI/IMD interference budget active in the advanced analysis.
+    \item \textbf{Numerical Observations:} A bold diverging-color boundary splits the parameter space at the $0$~dB margin line. Any combination in the positive-margin region represents successful link closure. For instance, at a high receiver noise temperature ($T_{\mathrm{sys}} = 300$~K), the link requires a minimum satellite EIRP of approximately $45.5$~dBW to close. The operating point marker at EIRP $= 46$~dBW and $T_{\mathrm{sys}} = 150$~K confirms the effective margin of approximately $\marginASI$~dB, consistent with the advanced-impaired result summarized in Table~\ref{tab:comparison_summary}.
+    \item \textbf{Physical / Engineering Interpretation:} The combined margin varies linearly with satellite power in dB, but scales inversely with the logarithm of system noise temperature ($G/T \propto -10\log_{10} T_{\mathrm{sys}}$). Higher thermal noise in the receiver LNB directly degrades the signal-to-noise ratio, requiring a compensating increase in transponder power.
+    \item \textbf{Design Guidelines:} This trade-off is critical for cost optimization. Satellite operators can decide whether to spend capital on highly powerful satellites (high EIRP) or to invest in high-performance ground terminals (low $T_{\mathrm{sys}}$ LNBs) to maintain a target link margin.
 \end{itemize}
 
 \subsubsection{Uplink C/N vs. HPA Power and GS1 Dish Diameter}
@@ -167,12 +172,12 @@ The custom Python analyzer generates five distinct contour maps to study static 
     \item \textbf{Design Guidelines:} HPA hardware costs scale steeply with output power. Ground terminal designers use this trade-off to minimize capital costs by choosing larger dish antennas, which also narrows the beamwidth and reduces sidelobe interference to adjacent satellites.
 \end{itemize}
 
-\subsubsection{Combined Eb/N0 vs. Information Bit Rate and Bandwidth}
+\subsubsection{Combined $(E_b/N_0)$ vs. Information Bit Rate and Bandwidth}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{04_total_ebn0_bitrate_vs_bandwidth.png}
-    \caption{Effective End-to-End Eb/(N0+I0) vs Information Bit Rate and Bandwidth.}
+    \caption{Effective end-to-end $E_b/(N_0+I_0)$ vs. information bit rate and bandwidth.}
     \label{fig:contour04}
 \end{figure}
 
@@ -261,7 +266,14 @@ This section introduces real-world atmospheric, orbital, and non-linear impairme
 \subsection{Performance Comparison and Engineering Synthesis}
 To fully understand the robustness of the designed spacecraft communication link, it is critical to compare the static theoretical baseline against the advanced operational model. 
 
-\begin{tcolorbox}[colback=blue!5,colframe=blue!40!black,title=Assumptions and Metric Definitions]
+\begin{tcolorbox}[
+    colback=gray!5,
+    colframe=gray!45,
+    title=Design Implication: Fixed-Rate Margin vs. ACM Throughput,
+    fonttitle=\bfseries,
+    boxrule=0.4pt,
+    arc=2pt
+]
 \small
 \textbf{Fixed-rate metric:} $E_b/N_0 = C/N_0 - 10\log_{10}(R_b)$ \\
 \textbf{ACM metric:} $E_s/N_0 = C/N_0 - 10\log_{10}(R_s)$ \\
@@ -269,7 +281,7 @@ To fully understand the robustness of the designed spacecraft communication link
 \textbf{Effective impaired metric:} Thermal noise and interference are combined using inverse-linear summation.
 
 \vspace{0.2cm}
-\textbf{Important Clarification on Throughput:} The fixed-rate 10 Mbps case and the DVB-S2 ACM throughput case are not evaluated with the same closure criterion. The fixed-rate case uses a conservative required $E_b/N_0 = 7$ dB design threshold. The ACM case instead converts the available end-to-end $C/(N+I)_0$ into $E_s/N_0$ at the DVB-S2 symbol rate and checks closure against MODCOD-specific DVB-S2 thresholds plus implementation margin. Therefore, the ACM throughput values should be interpreted as estimated variable-rate DVB-S2 carrier capacity under the selected MODCOD, not as a direct continuation of the fixed 10 Mbps operating mode.
+\textbf{Clarification:} The fixed-rate 10 Mbps case and the DVB-S2 ACM throughput case are not evaluated with the same closure criterion. The fixed-rate case uses a conservative required $E_b/N_0 = 7$ dB design threshold. The ACM case converts the available end-to-end $C/(N+I)_0$ into $E_s/N_0$ at the DVB-S2 symbol rate and checks closure against MODCOD-specific DVB-S2 thresholds plus implementation margin. Therefore, the ACM throughput values are estimated variable-rate DVB-S2 carrier capacities under the selected MODCOD, not a direct continuation of the fixed 10 Mbps operating mode.
 \end{tcolorbox}
 
 Table~\ref{tab:comparison_summary} summarizes the key performance indicators across different simulation states.

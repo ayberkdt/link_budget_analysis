@@ -63,66 +63,66 @@ The parameter $\eta$ represents the overall aperture efficiency. While an ideal 
 \end{equation}
 where $\eta_{sub}$ represents sub-reflector blockage, $\eta_{spill}$ is the spillover efficiency (fraction of feed power intercepted by the dish), $\eta_{taper}$ is the amplitude illumination taper, and $\eta_{surface}$ is the surface roughness tolerance efficiency modeled by Ruze's rule. For our commercial baseline, a standard engineering efficiency of $\eta = 0.62$ ($62\%$) is utilized.
 
-The Half-Power Beamwidth ($\theta_{HPBW}$), which dictates how tightly the antenna focuses its energy and dictates adjacent satellite interference susceptibility, is approximated by:
+The Half-Power Beamwidth ($\theta_{\mathrm{HPBW}}$), which describes the angular width of the main beam and strongly affects adjacent-satellite interference susceptibility, is approximated by:
 \begin{equation}
-    \theta_{HPBW} \approx 70^\circ \frac{\lambda_w}{D}
+    \theta_{\mathrm{HPBW}} \approx 70^\circ \frac{\lambda_w}{D}
 \end{equation}
 
 \subsection{Free-Space Path Loss (FSPL) and Signal Spreading}
 The Free-Space Path Loss (FSPL) is often misunderstood as a resistive "loss" of energy to the vacuum. In reality, it is a purely geometric phenomenon resulting from the spherical spreading of the wavefront over the vast distance $d$. As the wave expands, its power density (Watts per square meter) drops proportionally to the surface area of the expanding sphere ($4\pi d^2$). 
 
-Derived directly from the Friis Transmission Equation, the free-space path loss $L_{\text{FSPL}}$ in decibel terms is expressed as:
+Derived directly from the Friis Transmission Equation, the free-space path loss $L_{\mathrm{FSPL}}$ in decibel terms is expressed as:
 \begin{equation}
-    L_{\text{FSPL}}(\text{dB}) = 20\log_{10}\left( \frac{4\pi d}{\lambda_w} \right) = 92.45 + 20\log_{10}(f_{\text{GHz}}) + 20\log_{10}(d_{\text{km}})
+    L_{\mathrm{FSPL}}\,[\mathrm{dB}] = 20\log_{10}\left( \frac{4\pi d}{\lambda_w} \right) = 92.45 + 20\log_{10}(f_{\mathrm{GHz}}) + 20\log_{10}(d_{\mathrm{km}})
 \end{equation}
 For a geostationary link, this term overwhelmingly dominates the power budget, typically ranging from $205$ to $210$~dB.
 
 \subsection{Additional System Losses: Pointing Error and Polarization Mismatch}
 While Free-Space Path Loss dominates the attenuation budget, real-world operational links suffer from additional impairments that must be strictly accounted for in $L_{total}$.
 
-\textbf{Antenna Pointing Error Loss ($L_{point}$):} Even with precise mechanical installation, wind loading, thermal expansion, or satellite orbital drift can cause the ground antenna boresight to misalign with the satellite. For a small angular pointing error $\theta_{error}$ relative to the half-power beamwidth ($\theta_{HPBW}$), the attenuation can be approximated using a Gaussian beam envelope:
+\textbf{Antenna Pointing Error Loss ($L_{\mathrm{point}}$):} Even with precise mechanical installation, wind loading, thermal expansion, or satellite orbital drift can cause the ground antenna boresight to misalign with the satellite. For a small angular pointing error $\theta_{\mathrm{error}}$ relative to the half-power beamwidth ($\theta_{\mathrm{HPBW}}$), the attenuation can be approximated using a Gaussian beam envelope:
 \begin{equation}
-    L_{point}(\text{dB}) \approx 12 \left( \frac{\theta_{error}}{\theta_{HPBW}} \right)^2
+    L_{\mathrm{point}}\,[\mathrm{dB}] \approx 12 \left( \frac{\theta_{\mathrm{error}}}{\theta_{\mathrm{HPBW}}} \right)^2
 \end{equation}
 
-\textbf{Polarization Mismatch Loss ($L_{pol}$):} When the polarization of the incoming wave does not perfectly align with the receiving antenna feed, signal power is lost. For the present study, linear polarization (vertical) is assumed, which is the standard convention for Ku-band DTH broadcast transponders such as those on Hotbird. In practice, the finite Cross-Polarization Discrimination (XPD) of a well-designed reflector is typically about $30$~dB, representing the isolation between the co-polar (e.g.\ vertical) and cross-polar (horizontal) states. Atmospheric depolarization, particularly during heavy rain (canting of raindrops), can further degrade XPD, introducing co-channel interference in frequency-reuse systems.
+\textbf{Polarization Mismatch Loss ($L_{\mathrm{pol}}$):} When the polarization of the incoming wave does not perfectly align with the receiving antenna feed, signal power is lost. For the present study, linear polarization (vertical) is assumed, which is the standard convention for Ku-band DTH broadcast transponders such as those on Hotbird. In practice, the finite Cross-Polarization Discrimination (XPD) of a well-designed reflector is typically about $30$~dB, representing the isolation between the co-polar (e.g.\ vertical) and cross-polar (horizontal) states. Atmospheric depolarization, particularly during heavy rain (canting of raindrops), can further degrade XPD, introducing co-channel interference in frequency-reuse systems.
 
 \subsection{RF Link Power Budget and Receiver Figure of Merit}
 For any link segment, the Equivalent Isotropically Radiated Power (EIRP) defines the total effective power radiated in the direction of the main beam. It effectively multiplies the raw amplifier power by the focusing gain of the antenna:
 \begin{equation}
-    EIRP(\text{dBW}) = P_{tx}(\text{dBW}) + G_{tx}(\text{dBi}) - L_{tx\_feeder}(\text{dB})
+    \mathrm{EIRP}\,[\mathrm{dBW}] = P_{\mathrm{tx}}\,[\mathrm{dBW}] + G_{\mathrm{tx}}\,[\mathrm{dBi}] - L_{\mathrm{tx,feeder}}\,[\mathrm{dB}]
 \end{equation}
 
 At the receiving end, a useful receiver performance metric is the Figure of Merit ($G/T$), measured in dB/K. This parameter combines antenna gain and receiver noise temperature into a single figure of merit:
 \begin{equation}
-    G/T(\text{dB/K}) = G_{\text{rx}}(\text{dBi}) - L_{\text{rx,feeder}}(\text{dB}) - 10\log_{10}(T_{\text{sys}})
+    G/T\,[\mathrm{dB/K}] = G_{\mathrm{rx}}\,[\mathrm{dBi}] - L_{\mathrm{rx,feeder}}\,[\mathrm{dB}] - 10\log_{10}\left(T_{\mathrm{sys}}\right)
 \end{equation}
-where $T_{\text{sys}}$ is the comprehensive system noise temperature in Kelvin. The system noise temperature referred to the LNA input is modeled as:
+where $T_{\mathrm{sys}}$ is the comprehensive system noise temperature in Kelvin. The system noise temperature referred to the LNA input is modeled as:
 \begin{equation}
-    T_{\text{sys}} = T_{\text{ant}} + T_{\text{feeder}} + (F_{\text{LNA}} - 1)T_0
+    T_{\mathrm{sys}} = T_{\mathrm{ant}} + T_{\mathrm{feeder}} + (F_{\mathrm{LNA}} - 1)T_0
 \end{equation}
-where $T_{\text{ant}}$ is the antenna noise temperature (comprising cosmic sky noise and ground noise), $T_{\text{feeder}}$ is the physical feeder waveguide loss noise, $F_{\text{LNA}}$ is the noise factor of the Low-Noise Block amplifier, and $T_0 = 290$~K is the standard reference physical temperature. All noise contributions are referred to the LNA input port, which serves as the common noise reference plane throughout this analysis. The GS2 system noise temperature of $150$~K is an input assumption representing the combined noise of a consumer-grade LNB at the Ankara terminal; the component breakdown ($T_{\text{ant}}$, $T_{\text{feeder}}$, $T_{\text{LNA}}$) is not independently specified as manufacturer noise data is not publicly available for this terminal class.
+where $T_{\mathrm{ant}}$ is the antenna noise temperature (comprising cosmic sky noise and ground noise), $T_{\mathrm{feeder}}$ is the physical feeder waveguide loss noise, $F_{\mathrm{LNA}}$ is the noise factor of the Low-Noise Block amplifier, and $T_0 = 290$~K is the standard reference physical temperature. All noise contributions are referred to the LNA input port, which serves as the common noise reference plane throughout this analysis. The GS2 system noise temperature of $150$~K is an input assumption representing the combined noise of a consumer-grade LNB at the Ankara terminal; the component breakdown ($T_{\mathrm{ant}}$, $T_{\mathrm{feeder}}$, $T_{\mathrm{LNA}}$) is not independently specified as manufacturer noise data is not publicly available for this terminal class.
 
 The fundamental Carrier-to-Noise Density ratio $C/N_0$ at the receiver demodulator input is synthesized using the link budget equation:
 \begin{equation}
-    C/N_0(\text{dB-Hz}) = EIRP(\text{dBW}) + G/T(\text{dB/K}) - L_{total}(\text{dB}) - 10\log_{10}(k)
+    \left( C/N_0 \right)\,[\mathrm{dBHz}] = \mathrm{EIRP}\,[\mathrm{dBW}] + G/T\,[\mathrm{dB/K}] - L_{\mathrm{total}}\,[\mathrm{dB}] - 10\log_{10}(k)
 \end{equation}
-where $L_{total}$ encompasses FSPL, pointing misalignments, polarization losses, and atmospheric clear-sky absorption. The term $-10\log_{10}(k) \approx 228.6$~dB represents Boltzmann's constant in decibels.
+where $L_{\mathrm{total}}$ encompasses FSPL, pointing misalignments, polarization losses, and atmospheric clear-sky absorption. The term $-10\log_{10}(k) \approx 228.6$~dB represents Boltzmann's constant in decibels.
 
 Ultimately, the Energy-per-Bit to Noise-Density ratio $E_b/N_0$ acts as the core digital indicator of link viability:
 \begin{equation}
-    E_b/N_0(\text{dB}) = C/N_0(\text{dB-Hz}) - 10\log_{10}(R_b)
+    \left( E_b/N_0 \right)\,[\mathrm{dB}] = \left( C/N_0 \right)\,[\mathrm{dBHz}] - 10\log_{10}(R_b)
 \end{equation}
 where $R_b$ is the information transmission bit rate in bits per second (bps). The overall Link Margin, representing the system's safety cushion against fading events, is defined as:
 \begin{equation}
-    Margin(\text{dB}) = E_b/N_0(\text{dB}) - Required\ E_b/N_0(\text{dB})
+    M\,[\mathrm{dB}] = \left( E_b/N_0 \right)\,[\mathrm{dB}] - \left( E_b/N_0 \right)_{\mathrm{req}}\,[\mathrm{dB}]
 \end{equation}
 
 \subsection{Uplink-Downlink Coupling in Bent-Pipe Transponders}
 Because a transparent geostationary bent-pipe transponder acts merely as an analog frequency-translating amplifier, it lacks the ability to distinguish between signal and noise. Any thermal noise, interference, or distortion captured by the satellite's receiving antenna on the uplink is indiscriminately amplified and retransmitted on the downlink.
 
-Consequently, the end-to-end total Carrier-to-Noise Density ratio $(C/N_0)_{total}$ is mathematically coupled. It must be calculated via the inverse-linear addition of the individual uplink and downlink ratios (converted out of decibels into linear power ratios):
+Consequently, the end-to-end total Carrier-to-Noise Density ratio $(C/N_0)_{\mathrm{total}}$ is mathematically coupled. It must be calculated via the inverse-linear addition of the individual uplink and downlink ratios. Before applying the inverse summation, all $(C/N_0)$ terms are converted from decibel units to linear units; the combined result is then converted back to dB-Hz.
 \begin{equation}
-    \left( \frac{C}{N_0} \right)_{total}^{-1} = \left( \frac{C}{N_0} \right)_{uplink}^{-1} + \left( \frac{C}{N_0} \right)_{downlink}^{-1}
+    \left( \frac{C}{N_0} \right)_{\mathrm{total}}^{-1} = \left( \frac{C}{N_0} \right)_{\mathrm{uplink}}^{-1} + \left( \frac{C}{N_0} \right)_{\mathrm{downlink}}^{-1}
 \end{equation}
-This harmonic-like summation dictates that the combined link margin will always be strictly lower than the margin of the weakest individual link. For instance, if a massive rainstorm attenuates the uplink ($C/N_{up} \ll C/N_{down}$), the uplink becomes the system bottleneck, driving the total $(C/N_0)_{total}$ down asymptotically toward the uplink value. This physical coupling is a defining challenge of bent-pipe satellite engineering.
+This harmonic-like summation dictates that the combined link margin will always be strictly lower than the margin of the weakest individual link. For instance, if a severe rain cell attenuates the uplink ($(C/N)_{\mathrm{up}} \ll (C/N)_{\mathrm{down}}$), the uplink becomes the system bottleneck, driving the total $(C/N_0)_{\mathrm{total}}$ down asymptotically toward the uplink value. This physical coupling is a defining challenge of bent-pipe satellite engineering.

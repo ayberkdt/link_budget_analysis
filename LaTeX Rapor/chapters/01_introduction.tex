@@ -48,7 +48,7 @@ To ground the study in a realistic commercial context, we model a one-way transp
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.75\textwidth]{hotbird_satellite.png}
-    \caption{Scientific illustration of the Eutelsat Hotbird 13G telecommunication satellite in geostationary orbit, acting as our transparent bent-pipe orbital repeater.}
+    \caption{Author-created conceptual illustration of the Eutelsat Hotbird 13G telecommunication satellite in geostationary orbit, used to represent the transparent bent-pipe orbital repeater.}
     \label{fig:hotbird_satellite}
 \end{figure}
 
@@ -60,13 +60,25 @@ To ground the study in a realistic commercial context, we model a one-way transp
 \end{figure}
 
 \begin{itemize}
-    \item \textbf{Ground Station 1 (GS1 Rome):} Located in Rome, Italy ($41.9028^\circ$ N, $12.4964^\circ$ E). It acts as the broadcasting terminal (uplink station), utilizing a \gsOneDish-meter parabolic dish antenna (datasheet-supported aperture \cite{skyware_24m}) with a 20.0~Watt high-power amplifier (HPA) assumed to represent a commercial Ku-band HPA at this power class.
+    \item \textbf{Ground Station 1 (GS1 Rome):} Located in Rome, Italy ($41.9028^\circ$ N, $12.4964^\circ$ E). It acts as the broadcasting terminal (uplink station), utilizing a \gsOneDish-meter parabolic dish antenna (datasheet-supported aperture \cite{skyware_24m}) with a datasheet-supported commercial Ku-band BUC/HPA power class. The transmitter output power is represented by the Norsat ATOMBKU020 Ku-band BUC/SSPA, whose datasheet lists a 20~W model with $P_{\mathrm{1dB}} = 43$~dBm minimum and standard transmit frequency coverage of 14.0--14.5~GHz \cite{norsat_atombku}. In the link budget, the corresponding 20.0~W value is used as the nominal GS1 transmit-power case.
     \item \textbf{GEO Satellite (Hotbird 13G):} Positioned at $13.0^\circ$ E longitude on the geostationary equatorial arc. The satellite downlink EIRP at Ankara is estimated as \satEIRP~dBW from the HOTBIRD published footprint contour \cite{eutelsat, gunter_hotbird}. The wider contour range is approximately 46--53 dBW; \satEIRP~dBW is used as a conservative baseline for the Ankara receiving site. Since public HOTBIRD documentation does not provide the selected transponder uplink receive G/T, a representative satellite receive G/T of \satGT~dB/K is adopted as an engineering assumption for the uplink budget.
-    \item \textbf{Ground Station 2 (GS2 Ankara):} Located in Ankara, Turkey ($39.9334^\circ$ N, $32.8597^\circ$ E). It acts as the receive-only downlink terminal, utilizing a \gsTwoDish-meter parabolic dish (datasheet-supported aperture \cite{triax_td88}) with an assumed consumer-grade system noise temperature ($T_{\text{sys}}$) of 150~K. This value represents a typical outdoor unit (LNB + feed) performance for a Ku-band consumer terminal; no public Tsys measurement for this specific LNB/antenna combination is available.
+    \item \textbf{Ground Station 2 (GS2 Ankara):} Located in Ankara, Turkey ($39.9334^\circ$ N, $32.8597^\circ$ E). It acts as the receive-only downlink terminal, utilizing a \gsTwoDish-meter parabolic dish (datasheet-supported aperture \cite{triax_td88}) with an assumed consumer-grade system noise temperature ($T_{\mathrm{sys}}$) of 150~K. This value represents a typical outdoor unit (LNB + feed) performance for a Ku-band consumer terminal; no public $T_{\mathrm{sys}}$ measurement for this specific LNB/antenna combination is available.
 \end{itemize}
 
 \subsection{Computational Methodology}
 Although the original project statement mentioned a MATLAB Satellite Link Budget Analyzer as a reference workflow, the instructor explicitly permitted implementation in any programming language or computational environment. Therefore, this project implements the complete static and extended link-budget workflow in a custom Python analysis suite. The baseline equations follow the Pratt link design procedure~\cite{pratt}, while the advanced layers extend the analysis with ITU-R atmospheric models (P.618, P.837, P.838, P.676, P.840), Monte Carlo rain-outage simulation, adjacent-satellite interference, dynamic system noise temperature, apparent GEO motion, and DVB-S2 ACM. This choice allows reproducible, parametric sensitivity studies and automated generation of contour plots directly from computed physical quantities.
+
+\begin{tcolorbox}[
+    colback=gray!5,
+    colframe=gray!45,
+    title=Reproducibility Note,
+    fonttitle=\bfseries,
+    boxrule=0.4pt,
+    arc=2pt
+]
+The Python analysis scripts, generated figures, and numerical workflow used in this report are available in the project repository:
+\href{https://github.com/ayberkdt/link_budget_analysis}{GitHub Repository}.
+\end{tcolorbox}
 
 \subsection{Report Structure}
 Following this methodology, the report provides a structured, comprehensive analysis of the geostationary link. Chapter 2 details the classical link budget equations based on Pratt's textbook to establish our open-sky baseline. Chapter 3 presents advanced optional modeling layers (such as adjacent satellite interference, intermodulation distortion, digital BER/FEC, dynamic system noise temperature, and apparent GEO orbital drift). Chapter 4 models the standards-based ITU-R P.618 atmospheric suite alongside a DVB-S2 Adaptive Coding and Modulation (ACM) selector. Chapter 5 discusses the numerical results and provides detailed physical interpretations of our generated 2D contour maps, followed by a concluding summary in Chapter 6.

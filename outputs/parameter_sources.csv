@@ -3,7 +3,7 @@ GS1 latitude,41.9028,deg,sourced,Rome coordinate source
 GS1 longitude,12.4964,deg,sourced,Rome coordinate source
 GS1 dish diameter,2.4,m,datasheet_or_selected,Skyware Type 243 / selected project dish
 GS1 antenna efficiency,0.62,-,assumed,Representative aperture efficiency
-GS1 HPA power,20,W,assumed,Representative commercial Ku-band HPA power
+GS1 HPA power,20,W,datasheet_supported,Norsat ATOMBKU020 Ku-band BUC/SSPA P1dB 43 dBm minimum (20 W-class)
 GS1 feeder loss,1.0,dB,assumed,Representative uplink feeder allowance
 Satellite longitude,13.0,deg,sourced,HOTBIRD 13G orbital slot
 Satellite downlink EIRP,46,dBW,estimated,Estimated from HOTBIRD footprint contour at Ankara receiving site

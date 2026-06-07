@@ -7,15 +7,15 @@
 
 This chapter presents additional analysis modules developed beyond the core UZB451E term project specifications, focusing on atmospheric attenuation, link availability, and DVB-S2 Adaptive Coding and Modulation (ACM).
 
-\textit{Note: The implemented attenuation workflow is based on the cited ITU-R recommendation versions. It uses a self-contained engineering implementation of the main slant-path attenuation terms; site-specific regulatory design would require exact ITU digital maps and operational coordination data. The models dynamically convert standard meteorological parameters (pressure, temperature, water vapor density, and probability of exceedance) into composite decibel attenuation penalties.}
+\textit{Note: The atmospheric attenuation calculations are implemented using the cited ITU-R recommendation procedures for slant-path propagation. The model includes gaseous absorption, cloud attenuation, rain attenuation, and scintillation terms using representative meteorological inputs. For operational or regulatory link design, the same workflow should be repeated with site-specific ITU digital-map data, measured rainfall statistics, and operator coordination constraints.}
 
 \subsection[ITU-R Slant-Path Attenuation Suite]{ITU-R Slant-Path Attenuation Suite}
 
-\subsubsection{The Engineering Problem}
+\subsubsection{Slant-Path Loss Mechanisms}
 Electromagnetic waves propagating between an Earth station and a GEO satellite pass through the troposphere, where atmospheric gases, cloud liquid water, scintillation, and rain introduce additional attenuation. At Ku-band, rain is especially important because the signal wavelength is comparable to hydrometeor dimensions, so scattering and absorption can reduce the received carrier power. This section estimates these atmospheric losses for the Rome--Ankara link using a standards-based engineering implementation of the relevant ITU-R propagation models.
 
-\subsubsection{Design Motivation and Rationale}
-To design a reliable satellite communication system, engineers must accurately predict these atmospheric fades to calculate the required system margins. The International Telecommunication Union (ITU) publishes the ITU-R propagation recommendations---empirically validated mathematical suites that allow engineers to predict slant-path attenuation at any geographic coordinate on Earth. Analyzing these atmospheric effects is an important step in high-frequency RF link design.
+\subsubsection{Model Scope and Inputs}
+The ITU-R propagation recommendations provide empirical procedures for estimating slant-path attenuation as a function of frequency, elevation angle, polarization, and meteorological statistics. In this report they are used to quantify additional fade depth beyond the clear-sky budget and to identify whether the available fixed-rate margin can support the selected availability target.
 
 \subsubsection{Mathematical Formulation}
 The total atmospheric attenuation $A_{\text{total}}(p)$ in dB exceeded for an annual time percentage $p$ ($0.001\% \le p \le 5\%$) is calculated by combining gaseous absorption ($A_{\text{gaseous}}$), cloud attenuation ($A_{\text{cloud}}$), tropospheric scintillation ($A_{\text{scintillation}}$), and rain attenuation ($A_{\text{rain}}$) according to \textit{ITU-R P.618-13} \cite{itu618}:
@@ -23,7 +23,7 @@ The total atmospheric attenuation $A_{\text{total}}(p)$ in dB exceeded for an an
     A_{\text{total}}(p) = A_{\text{gaseous}} + \sqrt{ \left( A_{\text{rain}}(p) + A_{\text{cloud}} \right)^2 + A_{\text{scintillation}}(p)^2 }
 \end{equation}
 
-The point rainfall rate $R_{0.01}$ is treated as a P.837-based representative design input \cite{itu837}. In the implemented scenario, $R_{0.01} = 42$ mm/h is used; for a regulatory-grade design this value should be replaced by the exact mapped value for the selected ground-station site. The frequency- and polarization-dependent specific attenuation coefficients $k$ and $\alpha$ are then computed from ITU-R P.838-3 \cite{itu838}. The specific attenuation $\gamma_{\text{R}}$ in dB/km is computed as:
+The point rainfall rate $R_{0.01}$ is treated as a P.837-based representative design input \cite{itu837}. In the implemented scenario, the same representative value, $R_{0.01} = 42$~mm/h, is used for both terminals in this project-level analysis. A site-specific design should use separate ITU-R P.837 rainfall-rate values for Rome and Ankara. The frequency- and polarization-dependent specific attenuation coefficients $k$ and $\alpha$ are then computed from ITU-R P.838-3 \cite{itu838}. The specific attenuation $\gamma_{\text{R}}$ in dB/km is computed as:
 \begin{equation}
     \gamma_{\text{R}} = k R_{0.01}^\alpha
 \end{equation}
@@ -75,30 +75,52 @@ This ITU-R suite provides the estimated fade depths that the RF link must tolera
 
 \subsection[Monte-Carlo Rain Outage Simulation]{Monte-Carlo Rain Outage Simulation}
 
-\subsubsection{The Engineering Problem}
+\subsubsection{Weather-State Model}
 The ITU-R recommendations provide static, deterministic bounds for link availability at specific annual time percentages. However, they do not simulate the chronological, time-varying behaviour of weather---the transitions between clear-sky and storm states---nor do they provide a probability distribution of the active link margin over a continuous meteorological time series.
 
-\subsubsection{Design Motivation and Rationale}
-Running a Monte Carlo simulation allows system engineers to generate thousands of random meteorological states based on an illustrative weather-state probability model. This educational stochastic simulation models the statistical variance of atmospheric fades, enabling computation of the estimated probability distribution of active link margins and the estimated annual availability.
+\subsubsection{Availability Estimation Rationale}
+The stochastic availability model provides an illustrative estimate of margin variability under assumed weather-state probabilities. It is not a replacement for site-calibrated precipitation records, but it is useful for checking how often the selected fixed-rate margin would be exhausted under the stated fade-depth assumptions.
 
 \subsubsection{Mathematical Formulation}
-The simulation engine executes $N = 8760$ discrete trials, representing each hour of a complete year. At each time step $t_i$, the atmospheric weather state $S(t_i)$ is sampled from a probability mass function:
+The simulation engine executes $N = 8760$ discrete trials, representing each hour of a complete year. At each time step $t_i$, the atmospheric weather state $S_i$ is sampled from a probability mass function:
 \begin{itemize}
-    \item \textbf{Clear-Sky ($S_0$):} Standard operating conditions ($0$~dB excess attenuation).
-    \item \textbf{Light and Moderate Rain ($S_1, S_2$):} Small to medium fade depths drawn from a uniform attenuation profile.
-    \item \textbf{Heavy Storms ($S_3$):} Rare events ($p < 0.5\%$) triggering severe attenuation (up to $15$~dB in Ku-band).
+    \item \textbf{$S_{\mathrm{clear}}$:} Standard operating conditions ($0$~dB excess attenuation).
+    \item \textbf{$S_{\mathrm{light}}$ and $S_{\mathrm{moderate}}$:} Small to medium fade depths drawn from uniform attenuation ranges.
+    \item \textbf{$S_{\mathrm{heavy}}$:} Rare high-fade states that represent severe Ku-band rain attenuation.
 \end{itemize}
-For each generated hourly weather state, the computed active Carrier-to-Noise ratio and link margin are recalculated:
+The discrete state variable is therefore:
 \begin{equation}
-    Margin(t_i) = E_b/N_0(t_i) - \text{Required } E_b/N_0
+    S_i \in \{S_{\mathrm{clear}}, S_{\mathrm{light}}, S_{\mathrm{moderate}}, S_{\mathrm{heavy}}\}.
 \end{equation}
-An \textit{outage event} is any hour where $Margin(t_i) < 0$. The overall system availability is:
+For each generated hourly weather state, the active link margin is recalculated as:
 \begin{equation}
-    \text{Availability (\%)} = 100 \times \left( 1 - \frac{\sum \mathbf{1}(Margin(t_i) < 0)}{N} \right)
+    M_i =
+    \left(\frac{E_b}{N_0}\right)_i
+    -
+    \left(\frac{E_b}{N_0}\right)_{\mathrm{req}}.
+\end{equation}
+The outage indicator for each sample is:
+\begin{equation}
+    \mathcal{O}_i =
+    \begin{cases}
+    1, & M_i < 0, \\
+    0, & M_i \ge 0.
+    \end{cases}
+\end{equation}
+The corresponding link availability is then estimated as:
+\begin{equation}
+    A_{\mathrm{link}} =
+    100
+    \left(
+    1 -
+    \frac{1}{N}
+    \sum_{i=1}^{N}
+    \mathcal{O}_i
+    \right)\%.
 \end{equation}
 
 \subsubsection{Operational Impact and Results}
-The Monte Carlo simulation outputs a probability distribution of the link margin, illustrating the estimated risk profile over the simulated year. This allows the designer to evaluate whether the selected static margin is sufficient under stochastic weather variations.
+The Monte Carlo simulation outputs a probability distribution of the link margin and gives an estimated risk profile over the simulated year. The result indicates how often the selected static margin is consumed by the assumed stochastic weather states.
 
 \textbf{Note:} This Monte Carlo model is an illustrative stochastic availability simulation based on assumed weather-state probabilities (light rain: 2.0\%, moderate rain: 0.6\%, heavy rain: 0.1\%), not a site-calibrated meteorological time-series model derived from measured annual precipitation data. Results should therefore be interpreted as \textit{estimated availability under the assumed stochastic weather-state model}, not as a prediction of actual annual availability.
 
@@ -111,16 +133,18 @@ The Monte Carlo simulation outputs a probability distribution of the link margin
 
 \subsection[DVB-S2 ACM (Adaptive Coding \& Modulation)]{DVB-S2 ACM (Adaptive Coding \& Modulation)}
 
-\subsubsection{The Engineering Problem}
+\subsubsection{Adaptive-Throughput Context}
 Traditionally, satellite links are designed for the worst-case rain fade scenario using a fixed MODCOD. Because severe storms occur for less than $1\%$ of the year, this approach means that for over $99\%$ of the year the link operates with a large excess margin, wasting potential channel capacity.
 
-\subsubsection{Design Motivation and Rationale}
-Designing with a fixed MODCOD forces a severe compromise: either accept a higher outage risk during fades or choose a conservative data rate. Adaptive Coding and Modulation (ACM) solves this by dynamically monitoring the active $E_s/N_0$ at the receiver and changing the modulation order and FEC code rate in real-time. This improves throughput during clear-sky conditions while reducing outage risk during fades by switching to highly robust MODCODs.
+\subsubsection{Fixed-Rate and ACM Metrics}
+The fixed-rate link margin and the ACM throughput analysis are treated as separate performance views. The former evaluates closure against a prescribed $(E_b/N_0)$ threshold, whereas the latter maps the available $(E_s/N_0)$ to DVB-S2 MODCOD thresholds and net throughput for a specified carrier bandwidth and roll-off factor. The two metrics should not be interpreted as the same quantity.
+
+Adaptive Coding and Modulation (ACM) monitors the active $E_s/N_0$ at the receiver and changes the modulation order and FEC code rate in real time. This improves throughput during clear-sky conditions while reducing outage risk during fades by switching to more robust MODCODs.
 
 \subsubsection{Mathematical Formulation}
-The receiver continuously monitors $(E_s/N_0)_{\text{available}}$ and dynamically selects the highest spectral efficiency $\eta$ (in bits/symbol) from the DVB-S2 \cite{dvbs2} MODCOD ladder that satisfies:
+The receiver continuously monitors $(E_s/N_0)_{\mathrm{available}}$ and dynamically selects the highest spectral efficiency $\eta$ (in bits/symbol) from the DVB-S2 \cite{dvbs2} MODCOD ladder that satisfies:
 \begin{equation}
-    (E_s/N_0)_{\text{available}} \ge \text{Required } (E_s/N_0)_{\text{MODCOD}} + Margin_{\text{impl}}
+    (E_s/N_0)_{\mathrm{available}} \ge (E_s/N_0)_{\mathrm{MODCOD,req}} + M_{\mathrm{impl}}
 \end{equation}
 
 \begin{figure}[H]
@@ -130,13 +154,13 @@ The receiver continuously monitors $(E_s/N_0)_{\text{available}}$ and dynamicall
     \label{fig:dvbs2_modcod_ladder}
 \end{figure}
 
-Using the usable symbol rate $R_{\text{s}} = B / (1 + \alpha_{\text{rolloff}})$, the active net throughput is:
+Using the usable symbol rate $R_{\mathrm{s}} = B / (1 + \alpha_{\mathrm{rolloff}})$, the active net throughput is:
 \begin{equation}
-    Throughput(\text{Mbps}) = \eta \cdot R_{\text{s}}
+    R_{\mathrm{net}}\,[\mathrm{Mbps}] = \eta \cdot R_{\mathrm{s}}
 \end{equation}
 
 \subsubsection{Operational Impact and Results}
-Under clear-sky conditions, the ACM selector shifts to a higher-efficiency MODCOD than the robust rain-fade mode. The exact selected mode depends on the available $E_s/N_0$ and the implemented DVB-S2 threshold table. For a 36 MHz carrier with $\alpha=0.20$ ($R_s = 30$ Msps), the available $E_s/N_0$ allows for QPSK 3/4 in both noise-only and interference-impaired conditions, and degrades to QPSK 1/2 under 99.9\% rain fade.
+Under clear-sky conditions, the ACM selector shifts to a higher-efficiency MODCOD than the robust rain-fade mode. The exact selected mode depends on the available $E_s/N_0$ and the implemented DVB-S2 threshold table. For a 36 MHz carrier with $\alpha=0.20$ ($R_{\mathrm{s}} = 30$ Msps), the available $E_s/N_0$ allows for QPSK 3/4 in both noise-only and interference-impaired conditions, and degrades to QPSK 1/2 under 99.9\% rain fade.
 
 Table~\ref{tab:acm_consistency} maps the specific operating points to their required thresholds, verifying the physical consistency between the link margin and the throughput claims.
 
@@ -149,7 +173,7 @@ Table~\ref{tab:acm_consistency} maps the specific operating points to their requ
     \resizebox{\textwidth}{!}{
       \begin{tabular}{l c c c c c}
         \toprule
-        \textbf{Case} & \textbf{Avail. $E_s/N_0$} & \textbf{Selected MODCOD} & \textbf{Req. $E_s/N_0$} & \textbf{Efficiency ($\eta$)} & \textbf{Net Throughput ($\eta R_s$)} \\
+        \textbf{Case} & \textbf{Avail. $E_s/N_0$} & \textbf{Selected MODCOD} & \textbf{Req. $E_s/N_0$} & \textbf{Efficiency ($\eta$)} & \textbf{Net Throughput ($\eta R_{\mathrm{s}}$)} \\
         \midrule
         \textbf{Clear-Sky (Thermal)} & $\approx 6.38$ dB & QPSK 3/4 & 4.03 dB & 1.487 & $\approx 44.61$ Mbps \\
         \textbf{With ASI \& IMD} & $\approx 5.92$ dB & QPSK 3/4 & 4.03 dB & 1.487 & $\approx 44.61$ Mbps \\
@@ -158,7 +182,7 @@ Table~\ref{tab:acm_consistency} maps the specific operating points to their requ
     \end{tabular}
     }
     \vspace{0.1cm}
-    \small\textit{Note: All points assume 1.0 dB implementation margin. Throughput is computed using $R_s = 30$ Msps.}\normalsize
+    \small\textit{Note: All points assume 1.0 dB implementation margin. Throughput is computed using $R_{\mathrm{s}} = 30$ Msps.}\normalsize
 \end{table}
 
 \begin{figure}[H]
@@ -172,6 +196,6 @@ Table~\ref{tab:acm_consistency} maps the specific operating points to their requ
 
 ULPC is discussed as a mitigation concept, not as a fully implemented closed-loop control model. When heavy rain attenuates the uplink carrier, the satellite transponder input power drops below its optimal operating region. ULPC addresses this by dynamically increasing the ground station HPA transmit power:
 \begin{equation}
-    P_{\text{tx,dynamic}}(\text{dBW}) = P_{\text{tx,nominal}}(\text{dBW}) + A_{\text{rain,up}}(\text{dB})
+    P_{\mathrm{tx,dynamic}}\,[\mathrm{dBW}] = P_{\mathrm{tx,nominal}}\,[\mathrm{dBW}] + A_{\mathrm{rain,up}}\,[\mathrm{dB}]
 \end{equation}
-subject to $P_{\text{tx,dynamic}} \le P_{\text{tx,max}}$. This expression represents ideal first-order fade compensation. In practice, ULPC is constrained by HPA headroom, regulatory EIRP limits, adjacent-satellite interference budgets, transponder input back-off requirements, and the finite loop latency of the measurement-and-correction cycle. Therefore, the full recovery of the uplink attenuation through power control alone cannot always be guaranteed, and ULPC is best treated as a complementary measure alongside DVB-S2 ACM.
+subject to $P_{\mathrm{tx,dynamic}} \le P_{\mathrm{tx,max}}$. This expression represents ideal first-order fade compensation. In practice, ULPC is constrained by HPA headroom, regulatory EIRP limits, adjacent-satellite interference budgets, transponder input back-off requirements, and the finite loop latency of the measurement-and-correction cycle. Therefore, the full recovery of the uplink attenuation through power control alone cannot always be guaranteed, and ULPC is best treated as a complementary measure alongside DVB-S2 ACM.

@@ -321,7 +321,7 @@ def build_parameter_source_rows(scenario: ScenarioConfig) -> list[dict[str, obje
         {"parameter": "GS1 longitude", "value": 12.4964, "unit": "deg", "status": "sourced", "source_or_note": "Rome coordinate source"},
         {"parameter": "GS1 dish diameter", "value": 2.4, "unit": "m", "status": "datasheet_or_selected", "source_or_note": "Skyware Type 243 / selected project dish"},
         {"parameter": "GS1 antenna efficiency", "value": 0.62, "unit": "-", "status": "assumed", "source_or_note": "Representative aperture efficiency"},
-        {"parameter": "GS1 HPA power", "value": 20, "unit": "W", "status": "assumed", "source_or_note": "Representative commercial Ku-band HPA power"},
+        {"parameter": "GS1 HPA power", "value": 20, "unit": "W", "status": "datasheet_supported", "source_or_note": "Norsat ATOMBKU020 Ku-band BUC/SSPA P1dB 43 dBm minimum (20 W-class)"},
         {"parameter": "GS1 feeder loss", "value": 1.0, "unit": "dB", "status": "assumed", "source_or_note": "Representative uplink feeder allowance"},
         {"parameter": "Satellite longitude", "value": 13.0, "unit": "deg", "status": "sourced", "source_or_note": "HOTBIRD 13G orbital slot"},
         {"parameter": "Satellite downlink EIRP", "value": 46, "unit": "dBW", "status": "estimated", "source_or_note": "Estimated from HOTBIRD footprint contour at Ankara receiving site"},

@@ -8,13 +8,14 @@
 \input{parameters}
 
 \begin{document}
+\pagenumbering{gobble}
 
 % ========================================================================
 %                               COVER PAGE
 % ========================================================================
 \begin{titlepage}
     \centering
-    \vspace*{-0.5cm}
+    \vspace*{-0.35cm}
     
     {\large\bfseries ISTANBUL TECHNICAL UNIVERSITY}\\[0.15cm]
     {\large\bfseries FACULTY OF AERONAUTICS AND ASTRONAUTICS}\\[0.15cm]
@@ -22,7 +23,7 @@
     
     \rule{\linewidth}{1.2pt}\\[0.4cm]
     {\large\bfseries GEOSTATIONARY BENT-PIPE SATELLITE LINK BUDGET ANALYSIS \& ATMOSPHERIC PROPAGATION STUDY}\\[0.4cm]
-    \rule{\linewidth}{1.2pt}\\[0.5cm]
+    \rule{\linewidth}{1.2pt}\\[0.75cm]
     
     \includegraphics[width=0.6\textwidth]{itu_logo.png}\\[0.5cm]
     
@@ -44,7 +45,8 @@
     \hfill
     \begin{minipage}[t]{0.02\textwidth}
         \centering
-        \vrule height 2.6cm width 0.8pt
+        \vspace{0.18cm}
+        \vrule height 2.35cm width 0.8pt
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.45\textwidth}
@@ -60,6 +62,7 @@
 \end{titlepage}
 
 \newpage
+\pagenumbering{roman}
 
 % ========================================================================
 %                           TABLE OF CONTENTS
@@ -70,6 +73,10 @@
 \listoffigures
 \listoftables
 \newpage
+
+\input{nomenclature}
+\newpage
+\pagenumbering{arabic}
 
 % ========================================================================
 %                               CHAPTERS
