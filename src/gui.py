@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
     QLabel, QPushButton, QMessageBox, QFrame,
     QStackedWidget, QListWidget, QLineEdit, QDoubleSpinBox, QScrollArea, QAbstractButton
 )
-from PyQt6.QtCore import Qt, QThread, pyqtSignal, QRectF, QPropertyAnimation, pyqtProperty
+from PyQt6.QtCore import Qt, QThread, QTimer, pyqtSignal, QRectF, QPropertyAnimation, pyqtProperty
 from PyQt6.QtGui import QFont, QColor, QPainter, QCursor, QPen
 
 SCENARIO_FILE = os.path.join(os.path.dirname(__file__), "scenario_inputs.py")
@@ -55,7 +55,7 @@ PAGES = [
                 ]
             },
             {
-                "id": "SAT",
+                "id": "SATELLITE",
                 "title": "Geostationary Satellite",
                 "desc": "The bent-pipe space segment.",
                 "params": [
@@ -85,19 +85,19 @@ PAGES = [
             {
                 "id": "ITU_PROPAGATION",
                 "title": "ITU-R P.618 Propagation",
-                "desc": "The rigorous standard for satellite link design. Computes exact gaseous attenuation, cloud attenuation, rain fade, and tropospheric scintillation based on local meteorology and availability targets.",
+                "desc": "ITU-R-informed gas, cloud, rain, and tropospheric-scintillation estimates using the configured representative meteorological inputs.",
                 "params": [
                     {"key": "enabled", "type": "bool", "label": "Enable Module", "help": "Toggle the ITU-R empirical models"},
                     {"key": "rain_rate_001_mm_per_h", "type": "float", "label": "R0.01 Rain Rate (mm/h)", "help": "Rain intensity exceeded 0.01% of an average year", "min": 0, "max": 150},
-                    {"key": "design_availability_percent", "type": "float", "label": "Target Availability (%)", "help": "Link availability requirement (e.g., 99.9%)", "min": 90, "max": 99.999},
-                    {"key": "surface_temperature_c", "type": "float", "label": "Surface Temp (°C)", "help": "Average ground temperature", "min": -50, "max": 60},
-                    {"key": "water_vapour_density_g_m3", "type": "float", "label": "Water Vapour (g/m³)", "help": "Average atmospheric water vapour density", "min": 0, "max": 30},
+                    {"key": "design_availability_percent", "type": "float", "label": "Per-Path Non-Exceedance (%)", "help": "Per-path attenuation non-exceedance target; dual-site use is a stress case", "min": 90, "max": 99.999},
+                    {"key": "surface_temperature_c", "type": "float", "label": "Surface Temp (deg C)", "help": "Representative surface temperature", "min": -50, "max": 60},
+                    {"key": "water_vapour_density_g_m3", "type": "float", "label": "Water Vapour (g/m^3)", "help": "Representative atmospheric water-vapour density", "min": 0, "max": 30},
                 ]
             },
             {
                 "id": "RAIN_OUTAGE",
                 "title": "Rain Outage (Stochastic)",
-                "desc": "A basic stochastic model for rain fade events over a year, assigning probability states (Clear, Light, Moderate, Heavy) to randomize the channel. Useful for Monte Carlo availability studies.",
+                "desc": "An illustrative annual Monte Carlo generator with configurable clear, light, moderate, and heavy attenuation states.",
                 "params": [
                     {"key": "enabled", "type": "bool", "label": "Enable Module", "help": "Toggle Monte Carlo state simulations"},
                     {"key": "light_rain_probability", "type": "float", "label": "Light Rain Prob.", "help": "Probability of light rain occurrence", "min": 0, "max": 1},
@@ -135,7 +135,7 @@ PAGES = [
             {
                 "id": "DYNAMIC_NOISE",
                 "title": "Dynamic Noise",
-                "desc": "A refined antenna noise temperature model accounting for low-elevation ground spillover, internal LNB noise, and emission noise from rain clouds. This replaces the static 150K assumption.",
+                "desc": "A receiver-temperature model for internal noise, spillover, elevation-dependent sky noise, and atmospheric emission.",
                 "params": [
                     {"key": "enabled", "type": "bool", "label": "Enable Module", "help": "Calculate real-time Tsys based on weather"},
                     {"key": "receiver_internal_noise_k", "type": "float", "label": "LNB Internal Noise (K)", "help": "Noise temperature of the Low Noise Block", "min": 10, "max": 300},
@@ -146,13 +146,13 @@ PAGES = [
             {
                 "id": "APPARENT_MOTION",
                 "title": "Apparent Motion",
-                "desc": "Simulates the daily drift of the geostationary satellite within its station-keeping box (typically ±0.05° to ±0.1°). This affects slant range, elevation angle, and free-space path loss continuously over the specified duration.",
+                "desc": "Simulates apparent GEO motion within the configured station-keeping box and recomputes range, elevation, and free-space loss.",
                 "params": [
                     {"key": "enabled", "type": "bool", "label": "Enable Module", "help": "Simulate satellite drifting over time"},
                     {"key": "duration_hours", "type": "float", "label": "Duration (hours)", "help": "Length of the orbital simulation", "min": 1, "max": 72},
                     {"key": "step_minutes", "type": "float", "label": "Step Size (minutes)", "help": "Time resolution of the simulation", "min": 1, "max": 60},
-                    {"key": "east_west_amplitude_deg", "type": "float", "label": "East-West Amp (°)", "help": "Longitudinal station-keeping limits", "min": 0, "max": 1},
-                    {"key": "north_south_amplitude_deg", "type": "float", "label": "North-South Amp (°)", "help": "Latitudinal orbital inclination", "min": 0, "max": 1},
+                    {"key": "east_west_amplitude_deg", "type": "float", "label": "East-West Amp (deg)", "help": "Longitudinal station-keeping amplitude", "min": 0, "max": 1},
+                    {"key": "north_south_amplitude_deg", "type": "float", "label": "North-South Amp (deg)", "help": "Latitudinal station-keeping amplitude", "min": 0, "max": 1},
                 ]
             }
         ]
@@ -169,7 +169,7 @@ class ToggleSwitch(QAbstractButton):
         self.anim.setDuration(200)
         self.toggled.connect(self.start_anim)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setToolTip("Modern On/Off Switch adapted from Lunar Simulation.")
+        self.setToolTip("Enable or disable this analysis module.")
 
     @pyqtProperty(float)
     def pos(self):
@@ -200,20 +200,27 @@ class ToggleSwitch(QAbstractButton):
 
 class RunnerThread(QThread):
     output_signal = pyqtSignal(str)
-    finished_signal = pyqtSignal()
+    finished_signal = pyqtSignal(bool, str)
     
     def run(self):
-        process = subprocess.Popen(
-            [sys.executable, MAIN_SCRIPT],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            encoding='utf-8'
-        )
-        for line in process.stdout:
-            self.output_signal.emit(line)
-        process.wait()
-        self.finished_signal.emit()
+        try:
+            process = subprocess.Popen(
+                [sys.executable, MAIN_SCRIPT],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
+            for line in process.stdout or ():
+                self.output_signal.emit(line)
+            return_code = process.wait()
+            self.finished_signal.emit(
+                return_code == 0,
+                "" if return_code == 0 else f"Analysis exited with code {return_code}.",
+            )
+        except Exception as exc:
+            self.finished_signal.emit(False, str(exc))
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -656,7 +663,7 @@ class MainWindow(QMainWindow):
     def save_settings(self):
         if not os.path.exists(SCENARIO_FILE):
             QMessageBox.warning(self, "Warning", "scenario_inputs.py not found.")
-            return
+            return False
             
         with open(SCENARIO_FILE, "r", encoding="utf-8") as f:
             content = f.read()
@@ -700,14 +707,17 @@ class MainWindow(QMainWindow):
         with open(SCENARIO_FILE, "w", encoding="utf-8") as f:
             f.write(content)
             
-        self.btn_save.setText("Saved ✓")
+        self.btn_save.setText("Saved")
         self.btn_save.setStyleSheet(f"""
             QPushButton {{
                 background: {THEME['success']}; color: #05090F;
                 border: none; border-radius: 8px; font-weight: 600; font-size: 11pt; padding: 12px;
             }}
         """)
-        QThread.msleep(1000)
+        QTimer.singleShot(1000, self._reset_save_button)
+        return True
+
+    def _reset_save_button(self):
         self.btn_save.setText("Save Settings")
         self.btn_save.setStyleSheet(f"""
             QPushButton {{
@@ -718,18 +728,37 @@ class MainWindow(QMainWindow):
         """)
 
     def run_simulation(self):
-        self.save_settings()
+        if not self.save_settings():
+            return
         self.btn_run.setText("Running...")
         self.btn_run.setEnabled(False)
+        self.run_output = []
         
         self.thread = RunnerThread()
+        self.thread.output_signal.connect(self.on_run_output)
         self.thread.finished_signal.connect(self.on_run_finished)
         self.thread.start()
 
-    def on_run_finished(self):
+    def on_run_output(self, line):
+        self.run_output.append(line.rstrip())
+        self.run_output = self.run_output[-30:]
+
+    def on_run_finished(self, success, message):
         self.btn_run.setText("Run Analysis")
         self.btn_run.setEnabled(True)
-        QMessageBox.information(self, "Success", "Analysis completed successfully. Check the outputs folder.")
+        if success:
+            QMessageBox.information(
+                self,
+                "Success",
+                "Analysis completed successfully. Check the outputs folder.",
+            )
+            return
+        detail = "\n".join(self.run_output[-12:])
+        QMessageBox.critical(
+            self,
+            "Analysis Failed",
+            f"{message}\n\n{detail}".strip(),
+        )
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

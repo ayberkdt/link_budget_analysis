@@ -32,8 +32,8 @@ Table~\ref{tab:assumptions} distinguishes published hardware or operator values 
         Computed gain is 48.86~dBi at 14.0~GHz, consistent with the datasheet. \\
         Norsat ATOMBKU020 \cite{norsat_atombku} &
         $P_{\mathrm{1dB}}\ge43$~dBm; 14.0--14.5~GHz standard band &
-        20~W nominal output &
-        The 20~W class is used; no additional amplifier gain is invented. \\
+        20~W rated boundary point &
+        The input uses the minimum P1dB rating; no linear-output back-off is credited. \\
         HOTBIRD 13F/13G widebeam \cite{eutelsat} &
         $13^\circ$E; official 40--53~dBW contour map &
         46~dBW at Ankara &
@@ -45,7 +45,7 @@ Table~\ref{tab:assumptions} distinguishes published hardware or operator values 
         Triax TD88 \cite{triax_td88} &
         95~cm $\times$ 85~cm; 38.8~dBi at 11.7~GHz &
         0.9~m equivalent circular aperture &
-        Computed gain is approximately 39.0~dBi at 12~GHz. \\
+        $\sqrt{0.95\times0.85}=0.899$~m; computed gain is approximately 39.0~dBi at 12~GHz. \\
         GS2 receiver noise &
         LNB-specific combined $T_{\mathrm{sys}}$ unavailable &
         150~K static baseline &
@@ -77,7 +77,7 @@ Table~\ref{tab:static_budget} gives the intermediate values from the software im
         \multirow{6}{*}{\textbf{Geometry}} 
         & Coordinates & $41.90^\circ$N, $12.50^\circ$E & $39.93^\circ$N, $32.86^\circ$E & -- \\
         & Satellite Longitude & $13.00^\circ$E & $13.00^\circ$E & -- \\
-        & Slant Range ($d$) & $37,658.79$ & $37,823.12$ & km \\
+        & Slant Range ($d$) & $\upSlantRange$ & $\downSlantRange$ & km \\
         & Elevation Angle ($\theta$) & $41.60$ & $39.44$ & deg \\
         & Azimuth Angle ($Az$) & $179.25$ & $209.37$ & deg \\
         & Central Angle & $41.91$ & $43.85$ & deg \\
@@ -235,164 +235,128 @@ Five contour plots show the principal static sensitivities and link-closure boun
 \end{itemize}
 
 \subsection{Advanced Impairment and Dynamic Analysis}
-This section adds the optional interference, orbital, atmospheric, and adaptation models to the static reference case.
+The advanced calculations retain the baseline hardware and geometry, changing only the active physical models.
+
 \subsubsection[Interference (ASI and IMD)]{Interference (ASI and IMD)}
-\begin{itemize}
-    \item \textbf{Purpose:} Evaluate ASI from modeled neighbors at $11^\circ$E and $15^\circ$E and add the assumed transponder IMD term.
-    \item \textbf{Numerical result:} ASI and IMD reduce the margin from $\marginClear$~dB to \textbf{\marginASI~dB}. The ablation study attributes about 0.44~dB to ASI and 0.01~dB to the assumed IMD term.
-    \item \textbf{Interpretation:} The combined 0.46~dB penalty is modest for the selected antenna sizes and assumed activity factor, but it is not a coordination result.
-    \item \textbf{Design use:} An operational study would replace the generic sidelobe envelope and IMD assumption with measured antenna patterns, assigned polarizations, carrier powers, and transponder loading.
-\end{itemize}
+The modeled neighbors at $11^\circ$E and $15^\circ$E reduce the fixed-rate margin from \marginClear~dB to \marginASI~dB. Most of this change comes from ASI; the assumed 30~dB transponder IMD term contributes only 0.01~dB. These values are sensitivity assumptions, not coordination limits.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{06_downlink_asi_ci_spacing_vs_dish.png}
-    \caption{Downlink Adjacent Satellite Interference (ASI) $C/I$ ratio as a function of orbital spacing and receiving antenna diameter.}
+    \caption{Downlink ASI $C/I$ as a function of orbital spacing and receive-dish diameter.}
     \label{fig:downlink_asi}
 \end{figure}
 
 \subsubsection[Time-Varying Orbital Dynamics]{Time-Varying Orbital Dynamics}
-\begin{itemize}
-    \item \textbf{Purpose:} Apply the simplified station-keeping motion model over 48 hours.
-    \item \textbf{Result:} The combined margin varies by approximately 0.02~dB peak-to-peak.
-    \item \textbf{Interpretation:} The modeled longitude, latitude, and radial excursions produce only small range and elevation changes for this GEO geometry.
-    \item \textbf{Design use:} The approximately 0.02~dB variation is negligible for this budget. The result is a consistency check for the GEO motion model, not a validation for LEO or MEO orbit propagation.
-\end{itemize}
+The 48-hour station-keeping model produces a 3.98--4.00~dB impaired-margin envelope, only 0.017~dB peak-to-peak. The effect is negligible for this GEO budget and is presented as a model-consistency check.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{07_time_varying_combined_margin.png}
-    \caption{Time-varying combined link margin under the modeled apparent satellite motion.}
+    \caption{Combined link margin under the modeled apparent GEO motion.}
     \label{fig:time_varying_margin}
 \end{figure}
 
-\subsubsection[ITU-R Rain Fade and Atmospheric Impairments]{ITU-R Rain Fade and Atmospheric Impairments}
-\begin{itemize}
-    \item \textbf{Purpose:} Calculate the excess attenuation at the 99.9\% target-availability point ($p=0.1\%$).
-    \item \textbf{Result:}
-    \begin{itemize}
-        \item \textbf{Uplink Attenuation (14.0 GHz):} Total combined atmospheric fade of \upRainAtten~dB.
-        \item \textbf{Downlink Attenuation (12.0 GHz):} Total combined atmospheric fade of \downRainAtten~dB.
-    \end{itemize}
-    \item \textbf{Interpretation:} Rain contributes about 90\% of the modeled excess attenuation; gas, cloud, and scintillation make up the remainder.
-    \item \textbf{Design use:} The resulting \marginRain~dB margin does not close the 10~Mbps fixed-rate case. Additional RF margin or a revised service requirement is needed for the stated target.
-\end{itemize}
+\subsubsection{Atmospheric p-Point Cases and ACM}
+At $p=0.1\%$, the modeled totals are \upRainAtten~dB on the uplink and \downRainAtten~dB on the downlink. Table~\ref{tab:comparison_summary} separates the two single-path cases from the deliberately conservative coincident case. The latter is a stress point, not a 99.9\% end-to-end availability estimate.
+
+\begin{table}[H]
+    \centering
+    \caption{Static and advanced operating-point comparison.}
+    \label{tab:comparison_summary}
+    \vspace{0.12cm}
+    {\footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \renewcommand{\arraystretch}{1.22}
+    \begin{tabularx}{\textwidth}{
+        >{\raggedright\arraybackslash}p{0.21\textwidth}
+        >{\centering\arraybackslash}p{0.13\textwidth}
+        >{\centering\arraybackslash}p{0.13\textwidth}
+        >{\centering\arraybackslash}p{0.13\textwidth}
+        >{\centering\arraybackslash}p{0.13\textwidth}
+        >{\raggedright\arraybackslash}X}
+        \rowcolor{tableHeader}
+        \color{white}\textbf{Case} &
+        \color{white}\textbf{UL/DL Applied Loss} &
+        \color{white}\textbf{10 Mbps $E_b/(N_0+I_0)$} &
+        \color{white}\textbf{Margin} &
+        \color{white}\textbf{ACM Mode} &
+        \color{white}\textbf{Interpretation} \\
+        Clear sky, noise only & 0/0~dB & 11.15~dB & \marginClear~dB & QPSK 3/4, 44.6~Mbps & Static reference; interference excluded. \\
+        Clear sky with ASI and IMD & 0/0~dB & 10.69~dB & \marginASI~dB & QPSK 3/4, 44.6~Mbps & Impaired clear-sky snapshot. \\
+        Uplink-only $p=0.1\%$ & 3.65/0~dB & 9.17~dB & \marginUplinkFade~dB & QPSK 2/3, 39.67~Mbps & Rome fade applied; Ankara remains at its static allowance. \\
+        Downlink-only $p=0.1\%$ & 0/2.29~dB & 8.60~dB & \marginDownlinkFade~dB & QPSK 3/5, 35.65~Mbps & Ankara fade and sky-noise emission applied. \\
+        \rowcolor{tableSelected}
+        Coincident dual-site $p=0.1\%$ & 3.65/2.29~dB & 7.45~dB & \marginRain~dB & QPSK 1/2, \throughputRain~Mbps & Conservative stress case; fixed-rate link still closes by 0.45~dB. \\
+        \bottomrule
+    \end{tabularx}
+    }
+\end{table}
+
+\begin{tcolorbox}[
+    colback=repoBackground,
+    colframe=repoAccent,
+    title=Reading the Two Performance Metrics,
+    fonttitle=\bfseries,
+    boxrule=0.6pt,
+    arc=1.5pt
+]
+\small
+The 10~Mbps closure test uses $E_b/N_0=C/N_0-10\log_{10}R_b$ and a 7~dB requirement. ACM instead uses $E_s/N_0=C/N_0-10\log_{10}R_s$ with $R_s=B/(1+\alpha)$, then selects a MODCOD-specific threshold plus 1~dB implementation margin. ACM throughput is therefore a separate variable-rate service view; it does not add physical RF margin.
+\end{tcolorbox}
+
+The independent-site Monte Carlo generator gives an illustrative annual closure fraction under assumed weather-state probabilities. Figure~\ref{fig:rain_weather_samples} shows the first 240 hours; it is not a measured or temporally correlated storm record.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{14_rain_double_hit_margin_timeseries.png}
-    \caption{Illustrative link-margin response when the stochastic model applies heavy attenuation to both link directions.}
-    \label{fig:rain_double_hit}
+    \caption{Illustrative margin and downlink attenuation samples with independent Rome and Ankara weather draws.}
+    \label{fig:rain_weather_samples}
 \end{figure}
 
-\subsubsection[DVB-S2 ACM Throughput Performance]{DVB-S2 ACM Throughput Performance}
-\begin{itemize}
-    \item \textbf{Purpose:} Apply the DVB-S2 selector at the 99.9\% atmospheric design point.
-    \item \textbf{Numerical result:} At the 99.9\% atmospheric design point, the selector chooses \textbf{QPSK 1/2}, with a tabulated threshold of $E_s/N_0=1.00$~dB and estimated net throughput of \textbf{\throughputRain~Mbps}.
-    \item \textbf{Interpretation:} QPSK 1/2 has a lower threshold than QPSK 3/4 and therefore remains selectable at reduced throughput.
-    \item \textbf{Design use:} ACM preserves a variable-rate operating mode; it does not add physical link margin or prove fixed-rate availability.
-\end{itemize}
+\subsection{Module Ablation Study}
+The ablation chain in Table~\ref{tab:ablation_summary} changes one modeling element at a time. Values are generated from the same functions exported to \texttt{outputs/ablation\_summary.csv}.
 
-\subsection{Performance Comparison and Engineering Synthesis}
-The static and extended calculations use the same hardware and geometry inputs; only the enabled impairment and adaptation models change.
-
-\begin{tcolorbox}[
-    colback=gray!5,
-    colframe=gray!45,
-    title=Design Implication: Fixed-Rate Margin vs. ACM Throughput,
-    fonttitle=\bfseries,
-    boxrule=0.4pt,
-    arc=2pt
-]
-\small
-\textbf{Fixed-rate metric:} $E_b/N_0 = C/N_0 - 10\log_{10}(R_b)$ \\
-\textbf{ACM metric:} $E_s/N_0 = C/N_0 - 10\log_{10}(R_s)$ \\
-\textbf{Symbol rate:} $R_s = B / (1 + \alpha)$ \\
-\textbf{Effective impaired metric:} Thermal noise and interference are combined using inverse-linear summation.
-
-\vspace{0.2cm}
-\textbf{Clarification:} The fixed-rate 10 Mbps case and the DVB-S2 ACM throughput case are not evaluated with the same closure criterion. The fixed-rate case uses a conservative required $E_b/N_0 = 7$ dB design threshold. The ACM case converts the available end-to-end $C/(N+I)_0$ into $E_s/N_0$ at the DVB-S2 symbol rate and checks closure against MODCOD-specific DVB-S2 thresholds plus implementation margin. Therefore, the ACM throughput values are estimated variable-rate DVB-S2 carrier capacities under the selected MODCOD, not a direct continuation of the fixed 10 Mbps operating mode.
-\end{tcolorbox}
-
-\subsubsection{Module Ablation Study}
-The three-state comparison is complemented by a controlled ablation study in which one physical effect is introduced at a time. The values are generated by the same analysis functions and exported to \texttt{outputs/ablation\_summary.csv}; therefore, the table is not a collection of independent hand-picked cases. The cumulative rows isolate the incremental margin change caused by each model, while the diagnostic rows report effects that need not be one-sided impairments.
-
+\begin{landscape}
 \begin{table}[H]
     \centering
-    \caption{Ablation study separating the contribution of each advanced model.}
+    \caption{Controlled ablation of the advanced link-budget modules.}
     \label{tab:ablation_summary}
-    \vspace{0.15cm}
-    {\scriptsize
-    \setlength{\tabcolsep}{2.7pt}
-    \renewcommand{\arraystretch}{1.18}
-    \begin{tabular}{
-        >{\centering\arraybackslash}p{0.045\textwidth}
-        >{\raggedright\arraybackslash}p{0.275\textwidth}
-        >{\centering\arraybackslash}p{0.085\textwidth}
-        >{\centering\arraybackslash}p{0.075\textwidth}
-        >{\centering\arraybackslash}p{0.08\textwidth}
-        >{\centering\arraybackslash}p{0.105\textwidth}
-        >{\centering\arraybackslash}p{0.11\textwidth}
-        >{\raggedright\arraybackslash}p{0.16\textwidth}}
-        \toprule
-        \textbf{Stage} &
-        \textbf{Active Effects} &
-        \textbf{10 Mbps Margin} &
-        \textbf{Increment} &
-        \textbf{GS2 $T_{\mathrm{sys}}$} &
-        \textbf{UL/DL Excess Loss} &
-        \textbf{Margin Range / Variation} &
-        \textbf{Result} \\
+    \vspace{0.12cm}
+    {\footnotesize
+    \setlength{\tabcolsep}{5pt}
+    \renewcommand{\arraystretch}{1.22}
+    \begin{tabularx}{\linewidth}{
+        >{\centering\arraybackslash}p{0.05\linewidth}
+        >{\raggedright\arraybackslash}p{0.30\linewidth}
+        >{\centering\arraybackslash}p{0.09\linewidth}
+        >{\centering\arraybackslash}p{0.09\linewidth}
+        >{\centering\arraybackslash}p{0.09\linewidth}
+        >{\centering\arraybackslash}p{0.11\linewidth}
+        >{\raggedright\arraybackslash}X}
+        \rowcolor{tableHeader}
+        \color{white}\textbf{Stage} &
+        \color{white}\textbf{Change from Previous Stage} &
+        \color{white}\textbf{Margin} &
+        \color{white}\textbf{Increment} &
+        \color{white}\textbf{GS2 $T_{\mathrm{sys}}$} &
+        \color{white}\textbf{UL/DL Atmospheric Total} &
+        \color{white}\textbf{Finding} \\
+        A0 & Thermal-noise-only static reference & 4.15~dB & reference & 150~K & 0/0~dB & Baseline fixed-rate link closes. \\
+        A1 & Add adjacent-satellite interference & 3.71~dB & $-0.44$~dB & 150~K & 0/0~dB & ASI is the principal clear-sky interference term. \\
+        A2 & Add the assumed transponder IMD term & 3.69~dB & $-0.01$~dB & 150~K & 0/0~dB & IMD is minor for the selected 30~dB $C/I$. \\
+        A3 & Replace each 0.5~dB static atmospheric allowance with gas, cloud, and scintillation & 3.77~dB & $+0.08$~dB & 150~K & 0.43/0.41~dB & The modeled non-rain totals are slightly smaller than the static allowances. \\
+        A4 & Add rain carrier attenuation at per-path $p=0.1\%$; keep $T_{\mathrm{sys}}$ fixed & 1.36~dB & $-2.41$~dB & 150~K & 3.65/2.29~dB & Rain-induced carrier loss is the dominant penalty. \\
+        A5 & Replace fixed 150~K with the dynamic clear-sky receiver model; suppress atmospheric emission & 1.62~dB & $+0.26$~dB & 127~K & 3.65/2.29~dB & This isolates the receiver-temperature baseline change. \\
+        \rowcolor{tableSelected}
+        A6 & Add downlink atmospheric emission under the same carrier attenuation & 0.45~dB & $-1.17$~dB & 239~K & 3.65/2.29~dB & The faded sky-noise term is substantial but no longer mixed with the baseline change. \\
+        A7 & Apply the DVB-S2 ACM selector & 0.45~dB & 0.00~dB & 239~K & 3.65/2.29~dB & QPSK 1/2 gives \throughputRain~Mbps; physical margin is unchanged. \\
         \midrule
-        A0 & Thermal-noise-only static baseline & $4.15$ dB & reference & $150$ K & $0/0$ dB & single point & Fixed-rate closed \\
-        A1 & A0 + adjacent-satellite interference & $3.71$ dB & $-0.44$ dB & $150$ K & $0/0$ dB & single point & ASI is the main clear-sky interference penalty \\
-        A2 & A1 + transponder IMD & $3.69$ dB & $-0.01$ dB & $150$ K & $0/0$ dB & single point & IMD adds a small penalty for the assumed 30~dB $C/I$ term \\
-        A3 & A2 + gas, cloud, and scintillation; fixed $T_{\mathrm{sys}}$ & $3.32$ dB & $-0.38$ dB & $150$ K & $0.43/0.41$ dB & single point & Non-rain atmospheric loss remains moderate \\
-        A4 & A3 + rain attenuation at 99.9\% availability; fixed $T_{\mathrm{sys}}$ & $0.88$ dB & $-2.43$ dB & $150$ K & $3.65/2.29$ dB & single point & Carrier attenuation consumes most of the remaining margin \\
-        A5 & A4 + dynamic rain-emission noise temperature & $-0.02$ dB & $-0.91$ dB & $239$ K & $3.65/2.29$ dB & single point & Fixed-rate 10 Mbps no longer closes \\
-        A6 & A5 + DVB-S2 ACM response & $-0.02$ dB & $0.00$ dB & $239$ K & $3.65/2.29$ dB & single point & QPSK 1/2, approximately $29.67$ Mbps; physical margin is unchanged \\
-        \midrule
-        D0 & ASI + IMD + dynamic clear-sky $T_{\mathrm{sys}}$ & $3.99$ dB & $+0.30$ dB vs. A2 & $127$ K & $0/0$ dB & single point & The fixed 150 K baseline is conservative in clear sky \\
-        D1 & D0 + 48-hour GEO station-keeping motion & nominal $3.99$ dB & diagnostic & $\approx127$ K & $0/0$ dB & $3.98$--$4.00$ dB; $0.017$ dB peak-to-peak & Orbital motion is negligible for this GEO link \\
+        D1 & Apply 48-hour station-keeping motion to the dynamic clear-sky case & 3.98--4.00~dB & 0.017~dB p--p & 127~K & 0/0~dB & Apparent GEO motion is negligible in this scenario. \\
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
     }
 \end{table}
+\end{landscape}
 
-The ablation sequence shows that the advanced result is not driven by a single opaque ``advanced-model penalty.'' ASI accounts for approximately $0.44$~dB, whereas the selected IMD assumption contributes only about $0.01$~dB. At the 99.9\% design point, rain-induced carrier attenuation is the dominant incremental loss, and the associated increase in downlink sky-noise temperature contributes a further $0.91$~dB penalty. ACM does not restore the fixed-rate physical margin; it changes the operating threshold and throughput. The separate GEO-motion diagnostic produces only about $0.017$~dB peak-to-peak margin variation.
-
-Table~\ref{tab:comparison_summary} then condenses the detailed ablation sequence into the three principal operational states used throughout the report.
-
-\begin{table}[H]
-    \centering
-    \renewcommand{\arraystretch}{1.3}
-    \caption{Performance Comparison: Static Baseline vs. Advanced Impaired Conditions.}
-    \label{tab:comparison_summary}
-    \vspace{0.15cm}
-    \resizebox{\textwidth}{!}{
-      \begin{tabular}{l c c c}
-        \toprule
-        \textbf{Metric} & \textbf{Clear-Sky (Noise Only)} & \textbf{With ASI \& IMD} & \textbf{With 99.9\% Rain Fade} \\
-        \midrule
-        \textbf{Link Margin} & \marginClear~dB & \marginASI~dB & \marginRain~dB \\
-        \textbf{Available $E_b/N_0$ at 10 Mbps} & $\approx 11.15$ dB & $\approx 10.69$ dB & $\approx 6.98$ dB \\
-        \textbf{Available $E_s/N_0$ for ACM} & $\approx 6.38$ dB & $\approx 5.92$ dB & $\approx 2.20$ dB \\
-        \textbf{Supported MODCOD} & QPSK 3/4 & QPSK 3/4 & QPSK 1/2 \\
-        \textbf{Availability interpretation} & Not evaluated & Clear-sky snapshot & 99.9\% target point \\
-        \textbf{Fixed-rate 10 Mbps closure} & Closed & Closed & Not closed \\
-        \textbf{ACM Net Throughput} & $\approx 44.6$ Mbps & $\approx 44.6$ Mbps & \throughputRain~Mbps \\
-        \bottomrule
-    \end{tabular}
-      }
-  \end{table}
-
-  \small\textit{Note: The throughput values in Table~\ref{tab:comparison_summary} represent the achievable DVB-S2 ACM net throughput for the allocated 36 MHz carrier, not the baseline 10 Mbps information-rate setting used in the fixed-rate calculations.}\normalsize
-
-  \textbf{Interpretation of the Comparison:}
-\begin{enumerate}
-    \item \textbf{Interference:} The selected ASI and IMD assumptions impose a combined penalty of approximately 0.46~dB. A coordination-grade value would require measured patterns and operator carrier data.
-    \item \textbf{Atmospheric design point:} At 99.9\% target availability, the fixed-rate margin becomes \marginRain~dB. The baseline hardware therefore needs additional EIRP, receive aperture, power-control headroom, or a lower availability or rate requirement to close with the stated 7~dB threshold.
-    \item \textbf{ACM response:} QPSK 1/2 remains selectable at the atmospheric design point and gives \throughputRain~Mbps for the 36~MHz carrier. This is a separate variable-rate operating mode and does not change the negative 10~Mbps fixed-rate margin.
-\end{enumerate}
-
-The clear-sky 10~Mbps link closes with positive margin. The selected interference assumptions cause a modest reduction, while the 99.9\% atmospheric case consumes the remaining fixed-rate margin. ACM provides a lower-threshold variable-rate mode, but the baseline configuration still does not demonstrate 99.9\% fixed-rate closure.
+The controlled sequence identifies three materially different effects: ASI costs about 0.44~dB, rain carrier attenuation costs 2.41~dB at the coincident stress point, and downlink atmospheric emission costs a further 1.17~dB. The non-rain replacement and dynamic clear-sky receiver model slightly improve the result relative to the original fixed allowances. This decomposition removes the earlier ambiguity in which a 150~K-to-dynamic-temperature change was incorrectly attributed entirely to rain emission.

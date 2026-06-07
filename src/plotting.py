@@ -20,21 +20,38 @@ import numpy as np
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.lines import Line2D
 
-import itu_propagation as itu
-from calculations import (
-    calculate_asi_ci_grid,
-    calculate_dynamic_system_noise_temperature_k,
-    calculate_geo_link_geometry,
-    calculate_scenario,
-    calculate_scenario_with_itu,
-    modulation_bits_per_symbol,
-    shannon_capacity_bps,
-    theoretical_ber_awgn,
-    watts_to_dbw,
-)
-from constants import GHZ, MHZ
-from entities import ITUPropagationResult, ScenarioConfig, TimeVaryingSample
-from modcod import DVB_S2_MODCODS
+if __package__:
+    from . import itu_propagation as itu
+    from .calculations import (
+        calculate_asi_ci_grid,
+        calculate_dynamic_system_noise_temperature_k,
+        calculate_geo_link_geometry,
+        calculate_scenario,
+        calculate_scenario_with_itu,
+        modulation_bits_per_symbol,
+        shannon_capacity_bps,
+        theoretical_ber_awgn,
+        watts_to_dbw,
+    )
+    from .constants import GHZ, MHZ
+    from .entities import ITUPropagationResult, ScenarioConfig, TimeVaryingSample
+    from .modcod import DVB_S2_MODCODS
+else:
+    import itu_propagation as itu
+    from calculations import (
+        calculate_asi_ci_grid,
+        calculate_dynamic_system_noise_temperature_k,
+        calculate_geo_link_geometry,
+        calculate_scenario,
+        calculate_scenario_with_itu,
+        modulation_bits_per_symbol,
+        shannon_capacity_bps,
+        theoretical_ber_awgn,
+        watts_to_dbw,
+    )
+    from constants import GHZ, MHZ
+    from entities import ITUPropagationResult, ScenarioConfig, TimeVaryingSample
+    from modcod import DVB_S2_MODCODS
 
 
 # ========================================================================
@@ -659,12 +676,12 @@ def generate_availability_plots(samples: list[TimeVaryingSample], output_dir: Pa
     paths: list[Path] = []
     n_window = min(len(samples), 240)  # First 240 h keeps the dynamics readable.
 
-    # 14 - rain double-hit time series.
+    # 14 - illustrative independent-site weather samples.
     paths.append(
         _line_plot(
             t[:n_window],
             [(margin[:n_window], "combined margin"), (rain[:n_window], "downlink rain attenuation")],
-            "Rain Double-Hit Example: Attenuation and Margin",
+            "Illustrative Weather Samples: Downlink Attenuation and Margin",
             "Time [h]",
             "Level [dB]",
             output_dir / "14_rain_double_hit_margin_timeseries.png",
@@ -918,7 +935,7 @@ def plot_itu_attenuation_vs_availability(
         ax.axvline(design_exceedance_percent, linestyle="--", linewidth=THIN_LINE_WIDTH, color=BASELINE_COLOR,
                    label=f"design point p = {design_exceedance_percent:g}%")
 
-    ax.set_xlabel("Unavailability p [% of average year]  (right = higher availability)")
+    ax.set_xlabel("Per-path exceedance p [% of average year]  (right = rarer fade)")
     ax.set_ylabel("Attenuation [dB]")
     ax.grid(True, which="both", alpha=GRID_ALPHA)
     ax.legend(loc="best")
@@ -930,7 +947,7 @@ def plot_itu_margin_vs_availability(
     output_dir: Path,
     design_availability_percent: float | None = None,
 ) -> Path:
-    """Plot the faded combined link margin against the target availability."""
+    """Plot coincident dual-site stress margin against per-path non-exceedance."""
 
     availability = np.array([r.design_availability_percent for r in itu_curve], dtype=float)
     margin_ni = np.array([r.faded_result.combined_margin_ni_db for r in itu_curve], dtype=float)
@@ -950,7 +967,7 @@ def plot_itu_margin_vs_availability(
             _annotate_value(ax, design_availability_percent, design[0].faded_result.combined_margin_ni_db,
                             f"{design[0].faded_result.combined_margin_ni_db:.2f} dB", color=BASELINE_COLOR)
 
-    ax.set_xlabel("Availability [%]")
+    ax.set_xlabel("Per-path non-exceedance [%]; coincident dual-site stress")
     ax.set_ylabel(r"Combined $E_b/N_0$ margin [dB]")
     ax.grid(True, alpha=GRID_ALPHA)
     ax.legend(loc="best")
@@ -1026,16 +1043,30 @@ def plot_specific_rain_attenuation(scenario: ScenarioConfig, output_dir: Path) -
     """Plot ITU-R P.838 specific rain attenuation gamma_R vs rain rate."""
 
     cfg = scenario.itu_propagation
+    gs1 = scenario.uplink.transmitter.location
     gs2 = scenario.downlink.receiver.location
-    geom = calculate_geo_link_geometry(gs2, scenario.satellite)
+    uplink_geom = calculate_geo_link_geometry(gs1, scenario.satellite)
+    downlink_geom = calculate_geo_link_geometry(gs2, scenario.satellite)
     rates = np.linspace(1.0, 100.0, 160)
 
     fig, ax = plt.subplots(figsize=(8.6, 5.0))
-    for label, f_hz in (
-        (f"uplink {scenario.uplink.frequency_hz / GHZ:.1f} GHz", scenario.uplink.frequency_hz),
-        (f"downlink {scenario.downlink.frequency_hz / GHZ:.1f} GHz", scenario.downlink.frequency_hz),
+    for label, f_hz, elevation_deg in (
+        (
+            f"uplink {scenario.uplink.frequency_hz / GHZ:.1f} GHz",
+            scenario.uplink.frequency_hz,
+            uplink_geom.elevation_deg,
+        ),
+        (
+            f"downlink {scenario.downlink.frequency_hz / GHZ:.1f} GHz",
+            scenario.downlink.frequency_hz,
+            downlink_geom.elevation_deg,
+        ),
     ):
-        k, alpha = itu.rain_coefficients_p838(f_hz / GHZ, geom.elevation_deg, cfg.polarization_tilt_deg)
+        k, alpha = itu.rain_coefficients_p838(
+            f_hz / GHZ,
+            elevation_deg,
+            cfg.polarization_tilt_deg,
+        )
         gamma = np.array([itu.rain_specific_attenuation_db_per_km(float(r), k, alpha) for r in rates])
         ax.plot(rates, gamma, linewidth=LINE_WIDTH, label=f"{label}  (k = {k:.4f}, alpha = {alpha:.3f})")
     ax.axvline(cfg.rain_rate_001_mm_per_h, linestyle="--", linewidth=THIN_LINE_WIDTH, color=THRESHOLD_COLOR,
@@ -1052,8 +1083,9 @@ def plot_dvbs2_modcod_ladder(scenario: ScenarioConfig, output_dir: Path) -> Path
     """Plot the DVB-S2 MODCOD ladder and mark the selected ACM operating point."""
 
     design = calculate_scenario_with_itu(scenario)
-    esn0 = np.array([m.required_esn0_db for m in DVB_S2_MODCODS], dtype=float)
-    eff = np.array([m.spectral_efficiency_bps_hz for m in DVB_S2_MODCODS], dtype=float)
+    ordered_modcods = sorted(DVB_S2_MODCODS, key=lambda item: item.required_esn0_db)
+    esn0 = np.array([m.required_esn0_db for m in ordered_modcods], dtype=float)
+    eff = np.array([m.spectral_efficiency_bps_hz for m in ordered_modcods], dtype=float)
 
     fig, ax = plt.subplots(figsize=(8.8, 5.4))
     ax.fill_between(esn0, eff, step="post", color="#3498db", alpha=0.2)
@@ -1080,7 +1112,7 @@ def plot_dvbs2_acm_vs_availability(
     output_dir: Path,
     design_availability_percent: float | None = None,
 ) -> Path:
-    """Plot the ACM-selected throughput and spectral efficiency vs availability.
+    """Plot ACM response for the coincident dual-site stress sweep.
 
     As the availability target increases, the deeper ITU-R fade forces the ACM
     selector to a more robust (lower-efficiency) MODCOD, reducing net throughput.
@@ -1104,7 +1136,7 @@ def plot_dvbs2_acm_vs_availability(
     ax.fill_between(availability, throughput, color="#3498db", alpha=0.15, label="_nolegend_")
     ax.plot(availability, throughput, linewidth=2.5, marker="o", markersize=MARKER_SIZE+1,
             color="#2980b9", label="net throughput")
-    ax.set_xlabel("Availability [%]")
+    ax.set_xlabel("Per-path non-exceedance [%]; coincident dual-site stress")
     ax.set_ylabel("Net throughput [Mbit/s]", color="#2980b9", fontweight="bold")
     ax.tick_params(axis="y", labelcolor="#2980b9")
 

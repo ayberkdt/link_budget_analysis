@@ -41,23 +41,31 @@
 \usepackage{graphicx}
 \graphicspath{{resimler/}{../outputs/plots/}{../sources/}}
 \usepackage{float}
-\usepackage{booktabs}
 \usepackage{array}
-\usepackage{multirow}
 \usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{pdflscape}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage[table]{xcolor}
+
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, shadows}
 \usepackage{tcolorbox}
+\tcbuselibrary{skins}
 
 % ========================================================================
 % 5.                     HYPERLINKS & COLORS
 % ========================================================================
-\usepackage{xcolor}
 \definecolor{ituBlue}{RGB}{0, 43, 91}
 \definecolor{darkBlue}{RGB}{12, 35, 64}
 \definecolor{linkBlue}{RGB}{0, 114, 206}
+\definecolor{tableHeader}{RGB}{24, 54, 84}
+\definecolor{tableSelected}{RGB}{232, 243, 250}
+\definecolor{repoBackground}{RGB}{238, 247, 251}
+\definecolor{repoAccent}{RGB}{0, 105, 148}
 \usepackage[colorlinks=true,
             linkcolor=ituBlue,
             citecolor=ituBlue,

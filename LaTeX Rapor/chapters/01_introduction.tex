@@ -46,57 +46,50 @@ The baseline is a one-way transparent link from Rome to Ankara through \textbf{E
 \end{figure}
 
 \subsubsection{Satellite Selection Rationale}
-HOTBIRD 13G was selected for this specific Rome--Ankara broadcast case, not as a general ranking of GEO satellites. Its $13^\circ$E orbital position gives similar elevation angles at the two terminals, and Eutelsat publishes a Ku-band widebeam EIRP map that can be used for a traceable report-level estimate \cite{eutelsat}. Table~\ref{tab:satellite_selection} compares this baseline with Intelsat 39 using the same geometry routine.
+HOTBIRD 13G was selected for this Rome--Ankara broadcast case, not as a general ranking of GEO spacecraft. Its $13^\circ$E position gives useful elevation at both terminals, while Eutelsat publishes a Ku-band widebeam EIRP contour that supports a traceable report-level estimate \cite{eutelsat}. Table~\ref{tab:satellite_selection} compares three named spacecraft using the same geometry routine; it is a preselection comparison rather than a second full link budget.
 
 \begin{table}[H]
     \centering
     \caption{Candidate satellite comparison for the Rome--Ankara bent-pipe scenario.}
     \label{tab:satellite_selection}
-    \vspace{0.15cm}
-    {\scriptsize
-    \setlength{\tabcolsep}{3pt}
-    \renewcommand{\arraystretch}{1.18}
-    \begin{tabular}{
-        >{\raggedright\arraybackslash}p{0.145\textwidth}
-        >{\centering\arraybackslash}p{0.075\textwidth}
-        >{\raggedright\arraybackslash}p{0.14\textwidth}
-        >{\raggedright\arraybackslash}p{0.14\textwidth}
-        >{\raggedright\arraybackslash}p{0.19\textwidth}
-        >{\raggedright\arraybackslash}p{0.22\textwidth}}
-        \toprule
-        \textbf{Candidate / Operator} &
-        \textbf{Orbital Slot} &
-        \textbf{Rome Geometry} &
-        \textbf{Ankara Geometry} &
-        \textbf{Coverage / Service Context} &
-        \textbf{Selection Decision} \\
-        \midrule
-        Eutelsat HOTBIRD 13G &
-        $13^\circ$E &
-        $41.6^\circ$ elevation; Rome is close to the orbital longitude. &
-        $39.4^\circ$ elevation. &
-        European and Mediterranean Ku-band DTH and video distribution. &
-        Selected: balanced geometry, an official EIRP map, and a service profile consistent with the modeled DVB-S2 broadcast link. \\
-        \addlinespace
-        Intelsat 39 / Intelsat fleet &
-        $62^\circ$E &
-        $20.8^\circ$ elevation and approximately 39,478~km slant range. &
-        $34.9^\circ$ elevation. &
-        C- and Ku-band broadband, mobility, government, connectivity, and video distribution across Europe, the Middle East, Africa, and Asia. &
-        Not selected: the $62^\circ$E slot gives a substantially lower Rome uplink elevation. \\
-        \addlinespace
-        Other Intelsat Ku-band spacecraft &
-        Spacecraft-dependent &
-        Must be evaluated for the selected slot and beam. &
-        Must be evaluated for the selected slot and beam. &
-        Potentially suitable for VSAT/IP connectivity or operator-specific leased capacity. &
-        Not used without a formally selected spacecraft, beam, EIRP contour, polarization, transponder plan, and satellite receive G/T. \\
+    \vspace{0.12cm}
+    {\footnotesize
+    \setlength{\tabcolsep}{5pt}
+    \renewcommand{\arraystretch}{1.28}
+    \begin{tabularx}{\textwidth}{
+        >{\raggedright\arraybackslash}p{0.18\textwidth}
+        >{\raggedright\arraybackslash}p{0.21\textwidth}
+        >{\raggedright\arraybackslash}X
+        >{\raggedright\arraybackslash}p{0.27\textwidth}}
+        \rowcolor{tableHeader}
+        \color{white}\textbf{Candidate} &
+        \color{white}\textbf{Computed Geometry} &
+        \color{white}\textbf{Service and Evidence} &
+        \color{white}\textbf{Assessment for This Study} \\
+        \rowcolor{tableSelected}
+        \textbf{HOTBIRD 13G}\\Eutelsat, $13^\circ$E &
+        Rome: $41.60^\circ$, 37,659~km\\
+        Ankara: $39.44^\circ$, 37,823~km &
+        Ku-band DTH and video distribution across Europe, MENA, with an operator-issued 40--53~dBW widebeam map \cite{eutelsat}. &
+        \textbf{Selected.} Good two-terminal geometry, direct footprint evidence for Ankara, and close alignment with the DVB-S2 broadcast scenario. \\
+        \addlinespace[2pt]
+        \textbf{ASTRA 1P}\\SES, $19.2^\circ$E &
+        Rome: $41.12^\circ$, 37,695~km\\
+        Ankara: $41.68^\circ$, 37,652~km &
+        Operational Ku-band widebeam spacecraft serving SES's European television neighbourhood; 80 transponders are reported \cite{ses_astra1p}. &
+        \textbf{Credible alternative.} Geometry and service fit are strong, but the consulted public material does not provide an Ankara-specific EIRP contour as directly usable as the HOTBIRD brochure. \\
+        \addlinespace[2pt]
+        \textbf{Intelsat 39}\\Intelsat, $62^\circ$E &
+        Rome: $20.77^\circ$, 39,478~km\\
+        Ankara: $34.92^\circ$, 38,187~km &
+        C/Ku-band broadband, mobility, government, and video capacity across Europe, the Middle East, Africa, and Asia \cite{intelsat39,ses_fleet_map}. &
+        \textbf{Not retained.} The substantially lower Rome elevation lengthens the uplink path and increases Ku-band atmospheric sensitivity. \\
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
     }
 \end{table}
 
-``Intelsat'' denotes an operator fleet rather than one design point. A complete alternative would have to identify the spacecraft, orbital slot, beam, polarization, EIRP contour, transponder plan, and receive G/T. Intelsat 39 at $62^\circ$E has suitable regional Ku-band capacity \cite{intelsat39,ses_fleet_map}, but the Rome elevation is $20.8^\circ$, compared with $41.6^\circ$ for HOTBIRD 13G. The lower elevation increases both slant range and atmospheric path length on the uplink. For the service and sites defined in this report, HOTBIRD 13G therefore provides the more balanced and better-documented baseline.
+ASTRA 1P demonstrates that geometry alone does not uniquely determine the baseline: at $19.2^\circ$E it is also well balanced for Rome and Ankara. HOTBIRD 13G is retained because its operator brochure supplies a directly usable widebeam EIRP contour and its service context matches the modeled broadcast link. Conversely, ``Intelsat'' denotes a fleet rather than one design point. Any Intelsat alternative would still require a named spacecraft, beam, polarization, EIRP contour, transponder plan, and receive G/T before a fair end-to-end comparison could be made.
 
 \begin{figure}[H]
     \centering
@@ -134,15 +127,19 @@ HOTBIRD 13G was selected for this specific Rome--Ankara broadcast case, not as a
 The project brief used MATLAB's Satellite Link Budget Analyzer as a reference workflow but allowed an equivalent implementation. The calculations were implemented in Python so that the assumptions, equations, test cases, CSV outputs, and plots could be kept in one reproducible codebase. The clear-sky equations follow Pratt's link-budget procedure \cite{pratt}; the additional modules implement the stated ITU-R recommendation versions, a separate illustrative Monte Carlo weather model, interference estimates, dynamic receiver noise, apparent GEO motion, and DVB-S2 ACM.
 
 \begin{tcolorbox}[
-    colback=gray!5,
-    colframe=gray!45,
-    title=Reproducibility Note,
+    enhanced,
+    colback=repoBackground,
+    colframe=repoAccent,
+    colbacktitle=darkBlue,
+    coltitle=white,
+    title=Reproducible Analysis Package,
     fonttitle=\bfseries,
-    boxrule=0.4pt,
-    arc=2pt
+    boxrule=0.7pt,
+    leftrule=2.4pt,
+    arc=1.5pt
 ]
-The Python analysis scripts, generated figures, and numerical workflow used in this report are available in the project repository:
-\href{https://github.com/ayberkdt/link_budget_analysis}{GitHub Repository}.
+The Python model, regression tests, generated CSV files, and plotting workflow are maintained at
+\href{https://github.com/ayberkdt/link_budget_analysis}{\textbf{\texttt{github.com/ayberkdt/link\_budget\_analysis}}}.
 \end{tcolorbox}
 
 \subsection{Report Structure}

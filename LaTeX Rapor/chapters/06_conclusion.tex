@@ -3,16 +3,12 @@
 
 \section{Conclusion}
 
-The report evaluated a 14/12~GHz transparent GEO link from Rome to Ankara through HOTBIRD 13G. The same Python model was used for the clear-sky budget, the optional impairment cases, and the ablation comparison.
+This report evaluated a 14/12~GHz transparent GEO link from Rome to Ankara through HOTBIRD 13G using one reproducible Python model for the static budget, impairment cases, and ablation study.
 
-In clear sky, the combined $C/N_0$ is \cnTotal~dB-Hz and the 10~Mbps fixed-rate margin is \marginClear~dB. The selected ASI and IMD terms reduce the margin to \marginASI~dB. At the 99.9\% atmospheric design point, the margin is \marginRain~dB; the stated baseline therefore does not close against the 7~dB fixed-rate threshold at that availability.
+The 10~Mbps clear-sky margin is \marginClear~dB, falling to \marginASI~dB with the selected ASI and IMD assumptions. At per-path $p=0.1\%$, the uplink-only and downlink-only margins are \marginUplinkFade~dB and \marginDownlinkFade~dB. Applying both fades simultaneously gives a conservative \marginRain~dB stress margin. Because simultaneous distant-site fades were not assigned a joint probability, this value must not be presented as a 99.9\% end-to-end availability guarantee.
 
-For the 36~MHz carrier and 0.20 roll-off factor, the ACM selector changes from QPSK 3/4 in clear sky to QPSK 1/2 at the atmospheric design point. The latter corresponds to an estimated \throughputRain~Mbps and remains a variable-rate mode, not evidence of 10~Mbps fixed-rate availability.
+The ablation study shows that rain carrier attenuation is the largest modeled penalty, followed by downlink atmospheric emission. ASI is smaller, IMD is minor for the stated assumption, and apparent GEO motion is negligible. The coincident stress case still closes the 7~dB fixed-rate requirement by 0.45~dB; the ACM selector independently chooses QPSK 1/2 at approximately \throughputRain~Mbps.
 
-The largest modeled penalties come from rain attenuation and the associated increase in receive-system noise temperature. Candidate design changes are a larger GS2 aperture, higher contracted downlink EIRP, verified uplink power-control headroom, or a lower fixed-rate requirement. An operational design would also replace the shared representative rainfall rate with separate mapped or measured values for Rome and Ankara and would use transponder-specific EIRP, G/T, polarization, and loading data.
+An operational design should replace the shared representative meteorological inputs with separate mapped or measured Rome and Ankara data and should use transponder-specific EIRP, G/T, polarization, loading, and amplifier back-off. Those inputs are more important to the remaining uncertainty than the numerical precision of the present calculation.
 
-Intelsat 39 and other GEO spacecraft may be suitable for different coverage or connectivity objectives. For the sites and broadcast-oriented service considered here, HOTBIRD 13G offers the more balanced geometry and the more directly usable public footprint data.
-
-\vspace{1em}
-\noindent \textbf{Source Code Availability:} \\
-The analysis code, tests, and generated-output workflow are available at \url{https://github.com/ayberkdt/link_budget_analysis}.
+ASTRA 1P is a credible broadcast alternative with similarly strong geometry, while Intelsat 39 is better aligned with different connectivity objectives. HOTBIRD 13G remains the baseline because it combines suitable Rome--Ankara geometry with the most directly usable public footprint evidence for this report.

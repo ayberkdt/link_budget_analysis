@@ -17,43 +17,82 @@ from typing import Iterable, Optional, Sequence
 
 import numpy as np
 
-from constants import (
-    ATMOSPHERIC_EFFECTIVE_TEMPERATURE_K,
-    BOLTZMANN_DB_CONSTANT,
-    COSMIC_BACKGROUND_TEMPERATURE_K,
-    EARTH_EQUATORIAL_RADIUS_KM,
-    FSPL_CONSTANT,
-    GEO_ORBIT_RADIUS_KM,
-    GHZ,
-    PARABOLIC_BEAMWIDTH_FACTOR,
-    SIDELOBE_ENVELOPE_CONSTANT_A,
-    SIDELOBE_ENVELOPE_CONSTANT_B,
-    SPEED_OF_LIGHT_M_PER_S,
-)
-from entities import (
-    DigitalLinkConfig,
-    DigitalMetrics,
-    DishAntenna,
-    DynamicNoiseConfig,
-    GeoApparentMotion,
-    GeoSatellite,
-    InterferenceResult,
-    ITUPropagationConfig,
-    ITUPropagationResult,
-    LinkBudgetResult,
-    LinkConfig,
-    LinkEndpoint,
-    LinkEnvironment,
-    LinkGeometry,
-    Location,
-    ModcodConfig,
-    RainOutageConfig,
-    ScenarioConfig,
-    ScenarioResult,
-    TimeVaryingSample,
-)
-import itu_propagation as itu
-from modcod import ModcodSelection, esn0_from_cn0_db, select_best_modcod
+try:
+    from .constants import (
+        ATMOSPHERIC_EFFECTIVE_TEMPERATURE_K,
+        BOLTZMANN_DB_CONSTANT,
+        COSMIC_BACKGROUND_TEMPERATURE_K,
+        EARTH_EQUATORIAL_RADIUS_KM,
+        FSPL_CONSTANT,
+        GEO_ORBIT_RADIUS_KM,
+        GHZ,
+        PARABOLIC_BEAMWIDTH_FACTOR,
+        SIDELOBE_ENVELOPE_CONSTANT_A,
+        SIDELOBE_ENVELOPE_CONSTANT_B,
+        SPEED_OF_LIGHT_M_PER_S,
+    )
+    from .entities import (
+        DigitalLinkConfig,
+        DigitalMetrics,
+        DishAntenna,
+        DynamicNoiseConfig,
+        GeoApparentMotion,
+        GeoSatellite,
+        InterferenceResult,
+        ITUPropagationConfig,
+        ITUPropagationResult,
+        LinkBudgetResult,
+        LinkConfig,
+        LinkEndpoint,
+        LinkEnvironment,
+        LinkGeometry,
+        Location,
+        ModcodConfig,
+        RainOutageConfig,
+        ScenarioConfig,
+        ScenarioResult,
+        TimeVaryingSample,
+    )
+    from . import itu_propagation as itu
+    from .modcod import ModcodSelection, esn0_from_cn0_db, select_best_modcod
+except ImportError:  # Support direct execution with ``python src/main.py``.
+    from constants import (
+        ATMOSPHERIC_EFFECTIVE_TEMPERATURE_K,
+        BOLTZMANN_DB_CONSTANT,
+        COSMIC_BACKGROUND_TEMPERATURE_K,
+        EARTH_EQUATORIAL_RADIUS_KM,
+        FSPL_CONSTANT,
+        GEO_ORBIT_RADIUS_KM,
+        GHZ,
+        PARABOLIC_BEAMWIDTH_FACTOR,
+        SIDELOBE_ENVELOPE_CONSTANT_A,
+        SIDELOBE_ENVELOPE_CONSTANT_B,
+        SPEED_OF_LIGHT_M_PER_S,
+    )
+    from entities import (
+        DigitalLinkConfig,
+        DigitalMetrics,
+        DishAntenna,
+        DynamicNoiseConfig,
+        GeoApparentMotion,
+        GeoSatellite,
+        InterferenceResult,
+        ITUPropagationConfig,
+        ITUPropagationResult,
+        LinkBudgetResult,
+        LinkConfig,
+        LinkEndpoint,
+        LinkEnvironment,
+        LinkGeometry,
+        Location,
+        ModcodConfig,
+        RainOutageConfig,
+        ScenarioConfig,
+        ScenarioResult,
+        TimeVaryingSample,
+    )
+    import itu_propagation as itu
+    from modcod import ModcodSelection, esn0_from_cn0_db, select_best_modcod
 
 
 # ========================================================================
@@ -777,6 +816,10 @@ def calculate_scenario(
         raise ValueError("The uplink transmitter must have a ground-station location.")
     if scenario.downlink.receiver.location is None:
         raise ValueError("The downlink receiver must have a ground-station location.")
+    if not np.isclose(scenario.uplink.bit_rate_bps, scenario.downlink.bit_rate_bps):
+        raise ValueError("Bent-pipe uplink and downlink bit rates must match.")
+    if not np.isclose(scenario.uplink.bandwidth_hz, scenario.downlink.bandwidth_hz):
+        raise ValueError("Bent-pipe uplink and downlink bandwidths must match.")
 
     uplink_geometry = calculate_geo_link_geometry(scenario.uplink.transmitter.location, satellite)
     downlink_geometry = calculate_geo_link_geometry(scenario.downlink.receiver.location, satellite)
@@ -797,7 +840,7 @@ def calculate_scenario(
 
     combined_cn0 = combine_inverse_db([uplink.cn0_dbhz, downlink.cn0_dbhz])
     combined_cn = combine_inverse_db([uplink.cn_db, downlink.cn_db])
-    combined_ebn0 = combined_cn0 - 10.0 * log10(scenario.uplink.bit_rate_bps)
+    combined_ebn0 = combined_cn0 - 10.0 * log10(scenario.downlink.bit_rate_bps)
     combined_margin = combined_ebn0 - scenario.required_end_to_end_ebn0_db
 
     interference = calculate_interference(scenario, satellite)
@@ -810,7 +853,11 @@ def calculate_scenario(
             interference.imd_c_i_db,
         ]
     )
-    combined_ebn0_ni = cn_to_ebn0_db(combined_cni, scenario.uplink.bandwidth_hz, scenario.uplink.bit_rate_bps)
+    combined_ebn0_ni = cn_to_ebn0_db(
+        combined_cni,
+        scenario.downlink.bandwidth_hz,
+        scenario.downlink.bit_rate_bps,
+    )
     combined_margin_ni = combined_ebn0_ni - scenario.required_end_to_end_ebn0_db
 
     digital_metrics = calculate_digital_metrics(
@@ -894,9 +941,16 @@ def simulate_monte_carlo_rain_outage(scenario: ScenarioConfig) -> list[TimeVaryi
     rng = np.random.default_rng(cfg.random_seed)
     samples: list[TimeVaryingSample] = []
 
+    sample_interval_hours = 8760.0 / cfg.samples_per_year
     for i in range(cfg.samples_per_year):
-        time_hours = float(i)
-        base_label, base_downlink_attenuation = _sample_rain_attenuation_base_db(rng, cfg)
+        time_hours = float(i) * sample_interval_hours
+        downlink_label, base_downlink_attenuation = _sample_rain_attenuation_base_db(rng, cfg)
+        if cfg.correlate_uplink_downlink_weather:
+            uplink_label = downlink_label
+            base_uplink_attenuation = base_downlink_attenuation
+        else:
+            uplink_label, base_uplink_attenuation = _sample_rain_attenuation_base_db(rng, cfg)
+
         downlink_rain = scale_rain_attenuation_for_frequency(
             base_downlink_attenuation,
             scenario.downlink.frequency_hz,
@@ -904,19 +958,28 @@ def simulate_monte_carlo_rain_outage(scenario: ScenarioConfig) -> list[TimeVaryi
             exponent=cfg.downlink_frequency_scaling_exponent,
         )
         uplink_rain = scale_rain_attenuation_for_frequency(
-            base_downlink_attenuation,
+            base_uplink_attenuation,
             scenario.uplink.frequency_hz,
             reference_frequency_hz=12.0e9,
             exponent=cfg.uplink_frequency_scaling_exponent,
         )
+        weather_label = (
+            downlink_label
+            if cfg.correlate_uplink_downlink_weather
+            else f"uplink: {uplink_label}; downlink: {downlink_label}"
+        )
 
-        # Add the slow station-keeping motion on top of weather variability.
-        sat_t = get_apparent_geo_state(scenario.satellite, scenario.apparent_motion, time_hours)
+        # Add station-keeping motion only when that module is enabled.
+        sat_t = (
+            get_apparent_geo_state(scenario.satellite, scenario.apparent_motion, time_hours)
+            if scenario.apparent_motion.enabled
+            else scenario.satellite
+        )
         result = calculate_scenario(
             scenario,
             satellite_override=sat_t,
-            uplink_environment=LinkEnvironment(rain_attenuation_db=uplink_rain, weather_label=base_label),
-            downlink_environment=LinkEnvironment(rain_attenuation_db=downlink_rain, weather_label=base_label),
+            uplink_environment=LinkEnvironment(rain_attenuation_db=uplink_rain, weather_label=uplink_label),
+            downlink_environment=LinkEnvironment(rain_attenuation_db=downlink_rain, weather_label=downlink_label),
             use_dynamic_downlink_tsys=True,
         )
         samples.append(
@@ -924,7 +987,7 @@ def simulate_monte_carlo_rain_outage(scenario: ScenarioConfig) -> list[TimeVaryi
                 time_hours=time_hours,
                 satellite=sat_t,
                 result=result,
-                weather_label=base_label,
+                weather_label=weather_label,
                 uplink_rain_attenuation_db=uplink_rain,
                 downlink_rain_attenuation_db=downlink_rain,
             )
@@ -981,7 +1044,7 @@ def summarize_monte_carlo_availability(samples: list[TimeVaryingSample]) -> dict
     sample_hours = 8760.0 / len(samples)
 
     labels = [s.weather_label for s in samples]
-    rain_samples = sum(label != "clear" for label in labels)
+    rain_samples = sum("rain" in label for label in labels)
 
     return {
         "sample_count": len(samples),
@@ -1162,14 +1225,19 @@ def calculate_scenario_with_itu(
     scenario: ScenarioConfig,
     exceedance_percent: Optional[float] = None,
     satellite_override: Optional[GeoSatellite] = None,
+    fade_application: str = "both",
+    include_atmospheric_emission: bool = True,
 ) -> ITUPropagationResult:
-    """Evaluate the full bent-pipe scenario with ITU-R atmospheric fades applied.
+    """Evaluate the scenario with a per-path ITU-R-informed fade applied.
 
-    This is the deterministic counterpart of the static clear-sky budget. It
-    computes the ITU-R total slant-path attenuation for the design availability,
-    applies it to both link directions (carrier loss and downlink sky-noise
-    emission), recomputes the combined link budget, and selects the DVB-S2 ACM
-    operating point for the degraded downlink.
+    The static budget contains a fixed clear-sky atmospheric allowance. For each
+    path receiving an ITU attenuation, that allowance is removed and replaced by
+    the absolute modeled atmospheric total, preventing double-counting.
+
+    ``fade_application="both"`` applies the same per-path exceedance percentage
+    to Rome and Ankara simultaneously. It is deliberately reported as a
+    coincident dual-site stress case, not as a statistically derived end-to-end
+    availability point.
 
     Parameters
     ----------
@@ -1186,36 +1254,68 @@ def calculate_scenario_with_itu(
     cfg = scenario.itu_propagation
     if not cfg.enabled:
         raise ValueError("ITU-R propagation is disabled in scenario.itu_propagation.enabled.")
+    if fade_application not in {"uplink", "downlink", "both"}:
+        raise ValueError("fade_application must be 'uplink', 'downlink', or 'both'.")
     p = exceedance_percent if exceedance_percent is not None else cfg.design_exceedance_percent
 
     uplink_breakdown, downlink_breakdown = calculate_itu_attenuation(
         scenario, p, satellite_override=satellite_override
     )
 
+    apply_uplink = fade_application in {"uplink", "both"}
+    apply_downlink = fade_application in {"downlink", "both"}
+
+    budget_scenario = replace(
+        scenario,
+        uplink=replace(
+            scenario.uplink,
+            losses=replace(
+                scenario.uplink.losses,
+                atmospheric_loss_db=0.0 if apply_uplink else scenario.uplink.losses.atmospheric_loss_db,
+            ),
+        ),
+        downlink=replace(
+            scenario.downlink,
+            losses=replace(
+                scenario.downlink.losses,
+                atmospheric_loss_db=0.0 if apply_downlink else scenario.downlink.losses.atmospheric_loss_db,
+            ),
+        ),
+    )
+
     uplink_environment = LinkEnvironment(
-        rain_attenuation_db=uplink_breakdown.total_db,
-        emission_attenuation_db=_absorptive_attenuation_db(uplink_breakdown),
-        weather_label=f"ITU p={p:g}%",
+        rain_attenuation_db=uplink_breakdown.total_db if apply_uplink else 0.0,
+        emission_attenuation_db=(
+            _absorptive_attenuation_db(uplink_breakdown)
+            if apply_uplink and include_atmospheric_emission
+            else 0.0
+        ),
+        weather_label=f"ITU p={p:g}% ({fade_application})",
     )
     downlink_environment = LinkEnvironment(
-        rain_attenuation_db=downlink_breakdown.total_db,
-        emission_attenuation_db=_absorptive_attenuation_db(downlink_breakdown),
-        weather_label=f"ITU p={p:g}%",
+        rain_attenuation_db=downlink_breakdown.total_db if apply_downlink else 0.0,
+        emission_attenuation_db=(
+            _absorptive_attenuation_db(downlink_breakdown)
+            if apply_downlink and include_atmospheric_emission
+            else 0.0
+        ),
+        weather_label=f"ITU p={p:g}% ({fade_application})",
     )
 
     faded_result = calculate_scenario(
-        scenario,
+        budget_scenario,
         satellite_override=satellite_override,
         uplink_environment=uplink_environment,
         downlink_environment=downlink_environment,
         use_dynamic_downlink_tsys=True,
     )
 
-    downlink_modcod = select_downlink_modcod(scenario, faded_result)
+    downlink_modcod = select_downlink_modcod(budget_scenario, faded_result)
 
     return ITUPropagationResult(
         design_availability_percent=100.0 - p,
         design_exceedance_percent=p,
+        fade_application=fade_application,
         uplink_breakdown=uplink_breakdown,
         downlink_breakdown=downlink_breakdown,
         faded_result=faded_result,
@@ -1227,11 +1327,13 @@ def calculate_scenario_with_itu(
 def calculate_itu_availability_curve(
     scenario: ScenarioConfig,
     exceedance_percents: Optional[Sequence[float]] = None,
+    fade_application: str = "both",
 ) -> list[ITUPropagationResult]:
-    """Return ITU-R faded results across a series of availability percentages.
+    """Return faded results across per-path exceedance percentages.
 
-    Drives the classic "fade margin vs percentage of time" study used to choose
-    the design availability. Percentages default to the configured curve.
+    With ``fade_application="both"``, each curve point is a coincident dual-site
+    stress case. The x-axis may be expressed as per-path non-exceedance, but it
+    is not a joint end-to-end availability distribution.
 
     Raises
     ------
@@ -1243,22 +1345,28 @@ def calculate_itu_availability_curve(
     if not cfg.enabled:
         raise ValueError("ITU-R propagation is disabled in scenario.itu_propagation.enabled.")
     percents = exceedance_percents if exceedance_percents is not None else cfg.availability_curve_percents
-    return [calculate_scenario_with_itu(scenario, float(p)) for p in percents]
+    return [
+        calculate_scenario_with_itu(
+            scenario,
+            float(p),
+            fade_application=fade_application,
+        )
+        for p in percents
+    ]
 
 
 def summarize_itu_availability_curve(
     results: list[ITUPropagationResult],
     design_result: ITUPropagationResult,
 ) -> dict[str, float | str]:
-    """Summarize the ITU-R availability sweep into headline design figures.
+    """Summarize the ITU-R-informed p-point sweep.
 
     Parameters
     ----------
     results:
-        The full availability sweep (used to find the best availability that
-        still closes the link).
+        The full per-path non-exceedance sweep.
     design_result:
-        The result at the configured design availability (already evaluated by
+        The result at the configured per-path exceedance point (already evaluated by
         :func:`calculate_scenario_with_itu`).
     """
 
@@ -1266,14 +1374,18 @@ def summarize_itu_availability_curve(
         return {}
 
     closes = [r for r in results if r.faded_result.combined_margin_ni_db >= 0.0]
-    best_availability = max((r.design_availability_percent for r in closes), default=float("nan"))
+    best_non_exceedance = max(
+        (r.design_availability_percent for r in closes),
+        default=float("nan"),
+    )
 
     return {
-        "design_availability_percent": design_result.design_availability_percent,
+        "design_per_path_non_exceedance_percent": design_result.design_availability_percent,
+        "fade_application": design_result.fade_application,
         "design_downlink_total_attenuation_dB": design_result.downlink_breakdown.total_db,
         "design_uplink_total_attenuation_dB": design_result.uplink_breakdown.total_db,
         "design_combined_margin_with_interference_dB": design_result.faded_result.combined_margin_ni_db,
-        "best_closed_availability_percent": best_availability,
+        "highest_closed_per_path_non_exceedance_percent_in_sweep": best_non_exceedance,
         "design_downlink_MODCOD": (
             design_result.downlink_modcod.selected.name
             if design_result.downlink_modcod is not None and design_result.downlink_modcod.selected is not None
@@ -1342,6 +1454,10 @@ def validate_scenario_config(scenario: ScenarioConfig) -> tuple[list[str], list[
     # Links and antennas.
     check_link("Uplink", scenario.uplink)
     check_link("Downlink", scenario.downlink)
+    if not np.isclose(scenario.uplink.bit_rate_bps, scenario.downlink.bit_rate_bps):
+        errors.append("Bent-pipe uplink and downlink bit rates must match.")
+    if not np.isclose(scenario.uplink.bandwidth_hz, scenario.downlink.bandwidth_hz):
+        errors.append("Bent-pipe uplink and downlink bandwidths must match.")
     check_antenna("GS1 transmit", scenario.uplink.transmitter.antenna)
     check_antenna("GS2 receive", scenario.downlink.receiver.antenna)
 
@@ -1391,9 +1507,50 @@ def validate_scenario_config(scenario: ScenarioConfig) -> tuple[list[str], list[
         if scenario.apparent_motion.step_minutes <= 0.0:
             errors.append("Apparent motion step_minutes must be > 0.")
 
+    # Dynamic receiver noise (advanced).
+    if scenario.dynamic_noise.enabled:
+        dynamic_values = {
+            "receiver_internal_noise_k": scenario.dynamic_noise.receiver_internal_noise_k,
+            "spillover_noise_k": scenario.dynamic_noise.spillover_noise_k,
+            "clear_sky_base_noise_k": scenario.dynamic_noise.clear_sky_base_noise_k,
+            "low_elevation_extra_noise_k": scenario.dynamic_noise.low_elevation_extra_noise_k,
+            "rain_emission_temperature_k": scenario.dynamic_noise.rain_emission_temperature_k,
+        }
+        for name, value in dynamic_values.items():
+            if value < 0.0:
+                errors.append(f"Dynamic-noise {name} must be >= 0.")
+        if scenario.dynamic_noise.minimum_elevation_deg <= 0.0:
+            errors.append("Dynamic-noise minimum_elevation_deg must be > 0.")
+
     # Monte-Carlo rain outage (advanced).
-    if scenario.rain_outage.enabled and scenario.rain_outage.samples_per_year <= 0:
-        errors.append("Monte-Carlo rain outage samples_per_year must be > 0.")
+    if scenario.rain_outage.enabled:
+        rain_cfg = scenario.rain_outage
+        if rain_cfg.samples_per_year <= 0:
+            errors.append("Monte-Carlo rain outage samples_per_year must be > 0.")
+        probabilities = {
+            "light_rain_probability": rain_cfg.light_rain_probability,
+            "moderate_rain_probability": rain_cfg.moderate_rain_probability,
+            "heavy_rain_probability": rain_cfg.heavy_rain_probability,
+        }
+        for name, value in probabilities.items():
+            if not (0.0 <= value <= 1.0):
+                errors.append(f"Monte-Carlo {name} must be in [0, 1].")
+        if sum(probabilities.values()) > 1.0:
+            errors.append("Monte-Carlo rain-state probabilities must sum to <= 1.")
+        if rain_cfg.clear_attenuation_max_db < 0.0:
+            errors.append("Monte-Carlo clear_attenuation_max_db must be >= 0.")
+        for name, bounds in (
+            ("light_rain_attenuation_range_db", rain_cfg.light_rain_attenuation_range_db),
+            ("moderate_rain_attenuation_range_db", rain_cfg.moderate_rain_attenuation_range_db),
+            ("heavy_rain_attenuation_range_db", rain_cfg.heavy_rain_attenuation_range_db),
+        ):
+            lo, hi = bounds
+            if lo < 0.0 or hi < 0.0 or lo > hi:
+                errors.append(f"Monte-Carlo {name} must be non-negative and ordered low <= high.")
+        if rain_cfg.uplink_frequency_scaling_exponent < 0.0:
+            errors.append("Monte-Carlo uplink_frequency_scaling_exponent must be >= 0.")
+        if rain_cfg.downlink_frequency_scaling_exponent < 0.0:
+            errors.append("Monte-Carlo downlink_frequency_scaling_exponent must be >= 0.")
 
     # ITU-R propagation (advanced).
     if scenario.itu_propagation.enabled:
@@ -1402,10 +1559,35 @@ def validate_scenario_config(scenario: ScenarioConfig) -> tuple[list[str], list[
             errors.append("ITU design_availability_percent must be in (0, 100).")
         if scenario.itu_propagation.rain_rate_001_mm_per_h < 0.0:
             errors.append("ITU rain_rate_001_mm_per_h must be >= 0.")
+        if scenario.itu_propagation.rain_height_h0_override_km is not None and (
+            scenario.itu_propagation.rain_height_h0_override_km < 0.0
+        ):
+            errors.append("ITU rain_height_h0_override_km must be >= 0 or None.")
+        if scenario.itu_propagation.surface_pressure_hpa <= 0.0:
+            errors.append("ITU surface_pressure_hpa must be > 0.")
+        if scenario.itu_propagation.water_vapour_density_g_m3 < 0.0:
+            errors.append("ITU water_vapour_density_g_m3 must be >= 0.")
+        if not (0.0 <= scenario.itu_propagation.relative_humidity_percent <= 100.0):
+            errors.append("ITU relative_humidity_percent must be in [0, 100].")
+        if scenario.itu_propagation.columnar_liquid_water_kg_m2 < 0.0:
+            errors.append("ITU columnar_liquid_water_kg_m2 must be >= 0.")
         p = scenario.itu_propagation.design_exceedance_percent
         if not (0.001 <= p <= 5.0):
             warnings.append(
                 f"ITU design exceedance p={p:g}% is outside the ITU-R P.618 scaling range 0.001%-5%."
+            )
+        curve = tuple(float(value) for value in scenario.itu_propagation.availability_curve_percents)
+        if not curve:
+            errors.append("ITU availability_curve_percents must not be empty.")
+        for curve_p in curve:
+            if not (0.001 <= curve_p <= 5.0):
+                errors.append(
+                    f"ITU availability-curve exceedance p={curve_p:g}% must be in [0.001, 5]."
+                )
+        if scenario.itu_propagation.include_scintillation and any(value < 0.01 for value in curve):
+            warnings.append(
+                "Scintillation is held at its p=0.01% endpoint for curve points below "
+                "the P.618 submodel's stated range."
             )
 
     # DVB-S2 ACM (advanced).

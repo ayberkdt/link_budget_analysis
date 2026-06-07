@@ -7,15 +7,15 @@
 
 This chapter describes the atmospheric attenuation, illustrative outage, and DVB-S2 ACM calculations used after the clear-sky budget.
 
-\textit{Model scope: the software is version-locked to the recommendation editions cited in this report, including P.618-13. Some recommendations have newer revisions, but changing versions would require a separate code and regression review. The present results use representative meteorological inputs rather than site-specific ITU digital-map extraction and should not be treated as an operational availability guarantee.}
+\textit{Model scope: the software is version-locked to the recommendation editions cited in this report, including P.618-13. It implements the published analytical procedures but uses representative meteorological inputs and a self-contained rain-height fallback rather than extracting every site value from ITU digital maps. The results are engineering sensitivity points, not an operational availability guarantee.}
 
 \subsection[ITU-R Slant-Path Attenuation Suite]{ITU-R Slant-Path Attenuation Suite}
 
 \subsubsection{Slant-Path Loss Mechanisms}
-The Earth--space path crosses the troposphere, where gases, cloud liquid water, refractive-index fluctuations, and precipitation affect the received carrier. At Ku-band, rain is the largest time-varying attenuation term in the selected 99.9\% design case.
+The Earth--space path crosses the troposphere, where gases, cloud liquid water, refractive-index fluctuations, and precipitation affect the received carrier. At Ku-band, rain is the largest time-varying attenuation term at the selected per-path $p=0.1\%$ point.
 
 \subsubsection{Model Scope and Inputs}
-The ITU-R procedures are used to calculate excess attenuation beyond the fixed clear-sky allowances. Uplink and downlink attenuation are evaluated separately because their frequencies, elevations, and terminal apertures differ.
+The advanced branch calculates an absolute atmospheric attenuation for each path. When this branch is active, it \emph{replaces} the 0.5~dB static atmospheric allowance on that path; the two quantities are not added. Uplink and downlink attenuation are evaluated separately because their frequencies, elevations, and terminal apertures differ.
 
 \subsubsection{Mathematical Formulation}
 The total atmospheric attenuation $A_{\text{total}}(p)$ in dB exceeded for an annual time percentage $p$ ($0.001\% \le p \le 5\%$) is calculated by combining gaseous absorption ($A_{\text{gaseous}}$), cloud attenuation ($A_{\text{cloud}}$), tropospheric scintillation ($A_{\text{scintillation}}$), and rain attenuation ($A_{\text{rain}}$) according to \textit{ITU-R P.618-13} \cite{itu618}:
@@ -23,7 +23,7 @@ The total atmospheric attenuation $A_{\text{total}}(p)$ in dB exceeded for an an
     A_{\text{total}}(p) = A_{\text{gaseous}} + \sqrt{ \left( A_{\text{rain}}(p) + A_{\text{cloud}} \right)^2 + A_{\text{scintillation}}(p)^2 }
 \end{equation}
 
-The point rainfall rate $R_{0.01}$ is a representative P.837-based input \cite{itu837}. The same $R_{0.01}=42$~mm/h value is used at both terminals; a site-specific study would use separate mapped values for Rome and Ankara. Rain height follows P.839-4 \cite{itu839}, while the frequency- and polarization-dependent $k$ and $\alpha$ coefficients follow P.838-3 \cite{itu838}. The specific attenuation is:
+The point rainfall rate $R_{0.01}$ is a representative P.837-based input \cite{itu837}. The same $R_{0.01}=42$~mm/h value is used at both terminals; a site-specific study would use separate mapped values for Rome and Ankara. P.839-4 defines rain height from a digital $0^\circ$C-isotherm map \cite{itu839}; because that grid is not bundled with the project, the code uses a documented latitude approximation unless a mapped $h_0$ override is supplied. The frequency- and polarization-dependent $k$ and $\alpha$ coefficients follow P.838-3 \cite{itu838}. The specific attenuation is:
 \begin{equation}
     \gamma_{\text{R}} = k R_{0.01}^\alpha
 \end{equation}
@@ -52,21 +52,21 @@ Scintillation uses the P.618-13 procedure with refractivity-related inputs consi
 \end{equation}
 
 \subsubsection{Operational Impact and Results}
-At 99.9\% target availability, the model gives \upRainAtten~dB total uplink attenuation at 14~GHz and \downRainAtten~dB total downlink attenuation at 12~GHz. With the selected interference and dynamic-noise assumptions, the fixed-rate end-to-end margin becomes \marginRain~dB.
+At the per-path $p=0.1\%$ point, the model gives \upRainAtten~dB total uplink attenuation at 14~GHz and \downRainAtten~dB at 12~GHz. Applying both fades simultaneously gives a conservative dual-site stress margin of \marginRain~dB. This is not a statistically derived 99.9\% end-to-end availability point: that claim would require a joint fade-occurrence or correlation model.
 
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{23_itu_attenuation_vs_availability.png}
-        \caption{Slant-path attenuation vs. annual link availability.}
+        \caption{Slant-path attenuation vs. per-path exceedance percentage.}
         \label{fig:itu_attenuation_curve}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{25_itu_attenuation_breakdown_bar.png}
-        \caption{Attenuation breakdown at $99.9\%$ availability.}
+        \caption{Attenuation breakdown at per-path $p=0.1\%$.}
         \label{fig:itu_breakdown_bar}
     \end{subfigure}
     \caption{ITU-R P.618 slant-path propagation impairments and specific contribution analysis for the Rome-Ankara link.}
@@ -82,7 +82,7 @@ The ITU-R design point gives attenuation exceeded for a specified percentage of 
 This stochastic model is a sensitivity exercise based on assumed state probabilities and fade ranges. It is not fitted to measured precipitation records.
 
 \subsubsection{Mathematical Formulation}
-The simulation executes $N=8760$ independent hourly trials. At each sample $t_i$, a weather state $S_i$ is drawn from a probability mass function:
+The simulation executes $N=8760$ one-hour samples. At each $t_i$, Rome and Ankara draw separate weather states from the same illustrative probability mass function; a configuration switch can instead force correlated states for a deliberate double-hit stress experiment.
 \begin{itemize}
     \item \textbf{$S_{\mathrm{clear}}$:} A small residual excess attenuation uniformly sampled between 0 and 0.15~dB.
     \item \textbf{$S_{\mathrm{light}}$ and $S_{\mathrm{moderate}}$:} Small to medium fade depths drawn from uniform attenuation ranges.
@@ -120,7 +120,7 @@ The corresponding link availability is then estimated as:
 \end{equation}
 
 \subsubsection{Operational Impact and Results}
-The output is a distribution of link margin under the assumed states and random seed. Because successive samples are independent, it does not reproduce storm duration or temporal correlation.
+The output is a distribution of link margin under the assumed states and random seed. Successive samples are independent, so the model does not reproduce storm duration or temporal correlation; its reported availability is illustrative.
 
 \textbf{Note:} This Monte Carlo model is an illustrative stochastic availability simulation based on assumed weather-state probabilities (light rain: 2.0\%, moderate rain: 0.6\%, heavy rain: 0.1\%), not a site-calibrated meteorological time-series model derived from measured annual precipitation data. Results should therefore be interpreted as \textit{estimated availability under the assumed stochastic weather-state model}, not as a prediction of actual annual availability.
 
@@ -160,7 +160,7 @@ Using the usable symbol rate $R_{\mathrm{s}} = B / (1 + \alpha_{\mathrm{rolloff}
 \end{equation}
 
 \subsubsection{Operational Impact and Results}
-For a 36~MHz carrier with $\alpha=0.20$, the symbol rate is 30~Msps. The implemented threshold table selects QPSK 3/4 for the clear-sky thermal and interference cases and QPSK 1/2 at the 99.9\% atmospheric design point.
+For a 36~MHz carrier with $\alpha=0.20$, the symbol rate is 30~Msps. The implemented threshold table selects QPSK 3/4 for the clear-sky thermal and interference cases and QPSK 1/2 for the coincident dual-site $p=0.1\%$ stress point.
 
 Table~\ref{tab:acm_consistency} lists the available and required $E_s/N_0$ values used by the selector.
 
@@ -177,7 +177,7 @@ Table~\ref{tab:acm_consistency} lists the available and required $E_s/N_0$ value
         \midrule
         \textbf{Clear-Sky (Thermal)} & $\approx 6.38$ dB & QPSK 3/4 & 4.03 dB & 1.487 & $\approx 44.61$ Mbps \\
         \textbf{With ASI \& IMD} & $\approx 5.92$ dB & QPSK 3/4 & 4.03 dB & 1.487 & $\approx 44.61$ Mbps \\
-        \textbf{99.9\% Rain Fade} & $\approx 2.20$ dB & QPSK 1/2 & 1.00 dB & 0.989 & $\approx 29.67$ Mbps \\
+        \textbf{Dual-Site $p=0.1\%$ Stress} & $\approx 2.68$ dB & QPSK 1/2 & 1.00 dB & 0.989 & $\approx 29.67$ Mbps \\
         \bottomrule
     \end{tabular}
     }
@@ -188,7 +188,7 @@ Table~\ref{tab:acm_consistency} lists the available and required $E_s/N_0$ value
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.75\textwidth]{29_dvbs2_acm_vs_availability.png}
-    \caption{DVB-S2 ACM dynamic throughput and MODCOD selection over the link availability spectrum.}
+    \caption{DVB-S2 ACM response over the coincident dual-site per-path exceedance sweep.}
     \label{fig:dvbs2_acm_availability}
 \end{figure}
 

@@ -24,59 +24,111 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Iterable, Mapping
 
-from calculations import (
-    calculate_itu_availability_curve,
-    calculate_scenario,
-    calculate_scenario_with_itu,
-    simulate_monte_carlo_rain_outage,
-    simulate_time_varying_scenario,
-    summarize_itu_availability_curve,
-    summarize_monte_carlo_availability,
-    summarize_time_varying_results,
-    validate_scenario_config,
-    watts_to_dbw,
-)
-from constants import GHZ, MHZ
-from entities import (
-    DigitalLinkConfig,
-    DishAntenna,
-    DynamicNoiseConfig,
-    GeoApparentMotion,
-    GeoSatellite,
-    InterferenceConfig,
-    ITUPropagationConfig,
-    LinkConfig,
-    LinkEndpoint,
-    LinkLosses,
-    Location,
-    ModcodConfig,
-    RainOutageConfig,
-    ScenarioConfig,
-)
-from plotting import generate_advanced_plots, generate_contour_plots, generate_itu_plots
-from scenario_inputs import (
-    APPARENT_MOTION,
-    DIGITAL,
-    DOWNLINK,
-    DOWNLINK_LOSSES,
-    DYNAMIC_NOISE,
-    GS1,
-    GS2,
-    INTERFERENCE,
-    ITU_PROPAGATION,
-    MODCOD,
-    RAIN_OUTAGE,
-    SATELLITE,
-    SATELLITE_DOWNLINK_TRANSMITTER,
-    SATELLITE_UPLINK_RECEIVER,
-    SCENARIO_NAME,
-    UPLINK,
-    UPLINK_LOSSES,
-)
+if __package__:
+    from .calculations import (
+        calculate_itu_availability_curve,
+        calculate_scenario,
+        calculate_scenario_with_itu,
+        simulate_monte_carlo_rain_outage,
+        simulate_time_varying_scenario,
+        summarize_itu_availability_curve,
+        summarize_monte_carlo_availability,
+        summarize_time_varying_results,
+        validate_scenario_config,
+        watts_to_dbw,
+    )
+    from .constants import GHZ, MHZ
+    from .entities import (
+        DigitalLinkConfig,
+        DishAntenna,
+        DynamicNoiseConfig,
+        GeoApparentMotion,
+        GeoSatellite,
+        InterferenceConfig,
+        ITUPropagationConfig,
+        LinkConfig,
+        LinkEndpoint,
+        LinkLosses,
+        Location,
+        ModcodConfig,
+        RainOutageConfig,
+        ScenarioConfig,
+    )
+    from .plotting import generate_advanced_plots, generate_contour_plots, generate_itu_plots
+    from .scenario_inputs import (
+        APPARENT_MOTION,
+        DIGITAL,
+        DOWNLINK,
+        DOWNLINK_LOSSES,
+        DYNAMIC_NOISE,
+        GS1,
+        GS2,
+        INTERFERENCE,
+        ITU_PROPAGATION,
+        MODCOD,
+        RAIN_OUTAGE,
+        SATELLITE,
+        SATELLITE_DOWNLINK_TRANSMITTER,
+        SATELLITE_UPLINK_RECEIVER,
+        SCENARIO_NAME,
+        UPLINK,
+        UPLINK_LOSSES,
+    )
+else:
+    from calculations import (
+        calculate_itu_availability_curve,
+        calculate_scenario,
+        calculate_scenario_with_itu,
+        simulate_monte_carlo_rain_outage,
+        simulate_time_varying_scenario,
+        summarize_itu_availability_curve,
+        summarize_monte_carlo_availability,
+        summarize_time_varying_results,
+        validate_scenario_config,
+        watts_to_dbw,
+    )
+    from constants import GHZ, MHZ
+    from entities import (
+        DigitalLinkConfig,
+        DishAntenna,
+        DynamicNoiseConfig,
+        GeoApparentMotion,
+        GeoSatellite,
+        InterferenceConfig,
+        ITUPropagationConfig,
+        LinkConfig,
+        LinkEndpoint,
+        LinkLosses,
+        Location,
+        ModcodConfig,
+        RainOutageConfig,
+        ScenarioConfig,
+    )
+    from plotting import generate_advanced_plots, generate_contour_plots, generate_itu_plots
+    from scenario_inputs import (
+        APPARENT_MOTION,
+        DIGITAL,
+        DOWNLINK,
+        DOWNLINK_LOSSES,
+        DYNAMIC_NOISE,
+        GS1,
+        GS2,
+        INTERFERENCE,
+        ITU_PROPAGATION,
+        MODCOD,
+        RAIN_OUTAGE,
+        SATELLITE,
+        SATELLITE_DOWNLINK_TRANSMITTER,
+        SATELLITE_UPLINK_RECEIVER,
+        SCENARIO_NAME,
+        UPLINK,
+        UPLINK_LOSSES,
+    )
 
 
 RESULTS_DIR = Path("outputs")
 PLOTS_DIR = RESULTS_DIR / "plots"
+REPORT_PARAMETERS_PATH = Path("LaTeX Rapor") / "parameters.tex"
 
 
 def _optional_float(value: object) -> float | None:
@@ -316,57 +368,116 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def build_parameter_source_rows(scenario: ScenarioConfig) -> list[dict[str, object]]:
     """Return rows for the parameter_sources.csv output."""
+    gs1 = scenario.uplink.transmitter.location
+    gs2 = scenario.downlink.receiver.location
+    gs1_antenna = scenario.uplink.transmitter.antenna
+    gs2_antenna = scenario.downlink.receiver.antenna
+    tx_power_dbw = scenario.uplink.transmitter.tx_power_dbw
+    tx_power_w = 10.0 ** (tx_power_dbw / 10.0) if tx_power_dbw is not None else None
+
     return [
-        {"parameter": "GS1 latitude", "value": 41.9028, "unit": "deg", "status": "sourced", "source_or_note": "Rome coordinate source"},
-        {"parameter": "GS1 longitude", "value": 12.4964, "unit": "deg", "status": "sourced", "source_or_note": "Rome coordinate source"},
-        {"parameter": "GS1 dish diameter", "value": 2.4, "unit": "m", "status": "datasheet_or_selected", "source_or_note": "Skyware Type 243 / selected project dish"},
-        {"parameter": "GS1 antenna efficiency", "value": 0.62, "unit": "-", "status": "assumed", "source_or_note": "Representative aperture efficiency"},
-        {"parameter": "GS1 HPA power", "value": 20, "unit": "W", "status": "datasheet_supported", "source_or_note": "Norsat ATOMBKU020 Ku-band BUC/SSPA P1dB 43 dBm minimum (20 W-class)"},
-        {"parameter": "GS1 feeder loss", "value": 1.0, "unit": "dB", "status": "assumed", "source_or_note": "Representative uplink feeder allowance"},
-        {"parameter": "Satellite longitude", "value": 13.0, "unit": "deg", "status": "sourced", "source_or_note": "HOTBIRD 13G orbital slot"},
-        {"parameter": "Satellite downlink EIRP", "value": 46, "unit": "dBW", "status": "estimated", "source_or_note": "Estimated from HOTBIRD footprint contour at Ankara receiving site"},
-        {"parameter": "Satellite receive G/T", "value": 3, "unit": "dB/K", "status": "assumed", "source_or_note": "Public selected-transponder uplink G/T unavailable"},
-        {"parameter": "GS2 latitude", "value": 39.9334, "unit": "deg", "status": "sourced", "source_or_note": "Ankara coordinate source"},
-        {"parameter": "GS2 longitude", "value": 32.8597, "unit": "deg", "status": "sourced", "source_or_note": "Ankara coordinate source"},
-        {"parameter": "GS2 dish diameter", "value": 0.9, "unit": "m", "status": "datasheet_or_selected", "source_or_note": "Triax TD88 / selected receive dish"},
-        {"parameter": "GS2 antenna efficiency", "value": 0.62, "unit": "-", "status": "assumed", "source_or_note": "Representative aperture efficiency"},
-        {"parameter": "GS2 system noise temperature", "value": 150, "unit": "K", "status": "assumed", "source_or_note": "Representative consumer Ku-band receive system estimate"},
-        {"parameter": "GS2 receiver feeder loss", "value": 0.5, "unit": "dB", "status": "assumed", "source_or_note": "Representative receive feeder allowance"},
-        {"parameter": "Pointing loss", "value": 0.5, "unit": "dB", "status": "assumed", "source_or_note": "Engineering pointing allowance"},
-        {"parameter": "Polarization loss", "value": 0.3, "unit": "dB", "status": "assumed", "source_or_note": "Engineering polarization mismatch allowance"},
-        {"parameter": "Clear-sky atmospheric loss", "value": 0.5, "unit": "dB", "status": "assumed", "source_or_note": "Clear-sky engineering allowance"},
-        {"parameter": "Miscellaneous RF loss", "value": 0.2, "unit": "dB", "status": "assumed", "source_or_note": "Small unallocated RF/system allowance"},
-        {"parameter": "Static implementation loss", "value": 0, "unit": "dB", "status": "model_choice", "source_or_note": "Removed from RF path to avoid double-counting with DVB-S2 implementation margin"},
-        {"parameter": "Required fixed-rate Eb/N0", "value": 7, "unit": "dB", "status": "assumed", "source_or_note": "Conservative fixed-rate design threshold"},
-        {"parameter": "R0.01 rainfall rate", "value": 42, "unit": "mm/h", "status": "representative", "source_or_note": "P.837-based rainfall-rate input"},
-        {"parameter": "ITU-R polarization tilt", "value": 90, "unit": "deg", "status": "assumed", "source_or_note": "Vertical linear polarization for P.838 rain attenuation"},
-        {"parameter": "DVB-S2 rolloff", "value": 0.20, "unit": "-", "status": "assumed", "source_or_note": "DVB-S2 ACM carrier roll-off"},
-        {"parameter": "DVB-S2 implementation margin", "value": 1, "unit": "dB", "status": "assumed", "source_or_note": "Representative modem threshold back-off"},
-        {"parameter": "ACM carrier bandwidth", "value": 36, "unit": "MHz", "status": "configured", "source_or_note": "DVB-S2 carrier bandwidth for MODCOD throughput"},
-        {"parameter": "Fixed-rate bit rate", "value": 10, "unit": "Mbps", "status": "configured", "source_or_note": "Fixed-rate closure mode bit rate"},
+        {"parameter": "GS1 latitude", "value": gs1.latitude_deg if gs1 else None, "unit": "deg", "status": "sourced", "source_or_note": "Rome coordinate input"},
+        {"parameter": "GS1 longitude", "value": gs1.longitude_deg if gs1 else None, "unit": "deg", "status": "sourced", "source_or_note": "Rome coordinate input"},
+        {"parameter": "GS1 dish diameter", "value": gs1_antenna.diameter_m if gs1_antenna else None, "unit": "m", "status": "datasheet_or_selected", "source_or_note": "Andrew Type 243 selected project dish"},
+        {"parameter": "GS1 antenna efficiency", "value": gs1_antenna.efficiency if gs1_antenna else None, "unit": "-", "status": "assumed", "source_or_note": "Representative aperture efficiency"},
+        {"parameter": "GS1 HPA power", "value": tx_power_w, "unit": "W", "status": "datasheet_supported", "source_or_note": "Norsat ATOMBKU020 P1dB 43 dBm minimum"},
+        {"parameter": "GS1 feeder loss", "value": scenario.uplink.transmitter.tx_feeder_loss_db, "unit": "dB", "status": "assumed", "source_or_note": "Representative uplink feeder allowance"},
+        {"parameter": "Satellite longitude", "value": scenario.satellite.longitude_deg, "unit": "deg", "status": "sourced", "source_or_note": "Selected GEO orbital slot"},
+        {"parameter": "Satellite downlink EIRP", "value": scenario.downlink.transmitter.eirp_dbw_override, "unit": "dBW", "status": "estimated", "source_or_note": "Estimated from HOTBIRD footprint contour at Ankara"},
+        {"parameter": "Satellite receive G/T", "value": scenario.uplink.receiver.g_over_t_db_per_k_override, "unit": "dB/K", "status": "assumed", "source_or_note": "Selected-transponder uplink G/T unavailable"},
+        {"parameter": "GS2 latitude", "value": gs2.latitude_deg if gs2 else None, "unit": "deg", "status": "sourced", "source_or_note": "Ankara coordinate input"},
+        {"parameter": "GS2 longitude", "value": gs2.longitude_deg if gs2 else None, "unit": "deg", "status": "sourced", "source_or_note": "Ankara coordinate input"},
+        {"parameter": "GS2 dish diameter", "value": gs2_antenna.diameter_m if gs2_antenna else None, "unit": "m", "status": "datasheet_or_selected", "source_or_note": "Triax TD88 represented by an equivalent circular aperture"},
+        {"parameter": "GS2 antenna efficiency", "value": gs2_antenna.efficiency if gs2_antenna else None, "unit": "-", "status": "assumed", "source_or_note": "Representative aperture efficiency"},
+        {"parameter": "GS2 system noise temperature", "value": scenario.downlink.receiver.system_noise_temperature_k, "unit": "K", "status": "assumed", "source_or_note": "Representative Ku-band receive-system estimate"},
+        {"parameter": "GS2 receiver feeder loss", "value": scenario.downlink.receiver.rx_feeder_loss_db, "unit": "dB", "status": "assumed", "source_or_note": "Representative receive feeder allowance"},
+        {"parameter": "Uplink pointing loss", "value": scenario.uplink.losses.pointing_loss_db, "unit": "dB", "status": "assumed", "source_or_note": "Engineering pointing allowance"},
+        {"parameter": "Downlink pointing loss", "value": scenario.downlink.losses.pointing_loss_db, "unit": "dB", "status": "assumed", "source_or_note": "Engineering pointing allowance"},
+        {"parameter": "Uplink polarization loss", "value": scenario.uplink.losses.polarization_loss_db, "unit": "dB", "status": "assumed", "source_or_note": "Engineering polarization mismatch allowance"},
+        {"parameter": "Downlink polarization loss", "value": scenario.downlink.losses.polarization_loss_db, "unit": "dB", "status": "assumed", "source_or_note": "Engineering polarization mismatch allowance"},
+        {"parameter": "Static uplink atmospheric allowance", "value": scenario.uplink.losses.atmospheric_loss_db, "unit": "dB", "status": "assumed", "source_or_note": "Replaced, not added, in the advanced ITU branch"},
+        {"parameter": "Static downlink atmospheric allowance", "value": scenario.downlink.losses.atmospheric_loss_db, "unit": "dB", "status": "assumed", "source_or_note": "Replaced, not added, in the advanced ITU branch"},
+        {"parameter": "Required fixed-rate Eb/N0", "value": scenario.required_end_to_end_ebn0_db, "unit": "dB", "status": "assumed", "source_or_note": "Conservative fixed-rate design threshold"},
+        {"parameter": "R0.01 rainfall rate", "value": scenario.itu_propagation.rain_rate_001_mm_per_h, "unit": "mm/h", "status": "representative", "source_or_note": "Shared representative P.837-based input; not a map extraction"},
+        {"parameter": "ITU-R polarization tilt", "value": scenario.itu_propagation.polarization_tilt_deg, "unit": "deg", "status": "assumed", "source_or_note": "Vertical linear polarization for P.838"},
+        {"parameter": "DVB-S2 rolloff", "value": scenario.modcod.rolloff_factor, "unit": "-", "status": "assumed", "source_or_note": "DVB-S2 ACM carrier roll-off"},
+        {"parameter": "DVB-S2 implementation margin", "value": scenario.modcod.implementation_margin_db, "unit": "dB", "status": "assumed", "source_or_note": "Representative modem threshold back-off"},
+        {"parameter": "ACM carrier bandwidth", "value": scenario.downlink.bandwidth_hz / MHZ, "unit": "MHz", "status": "configured", "source_or_note": "DVB-S2 carrier bandwidth"},
+        {"parameter": "Fixed-rate bit rate", "value": scenario.downlink.bit_rate_bps / 1.0e6, "unit": "Mbps", "status": "configured", "source_or_note": "Fixed-rate closure-mode bit rate"},
     ]
 
 
-def build_mode_definitions_rows() -> list[dict[str, object]]:
+def build_mode_definitions_rows(scenario: ScenarioConfig) -> list[dict[str, object]]:
     """Return rows defining fixed-rate vs ACM modes."""
+    bit_rate_mbps = scenario.downlink.bit_rate_bps / 1.0e6
+    bandwidth_mhz = scenario.downlink.bandwidth_hz / MHZ
     return [
         {
             "mode": "fixed_rate",
-            "bit_rate_Mbps": "10",
-            "bandwidth_MHz": "36",
+            "bit_rate_Mbps": f"{bit_rate_mbps:g}",
+            "bandwidth_MHz": f"{bandwidth_mhz:g}",
             "metric": "Eb/N0",
-            "threshold_basis": "required Eb/N0 = 7 dB",
+            "threshold_basis": f"required Eb/N0 = {scenario.required_end_to_end_ebn0_db:g} dB",
             "note": "Fixed-rate closure mode",
         },
         {
             "mode": "DVB-S2 ACM",
             "bit_rate_Mbps": "variable",
-            "bandwidth_MHz": "36",
+            "bandwidth_MHz": f"{bandwidth_mhz:g}",
             "metric": "Es/N0",
             "threshold_basis": "DVB-S2 MODCOD table + implementation margin",
-            "note": "Variable throughput carrier mode; not direct continuation of fixed 10 Mbps closure",
+            "note": f"Variable-throughput carrier mode; separate from fixed {bit_rate_mbps:g} Mbps closure",
         },
     ]
+
+
+def write_report_parameters(
+    scenario: ScenarioConfig,
+    static_result,
+    itu_design,
+    uplink_only_design,
+    downlink_only_design,
+) -> Path:
+    """Write LaTeX macros directly from the current computed results."""
+
+    selection = itu_design.downlink_modcod
+    throughput_mbps = (
+        selection.net_throughput_bps / 1.0e6
+        if selection is not None and selection.selected is not None
+        else 0.0
+    )
+    available_esn0_db = selection.available_esn0_db if selection is not None else float("nan")
+    text = f"""% parameters.tex
+% Auto-generated by src/main.py. Do not edit numerical values by hand.
+
+% --- Geometry and system ---
+\\newcommand{{\\gsOneDish}}{{{scenario.uplink.transmitter.antenna.diameter_m:g}}}
+\\newcommand{{\\gsTwoDish}}{{{scenario.downlink.receiver.antenna.diameter_m:g}}}
+\\newcommand{{\\satEIRP}}{{{scenario.downlink.transmitter.eirp_dbw_override:g}}}
+\\newcommand{{\\satGT}}{{{scenario.uplink.receiver.g_over_t_db_per_k_override:.1f}}}
+\\newcommand{{\\reqEbNo}}{{{scenario.required_end_to_end_ebn0_db:.2f}}}
+\\newcommand{{\\upSlantRange}}{{{static_result.uplink.range_km:,.2f}}}
+\\newcommand{{\\downSlantRange}}{{{static_result.downlink.range_km:,.2f}}}
+
+% --- Static clear-sky results ---
+\\newcommand{{\\cnTotal}}{{{static_result.combined_cn0_dbhz:.2f}}}
+\\newcommand{{\\ebnoTotal}}{{{static_result.combined_ebn0_db:.2f}}}
+\\newcommand{{\\marginClear}}{{{static_result.combined_margin_db:.2f}}}
+\\newcommand{{\\marginASI}}{{{static_result.combined_margin_ni_db:.2f}}}
+\\newcommand{{\\upFSPL}}{{{static_result.uplink.free_space_loss_db:.2f}}}
+\\newcommand{{\\downFSPL}}{{{static_result.downlink.free_space_loss_db:.2f}}}
+
+% --- Per-path p-point and coincident dual-site stress results ---
+\\newcommand{{\\marginUplinkFade}}{{{uplink_only_design.faded_result.combined_margin_ni_db:.2f}}}
+\\newcommand{{\\marginDownlinkFade}}{{{downlink_only_design.faded_result.combined_margin_ni_db:.2f}}}
+\\newcommand{{\\marginRain}}{{{itu_design.faded_result.combined_margin_ni_db:.2f}}}
+\\newcommand{{\\downlinkEsnoRain}}{{{available_esn0_db:.2f}}}
+\\newcommand{{\\throughputRain}}{{{throughput_mbps:.2f}}}
+\\newcommand{{\\upRainAtten}}{{{itu_design.uplink_breakdown.total_db:.2f}}}
+\\newcommand{{\\downRainAtten}}{{{itu_design.downlink_breakdown.total_db:.2f}}}
+"""
+    REPORT_PARAMETERS_PATH.write_text(text, encoding="utf-8")
+    return REPORT_PARAMETERS_PATH
 
 
 def _geometry_rows(static_result) -> list[dict[str, object]]:
@@ -398,11 +509,10 @@ def build_ablation_rows(scenario: ScenarioConfig) -> list[dict[str, object]]:
     """Return cumulative and diagnostic rows for the advanced-model ablation study.
 
     The cumulative chain separates carrier degradation from receiver-noise
-    degradation: interference is added first, then non-rain propagation, rain
-    attenuation with fixed Tsys, rain-emission noise with dynamic Tsys, and
-    finally ACM as a link-adaptation response. Clear-sky dynamic Tsys and GEO
-    station-keeping motion are reported separately because they are diagnostics
-    rather than monotonic impairments.
+    degradation: interference is added first, the fixed atmospheric allowance
+    is replaced by the ITU-R-informed model, rain attenuation is added, the
+    receiver-temperature model is changed under otherwise identical conditions,
+    atmospheric emission is added, and ACM is evaluated as a response.
     """
 
     no_interference = replace(
@@ -448,6 +558,10 @@ def build_ablation_rows(scenario: ScenarioConfig) -> list[dict[str, object]]:
         itu_propagation=replace(scenario.itu_propagation, enabled=True),
         modcod=replace(scenario.modcod, enabled=True),
     )
+    full_dynamic_no_emission = calculate_scenario_with_itu(
+        full_dynamic_scenario,
+        include_atmospheric_emission=False,
+    )
     full_dynamic = calculate_scenario_with_itu(full_dynamic_scenario)
 
     dynamic_clear_result = calculate_scenario(
@@ -490,7 +604,8 @@ def build_ablation_rows(scenario: ScenarioConfig) -> list[dict[str, object]]:
             "uplink_excess_attenuation_dB": uplink_attenuation_db,
             "downlink_excess_attenuation_dB": downlink_attenuation_db,
             "downlink_Tsys_K": result.downlink.system_noise_temperature_k,
-            "fixed_rate_10Mbps_closed": margin >= 0.0,
+            "fixed_rate_bit_rate_Mbps": scenario.downlink.bit_rate_bps / 1.0e6,
+            "fixed_rate_closed": margin >= 0.0,
             "selected_MODCOD": selected_modcod,
             "ACM_net_throughput_Mbps": throughput_mbps,
             "interpretation": interpretation,
@@ -501,6 +616,9 @@ def build_ablation_rows(scenario: ScenarioConfig) -> list[dict[str, object]]:
     margin_asi_imd = asi_imd_result.combined_margin_ni_db
     margin_non_rain = non_rain_fixed.faded_result.combined_margin_ni_db
     margin_full_fixed = full_fixed.faded_result.combined_margin_ni_db
+    margin_full_dynamic_no_emission = (
+        full_dynamic_no_emission.faded_result.combined_margin_ni_db
+    )
     margin_full_dynamic = full_dynamic.faded_result.combined_margin_ni_db
 
     selection = full_dynamic.downlink_modcod
@@ -541,12 +659,12 @@ def build_ablation_rows(scenario: ScenarioConfig) -> list[dict[str, object]]:
         result_row(
             "A3",
             "cumulative",
-            "A2 + gas, cloud, and scintillation; fixed Tsys",
+            "A2 + replace fixed atmosphere with gas, cloud, and scintillation; fixed Tsys",
             non_rain_fixed.faded_result,
             margin_non_rain - margin_asi_imd,
             uplink_attenuation_db=non_rain_fixed.uplink_breakdown.total_db,
             downlink_attenuation_db=non_rain_fixed.downlink_breakdown.total_db,
-            interpretation="Adds non-rain ITU-R propagation loss.",
+            interpretation="Replaces the fixed clear-sky atmospheric allowance.",
         ),
         result_row(
             "A4",
@@ -561,17 +679,27 @@ def build_ablation_rows(scenario: ScenarioConfig) -> list[dict[str, object]]:
         result_row(
             "A5",
             "cumulative",
-            "A4 + dynamic rain-emission Tsys",
-            full_dynamic.faded_result,
-            margin_full_dynamic - margin_full_fixed,
-            uplink_attenuation_db=full_dynamic.uplink_breakdown.total_db,
-            downlink_attenuation_db=full_dynamic.downlink_breakdown.total_db,
-            interpretation="Isolates the receiver-noise increase caused by the faded sky.",
+            "A4 + dynamic clear-sky receiver Tsys; emission disabled",
+            full_dynamic_no_emission.faded_result,
+            margin_full_dynamic_no_emission - margin_full_fixed,
+            uplink_attenuation_db=full_dynamic_no_emission.uplink_breakdown.total_db,
+            downlink_attenuation_db=full_dynamic_no_emission.downlink_breakdown.total_db,
+            interpretation="Changes only the receiver-temperature baseline.",
         ),
         result_row(
             "A6",
+            "cumulative",
+            "A5 + atmospheric emission in downlink Tsys",
+            full_dynamic.faded_result,
+            margin_full_dynamic - margin_full_dynamic_no_emission,
+            uplink_attenuation_db=full_dynamic.uplink_breakdown.total_db,
+            downlink_attenuation_db=full_dynamic.downlink_breakdown.total_db,
+            interpretation="Isolates the receiver-noise increase caused by the lossy sky.",
+        ),
+        result_row(
+            "A7",
             "response",
-            "A5 + DVB-S2 ACM selection",
+            "A6 + DVB-S2 ACM selection",
             full_dynamic.faded_result,
             0.0,
             uplink_attenuation_db=full_dynamic.uplink_breakdown.total_db,
@@ -581,17 +709,9 @@ def build_ablation_rows(scenario: ScenarioConfig) -> list[dict[str, object]]:
             interpretation="ACM changes the service mode, not the physical fixed-rate margin.",
         ),
         result_row(
-            "D0",
-            "isolated diagnostic",
-            "ASI + IMD + dynamic Tsys in clear sky",
-            dynamic_clear_result,
-            dynamic_clear_result.combined_margin_ni_db - margin_asi_imd,
-            interpretation="The modeled clear-sky Tsys is compared with the fixed 150 K assumption.",
-        ),
-        result_row(
             "D1",
             "isolated diagnostic",
-            "D0 + 48-hour GEO station-keeping motion",
+            "ASI + IMD + dynamic clear-sky Tsys + 48-hour GEO motion",
             dynamic_clear_result,
             None,
             margin_min_db=float(motion_summary["combined_margin_with_interference_min_dB"]),
@@ -638,7 +758,7 @@ def main(argv: list[str] | None = None) -> None:
     static_result = calculate_scenario(scenario)
     geometry_rows = _geometry_rows(static_result)
     write("parameter_sources.csv", build_parameter_source_rows(scenario))
-    write("mode_definitions.csv", build_mode_definitions_rows())
+    write("mode_definitions.csv", build_mode_definitions_rows(scenario))
     write("geometry_static.csv", geometry_rows)
     write("link_budget_static.csv", [static_result.uplink.to_dict(), static_result.downlink.to_dict()])
     write("scenario_summary_static.csv", [static_result.to_summary_dict()])
@@ -701,15 +821,37 @@ def main(argv: list[str] | None = None) -> None:
     # Standards-based ITU-R propagation and DVB-S2 ACM (advanced).
     # ---------------------------------------------------------------
     itu_curve = []
+    itu_design = None
     if scenario.itu_propagation.enabled:
-        itu_design = calculate_scenario_with_itu(scenario)
+        uplink_only_design = calculate_scenario_with_itu(scenario, fade_application="uplink")
+        downlink_only_design = calculate_scenario_with_itu(scenario, fade_application="downlink")
+        itu_design = calculate_scenario_with_itu(scenario, fade_application="both")
         itu_curve = calculate_itu_availability_curve(scenario)
         itu_summary = summarize_itu_availability_curve(itu_curve, itu_design)
         write("itu_design_point.csv", [itu_design.to_dict()])
+        write(
+            "itu_design_cases.csv",
+            [
+                uplink_only_design.to_dict(),
+                downlink_only_design.to_dict(),
+                itu_design.to_dict(),
+            ],
+        )
         write("itu_availability_curve.csv", [r.to_dict() for r in itu_curve])
         write("itu_summary.csv", [itu_summary])
+        parameters_path = write_report_parameters(
+            scenario,
+            static_result,
+            itu_design,
+            uplink_only_design,
+            downlink_only_design,
+        )
+        print(f"\nUpdated report parameters: {parameters_path}")
         print_key_value_table(
-            f"ITU-R Design Point ({itu_design.design_availability_percent:g}% availability)",
+            (
+                "ITU-R Coincident Dual-Site Stress Point "
+                f"(per-path p={itu_design.design_exceedance_percent:g}%)"
+            ),
             itu_design.to_dict(),
         )
         print_key_value_table("ITU-R Availability Summary", itu_summary)
@@ -756,9 +898,10 @@ def main(argv: list[str] | None = None) -> None:
     print(
         "\nNote: several scenario parameters are representative engineering assumptions "
         "or footprint-based estimates, as documented in parameter_sources.csv and the report. "
-        "The clear-sky static baseline never includes rain fade. ITU-R propagation and "
-        "DVB-S2 ACM are separate advanced extensions and are standards-based engineering "
-        "implementations, not regulatory-grade or map-exact tools."
+        "The clear-sky static baseline never includes rain fade. The ITU-R-informed "
+        "propagation and DVB-S2 ACM extensions are engineering models, not regulatory-grade "
+        "or map-exact tools. The dual-site p-point is a coincident stress case, not a joint "
+        "end-to-end availability guarantee."
     )
 
 

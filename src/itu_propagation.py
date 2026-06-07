@@ -22,13 +22,22 @@ from dataclasses import dataclass
 from math import atan, atan2, cos, exp, log, log10, radians, sin, sqrt
 from typing import Sequence
 
-from constants import (
-    DEG_TO_RAD,
-    EFFECTIVE_EARTH_RADIUS_KM,
-    MINIMUM_VALID_ELEVATION_DEG,
-    RAD_TO_DEG,
-    SCINTILLATION_TURBULENT_LAYER_HEIGHT_M,
-)
+try:
+    from .constants import (
+        DEG_TO_RAD,
+        EFFECTIVE_EARTH_RADIUS_KM,
+        MINIMUM_VALID_ELEVATION_DEG,
+        RAD_TO_DEG,
+        SCINTILLATION_TURBULENT_LAYER_HEIGHT_M,
+    )
+except ImportError:  # Support direct execution with ``python src/main.py``.
+    from constants import (
+        DEG_TO_RAD,
+        EFFECTIVE_EARTH_RADIUS_KM,
+        MINIMUM_VALID_ELEVATION_DEG,
+        RAD_TO_DEG,
+        SCINTILLATION_TURBULENT_LAYER_HEIGHT_M,
+    )
 
 
 
@@ -152,13 +161,13 @@ def rain_specific_attenuation_db_per_km(rain_rate_mm_per_h: float, k: float, alp
 #    ITU-R P.839-4  RAIN HEIGHT MODEL
 # ========================================================================
 def rain_height_km(latitude_deg: float, rain_height_override_km: float | None = None) -> float:
-    """Return the mean rain height ``h_R`` in km (ITU-R P.839-4).
+    """Return an approximate mean rain height ``h_R`` in km.
 
     The rain height is the mean annual 0 deg C isotherm height plus 0.36 km. The
-    Recommendation distributes ``h0`` on a global digital map; here we use the
-    widely cited piecewise latitude approximation so the model is fully
-    self-contained. If a project has the exact map value for its site, pass it
-    through ``rain_height_override_km`` (interpreted as ``h0``) to override.
+    P.839-4 Recommendation distributes ``h0`` on a global digital map. This
+    self-contained fallback uses a legacy piecewise latitude approximation and
+    must not be described as a direct P.839 map extraction. Pass the mapped or
+    measured ``h0`` through ``rain_height_override_km`` when available.
 
     Parameters
     ----------
@@ -594,6 +603,8 @@ def scintillation_fade_db(
         Percentage of time the fade depth is exceeded (valid 0.01% <= p <= 50%).
     """
 
+    if not (0.01 <= exceedance_percent <= 50.0):
+        raise ValueError("Scintillation exceedance_percent must be in [0.01, 50].")
     p = exceedance_percent
     theta = max(elevation_deg, 4.0)
     sin_theta = sin(radians(theta))
@@ -726,7 +737,7 @@ def total_slant_path_attenuation(
             antenna_efficiency,
             temperature_c,
             relative_humidity_percent,
-            exceedance_percent,
+            max(exceedance_percent, 0.01),
         )
 
     total_db = combine_total_attenuation_db(rain_db, gaseous_db, cloud_db, scintillation_db)

@@ -14,9 +14,14 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional, Sequence
 
-from constants import SIDEREAL_DAY_HOURS
-from itu_propagation import AttenuationBreakdown
-from modcod import ModcodSelection
+try:
+    from .constants import GEO_ORBIT_RADIUS_KM, SIDEREAL_DAY_HOURS
+    from .itu_propagation import AttenuationBreakdown
+    from .modcod import ModcodSelection
+except ImportError:  # Support direct execution with ``python src/main.py``.
+    from constants import GEO_ORBIT_RADIUS_KM, SIDEREAL_DAY_HOURS
+    from itu_propagation import AttenuationBreakdown
+    from modcod import ModcodSelection
 
 
 @dataclass(frozen=True)
@@ -224,11 +229,12 @@ class RainOutageConfig:
     heavy_rain_attenuation_range_db: tuple[float, float] = (7.0, 18.0)
     uplink_frequency_scaling_exponent: float = 1.15
     downlink_frequency_scaling_exponent: float = 1.00
+    correlate_uplink_downlink_weather: bool = False
 
 
 @dataclass(frozen=True)
 class ITUPropagationConfig:
-    """Standards-based ITU-R slant-path attenuation inputs .
+    """ITU-R-informed slant-path attenuation inputs.
 
     Unlike :class:`RainOutageConfig`, which is an educational Monte-Carlo
     weather generator, this configuration drives the deterministic ITU-R
@@ -243,7 +249,9 @@ class ITUPropagationConfig:
     with P.618 losses disabled. keeps that clean static link budget and adds
     this separate layer so the link can be studied against an availability
     target. It is a self-contained engineering implementation; site-specific
-    accuracy requires replacing the representative inputs with mapped/measured values.
+    accuracy requires replacing the representative inputs with mapped or measured
+    site values. The self-contained rain-height fallback is not a substitute for
+    extracting the P.839 digital map.
     """
 
     enabled: bool = True
@@ -562,7 +570,7 @@ class ScenarioResult:
 
 @dataclass(frozen=True)
 class ITUPropagationResult:
-    """Standards-based slant-path attenuation result for one availability point.
+    """Slant-path attenuation result for one per-path exceedance point.
 
     Holds the per-direction ITU-R attenuation breakdowns and the resulting
     scenario link budget after those fades are applied, plus the optional
@@ -571,6 +579,7 @@ class ITUPropagationResult:
 
     design_availability_percent: float
     design_exceedance_percent: float
+    fade_application: str
     uplink_breakdown: AttenuationBreakdown
     downlink_breakdown: AttenuationBreakdown
     faded_result: "ScenarioResult"
@@ -583,12 +592,29 @@ class ITUPropagationResult:
         data: dict[str, float | str | None] = {
             "design_availability_percent": self.design_availability_percent,
             "design_exceedance_percent": self.design_exceedance_percent,
+            "fade_application": self.fade_application,
+            "availability_interpretation": (
+                "Per-path exceedance applied simultaneously as a stress case; "
+                "not a joint end-to-end availability estimate."
+                if self.fade_application == "both"
+                else f"Per-path exceedance applied to the {self.fade_application} only."
+            ),
             "uplink_total_attenuation_dB": self.uplink_breakdown.total_db,
+            "uplink_applied_attenuation_dB": (
+                self.uplink_breakdown.total_db
+                if self.fade_application in {"uplink", "both"}
+                else 0.0
+            ),
             "uplink_rain_attenuation_dB": self.uplink_breakdown.rain_db,
             "uplink_gaseous_attenuation_dB": self.uplink_breakdown.gaseous_db,
             "uplink_cloud_attenuation_dB": self.uplink_breakdown.cloud_db,
             "uplink_scintillation_dB": self.uplink_breakdown.scintillation_db,
             "downlink_total_attenuation_dB": self.downlink_breakdown.total_db,
+            "downlink_applied_attenuation_dB": (
+                self.downlink_breakdown.total_db
+                if self.fade_application in {"downlink", "both"}
+                else 0.0
+            ),
             "downlink_rain_attenuation_dB": self.downlink_breakdown.rain_db,
             "downlink_gaseous_attenuation_dB": self.downlink_breakdown.gaseous_db,
             "downlink_cloud_attenuation_dB": self.downlink_breakdown.cloud_db,
@@ -623,7 +649,11 @@ class TimeVaryingSample:
             "weather": self.weather_label,
             "satellite_longitude_deg": self.satellite.longitude_deg,
             "satellite_latitude_deg": self.satellite.latitude_deg,
-            "satellite_radius_km": self.satellite.orbit_radius_km or 0.0,
+            "satellite_radius_km": (
+                self.satellite.orbit_radius_km
+                if self.satellite.orbit_radius_km is not None
+                else GEO_ORBIT_RADIUS_KM
+            ),
             "uplink_range_km": self.result.uplink.range_km,
             "downlink_range_km": self.result.downlink.range_km,
             "uplink_elevation_deg": self.result.uplink.elevation_deg,

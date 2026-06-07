@@ -21,7 +21,7 @@ This envelope is used for sensitivity analysis, not regulatory coordination. The
 
 In this project, the ASI/IMD analysis is used as a parametric impairment estimate rather than a regulatory coordination calculation. The adjacent satellites are modeled at $11.0^\circ$E and $15.0^\circ$E, corresponding to a nominal $2.0^\circ$ orbital separation from the target $13.0^\circ$E slot. The adjacent-carrier activity factor is set to $-3.0$~dB, the antenna off-axis rejection follows the simplified envelope above, and the representative transponder IMD term is modeled as $C/I_{\mathrm{IMD}} = 30$~dB. A formal coordination study would require operator-specific carrier plans, measured antenna radiation patterns, polarization reuse information, and transponder loading data.
 
-For the selected assumptions, ASI and IMD reduce the fixed-rate margin from $\marginClear$~dB to $\marginASI$~dB. The ablation study separates this total into approximately 0.44~dB from ASI and 0.01~dB from the representative IMD term. These values are scenario-specific and should not be used as coordination limits.
+Chapter~5 reports the resulting margin and separates ASI from the representative IMD term in the ablation table.
 
 \subsection{Hardware Impairments: Non-Linearity and Phase Noise}
 The transponder is not an ideal linear amplifier. TWTA compression, AM/PM conversion, and modem imperfections are represented only through simplified engineering terms:
@@ -72,4 +72,4 @@ The apparent spacecraft position is allowed to vary within a simplified station-
     \Delta \phi(t) &= A_{\text{ns}} \sin\left(\frac{2\pi t}{T_{\text{sidereal}}} + \phi_{\text{ns}}\right) \\
     \Delta r(t) &= A_{\text{r}} \sin\left(\frac{2\pi t}{T_{\text{sidereal}}} + \phi_{\text{r}}\right)
 \end{align}
-These offsets update the slant-range vector $\vec{\rho}(t)$. With the modeled amplitudes ($0.06^\circ$ east--west, $0.04^\circ$ north--south, and 40~km radial), the 48-hour margin variation is about 0.02~dB peak-to-peak. This result indicates that station-keeping motion is negligible in the present power budget; it does not establish a tracking requirement, which would depend on the measured antenna pattern, pointing tolerance, and operator practice.
+These offsets update the slant-range vector $\vec{\rho}(t)$. The model is intended to test sensitivity to a controlled GEO station-keeping box; it does not establish a tracking requirement, which would depend on the measured antenna pattern, pointing tolerance, and operator practice.

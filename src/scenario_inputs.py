@@ -138,6 +138,9 @@ RAIN_OUTAGE = {
     "light_rain_probability": 0.020,
     "moderate_rain_probability": 0.006,
     "heavy_rain_probability": 0.001,
+    # Rome and Ankara are widely separated, so independent weather draws are
+    # the more defensible default for this illustrative generator.
+    "correlate_uplink_downlink_weather": False,
 }
 
 DIGITAL = {
@@ -153,10 +156,8 @@ DIGITAL = {
 # ========================================================================
 # 6.            ITU-R PROPAGATION (V5 standards-based fade model)
 # ========================================================================
-# Not: MATLAB'deki varsayılan ödev isterlerinde P.618 sönümlemeleri kapalı varsayılmaktadır.
-# Bu blok, projeye gerçekçilik katan opsiyonel ITU-R P.618/P.837/P.838/P.676/P.840
-# atmosferik sönümleme (attenuation) modellerini konfigüre eder. İstasyonunuzun 
-# değerleriyle (örneğin P.837 yağış oranı) değiştirebilirsiniz.
+# Optional ITU-R-informed propagation model. The configured meteorological
+# values are representative inputs and may be replaced by site-specific data.
 ITU_PROPAGATION = {
     "enabled": True,
     "rain_rate_001_mm_per_h": 42.0,   # R_0.01 from ITU-R P.837 for the site.
