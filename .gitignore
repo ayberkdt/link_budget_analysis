@@ -15,6 +15,7 @@ outputs/*
 !outputs/scenario_summary_static.csv
 !outputs/digital_metrics_static.csv
 !outputs/interference_summary.csv
+!outputs/ablation_summary.csv
 
 outputs/plots/*
 !outputs/plots/.gitkeep

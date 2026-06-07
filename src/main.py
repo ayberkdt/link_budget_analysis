@@ -394,6 +394,217 @@ def _geometry_rows(static_result) -> list[dict[str, object]]:
     return rows
 
 
+def build_ablation_rows(scenario: ScenarioConfig) -> list[dict[str, object]]:
+    """Return cumulative and diagnostic rows for the advanced-model ablation study.
+
+    The cumulative chain separates carrier degradation from receiver-noise
+    degradation: interference is added first, then non-rain propagation, rain
+    attenuation with fixed Tsys, rain-emission noise with dynamic Tsys, and
+    finally ACM as a link-adaptation response. Clear-sky dynamic Tsys and GEO
+    station-keeping motion are reported separately because they are diagnostics
+    rather than monotonic impairments.
+    """
+
+    no_interference = replace(
+        scenario,
+        interference=replace(scenario.interference, enabled=False),
+        dynamic_noise=replace(scenario.dynamic_noise, enabled=False),
+    )
+    asi_only = replace(
+        scenario,
+        interference=replace(scenario.interference, enabled=True, imd_c_i_db=None),
+        dynamic_noise=replace(scenario.dynamic_noise, enabled=False),
+    )
+    asi_imd = replace(
+        scenario,
+        interference=replace(scenario.interference, enabled=True),
+        dynamic_noise=replace(scenario.dynamic_noise, enabled=False),
+    )
+
+    thermal_result = calculate_scenario(no_interference)
+    asi_result = calculate_scenario(asi_only)
+    asi_imd_result = calculate_scenario(asi_imd)
+
+    non_rain_fixed_scenario = replace(
+        asi_imd,
+        itu_propagation=replace(
+            scenario.itu_propagation,
+            enabled=True,
+            rain_rate_001_mm_per_h=0.0,
+        ),
+    )
+    non_rain_fixed = calculate_scenario_with_itu(non_rain_fixed_scenario)
+
+    full_fixed_scenario = replace(
+        asi_imd,
+        itu_propagation=replace(scenario.itu_propagation, enabled=True),
+    )
+    full_fixed = calculate_scenario_with_itu(full_fixed_scenario)
+
+    full_dynamic_scenario = replace(
+        scenario,
+        interference=replace(scenario.interference, enabled=True),
+        dynamic_noise=replace(scenario.dynamic_noise, enabled=True),
+        itu_propagation=replace(scenario.itu_propagation, enabled=True),
+        modcod=replace(scenario.modcod, enabled=True),
+    )
+    full_dynamic = calculate_scenario_with_itu(full_dynamic_scenario)
+
+    dynamic_clear_result = calculate_scenario(
+        full_dynamic_scenario,
+        use_dynamic_downlink_tsys=True,
+    )
+    motion_scenario = replace(
+        full_dynamic_scenario,
+        apparent_motion=replace(scenario.apparent_motion, enabled=True),
+    )
+    motion_summary = summarize_time_varying_results(
+        simulate_time_varying_scenario(motion_scenario)
+    )
+
+    def result_row(
+        stage: str,
+        evaluation: str,
+        active_effects: str,
+        result,
+        delta_margin_db: float | None,
+        uplink_attenuation_db: float = 0.0,
+        downlink_attenuation_db: float = 0.0,
+        selected_modcod: str = "not evaluated",
+        throughput_mbps: float | None = None,
+        margin_min_db: float | None = None,
+        margin_max_db: float | None = None,
+        margin_peak_to_peak_db: float = 0.0,
+        interpretation: str = "",
+    ) -> dict[str, object]:
+        margin = result.combined_margin_ni_db
+        return {
+            "stage": stage,
+            "evaluation": evaluation,
+            "active_effects": active_effects,
+            "fixed_rate_margin_dB": margin,
+            "delta_margin_dB": delta_margin_db,
+            "margin_min_dB": margin if margin_min_db is None else margin_min_db,
+            "margin_max_dB": margin if margin_max_db is None else margin_max_db,
+            "margin_peak_to_peak_dB": margin_peak_to_peak_db,
+            "uplink_excess_attenuation_dB": uplink_attenuation_db,
+            "downlink_excess_attenuation_dB": downlink_attenuation_db,
+            "downlink_Tsys_K": result.downlink.system_noise_temperature_k,
+            "fixed_rate_10Mbps_closed": margin >= 0.0,
+            "selected_MODCOD": selected_modcod,
+            "ACM_net_throughput_Mbps": throughput_mbps,
+            "interpretation": interpretation,
+        }
+
+    margin_thermal = thermal_result.combined_margin_ni_db
+    margin_asi = asi_result.combined_margin_ni_db
+    margin_asi_imd = asi_imd_result.combined_margin_ni_db
+    margin_non_rain = non_rain_fixed.faded_result.combined_margin_ni_db
+    margin_full_fixed = full_fixed.faded_result.combined_margin_ni_db
+    margin_full_dynamic = full_dynamic.faded_result.combined_margin_ni_db
+
+    selection = full_dynamic.downlink_modcod
+    selected_name = (
+        selection.selected.name
+        if selection is not None and selection.selected is not None
+        else "outage"
+    )
+    throughput_mbps = (
+        selection.net_throughput_bps / 1.0e6 if selection is not None else None
+    )
+
+    rows = [
+        result_row(
+            "A0",
+            "cumulative",
+            "Thermal-noise-only static baseline",
+            thermal_result,
+            0.0,
+            interpretation="Reference clear-sky fixed-rate link.",
+        ),
+        result_row(
+            "A1",
+            "cumulative",
+            "A0 + adjacent-satellite interference",
+            asi_result,
+            margin_asi - margin_thermal,
+            interpretation="Isolates the ASI penalty.",
+        ),
+        result_row(
+            "A2",
+            "cumulative",
+            "A1 + transponder IMD",
+            asi_imd_result,
+            margin_asi_imd - margin_asi,
+            interpretation="Isolates the additional IMD penalty.",
+        ),
+        result_row(
+            "A3",
+            "cumulative",
+            "A2 + gas, cloud, and scintillation; fixed Tsys",
+            non_rain_fixed.faded_result,
+            margin_non_rain - margin_asi_imd,
+            uplink_attenuation_db=non_rain_fixed.uplink_breakdown.total_db,
+            downlink_attenuation_db=non_rain_fixed.downlink_breakdown.total_db,
+            interpretation="Adds non-rain ITU-R propagation loss.",
+        ),
+        result_row(
+            "A4",
+            "cumulative",
+            "A3 + rain attenuation; fixed Tsys",
+            full_fixed.faded_result,
+            margin_full_fixed - margin_non_rain,
+            uplink_attenuation_db=full_fixed.uplink_breakdown.total_db,
+            downlink_attenuation_db=full_fixed.downlink_breakdown.total_db,
+            interpretation="Adds rain carrier attenuation without rain-emission noise.",
+        ),
+        result_row(
+            "A5",
+            "cumulative",
+            "A4 + dynamic rain-emission Tsys",
+            full_dynamic.faded_result,
+            margin_full_dynamic - margin_full_fixed,
+            uplink_attenuation_db=full_dynamic.uplink_breakdown.total_db,
+            downlink_attenuation_db=full_dynamic.downlink_breakdown.total_db,
+            interpretation="Isolates the receiver-noise increase caused by the faded sky.",
+        ),
+        result_row(
+            "A6",
+            "response",
+            "A5 + DVB-S2 ACM selection",
+            full_dynamic.faded_result,
+            0.0,
+            uplink_attenuation_db=full_dynamic.uplink_breakdown.total_db,
+            downlink_attenuation_db=full_dynamic.downlink_breakdown.total_db,
+            selected_modcod=selected_name,
+            throughput_mbps=throughput_mbps,
+            interpretation="ACM changes the service mode, not the physical fixed-rate margin.",
+        ),
+        result_row(
+            "D0",
+            "isolated diagnostic",
+            "ASI + IMD + dynamic Tsys in clear sky",
+            dynamic_clear_result,
+            dynamic_clear_result.combined_margin_ni_db - margin_asi_imd,
+            interpretation="The modeled clear-sky Tsys is compared with the fixed 150 K assumption.",
+        ),
+        result_row(
+            "D1",
+            "isolated diagnostic",
+            "D0 + 48-hour GEO station-keeping motion",
+            dynamic_clear_result,
+            None,
+            margin_min_db=float(motion_summary["combined_margin_with_interference_min_dB"]),
+            margin_max_db=float(motion_summary["combined_margin_with_interference_max_dB"]),
+            margin_peak_to_peak_db=float(
+                motion_summary["combined_margin_with_interference_peak_to_peak_dB"]
+            ),
+            interpretation="Reports the margin envelope rather than a one-sided penalty.",
+        ),
+    ]
+    return rows
+
+
 def main(argv: list[str] | None = None) -> None:
     """Run the analysis pipeline, gating every output by its enabled flag."""
 
@@ -431,6 +642,8 @@ def main(argv: list[str] | None = None) -> None:
     write("geometry_static.csv", geometry_rows)
     write("link_budget_static.csv", [static_result.uplink.to_dict(), static_result.downlink.to_dict()])
     write("scenario_summary_static.csv", [static_result.to_summary_dict()])
+    if not args.static_only:
+        write("ablation_summary.csv", build_ablation_rows(scenario))
 
     print_key_value_table("Static Uplink Geometry", geometry_rows[0])
     print_key_value_table("Static Downlink Geometry", geometry_rows[1])

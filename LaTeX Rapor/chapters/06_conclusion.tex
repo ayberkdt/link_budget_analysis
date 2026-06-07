@@ -3,16 +3,16 @@
 
 \section{Conclusion}
 
-This project developed and evaluated a Ku-band GEO bent-pipe link from Rome to Ankara through Hotbird 13G. The clear-sky part of the study follows the standard link-budget procedure and was implemented in a Python analysis tool. Additional modules were then used to examine interference, atmospheric attenuation, dynamic receiver noise, Monte Carlo rain states, apparent GEO motion, and DVB-S2 ACM.
+The report evaluated a 14/12~GHz transparent GEO link from Rome to Ankara through HOTBIRD 13G. The same Python model was used for the clear-sky budget, the optional impairment cases, and the ablation comparison.
 
-The static link closes in clear-sky conditions with a combined $C/N_0$ of $\cnTotal$ dB-Hz, corresponding to $E_b/N_0 = \ebnoTotal$ dB at 10 Mbps and a $\marginClear$ dB fixed-rate margin. Including the selected ASI/IMD assumptions reduces the effective margin to $\marginASI$ dB. At the 99.9\% rain-fade design point, the ITU-R-based attenuation case reduces the fixed-rate margin to $\marginRain$ dB, so the baseline hardware does not meet strict 99.9\% fixed-rate closure without additional margin.
+In clear sky, the combined $C/N_0$ is \cnTotal~dB-Hz and the 10~Mbps fixed-rate margin is \marginClear~dB. The selected ASI and IMD terms reduce the margin to \marginASI~dB. At the 99.9\% atmospheric design point, the margin is \marginRain~dB; the stated baseline therefore does not close against the 7~dB fixed-rate threshold at that availability.
 
-The ACM analysis shows that the link can trade throughput for a lower required $E_s/N_0$. For the 36 MHz carrier and 0.20 roll-off factor, the selector moves from QPSK 3/4 in clear-sky conditions to QPSK 1/2 in the rain-fade case, giving an estimated net throughput of \throughputRain~Mbps if the selected MODCOD still closes. This should be interpreted as a degraded-mode mitigation rather than proof of guaranteed service availability.
+For the 36~MHz carrier and 0.20 roll-off factor, the ACM selector changes from QPSK 3/4 in clear sky to QPSK 1/2 at the atmospheric design point. The latter corresponds to an estimated \throughputRain~Mbps and remains a variable-rate mode, not evidence of 10~Mbps fixed-rate availability.
 
-Based on these results, the most direct improvements are increasing the GS2 receive dish diameter, increasing available downlink EIRP, adding uplink power-control headroom, or reducing the fixed-rate data-rate requirement during severe fades. A more detailed design would also use exact site-specific P.837 rainfall data, measured receiver noise temperature, and real transponder coordination data.
+The largest modeled penalties come from rain attenuation and the associated increase in receive-system noise temperature. Candidate design changes are a larger GS2 aperture, higher contracted downlink EIRP, verified uplink power-control headroom, or a lower fixed-rate requirement. An operational design would also replace the shared representative rainfall rate with separate mapped or measured values for Rome and Ankara and would use transponder-specific EIRP, G/T, polarization, and loading data.
 
-Alternative GEO satellites such as Intelsat 39 may be suitable for different service objectives, but the HOTBIRD 13G baseline provides the most balanced geometry and documentation support for the selected Rome--Ankara DVB-S2 Ku-band bent-pipe scenario.
+Intelsat 39 and other GEO spacecraft may be suitable for different coverage or connectivity objectives. For the sites and broadcast-oriented service considered here, HOTBIRD 13G offers the more balanced geometry and the more directly usable public footprint data.
 
 \vspace{1em}
 \noindent \textbf{Source Code Availability:} \\
-The complete custom Python simulation framework, including the Monte-Carlo and ITU-R propagation models developed for this project, is open-source and publicly available at: \url{https://github.com/ayberkdt/link_budget_analysis}.
+The analysis code, tests, and generated-output workflow are available at \url{https://github.com/ayberkdt/link_budget_analysis}.

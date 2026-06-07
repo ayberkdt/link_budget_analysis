@@ -112,6 +112,11 @@ pytest -q
 pytest -q
 ```
 
+The suite includes equation-level checks, end-to-end static regression,
+Hotbird/Intelsat geometry regression, deterministic Monte Carlo checks, and
+module ablation tests that separately verify ASI, IMD, atmospheric loss,
+dynamic sky-noise temperature, GEO motion, and ACM behavior.
+
 ---
 
 ## 📝 Customizing Input Parameters
@@ -145,6 +150,7 @@ Representative baseline CSV outputs are tracked in the repository, while other g
 *   `outputs/geometry_static.csv` — Calculated slant-paths, elevation angles, azimuths, and range distances.
 *   `outputs/link_budget_static.csv` — Point-by-point gains, losses, noise powers, and carrier-to-noise ratios.
 *   `outputs/scenario_summary_static.csv` — Unified end-to-end performance metrics ($C/(N+I)$, margins, spectral efficiencies).
+*   `outputs/ablation_summary.csv` — Cumulative and diagnostic comparison of static, interference, propagation, dynamic-noise, GEO-motion, and ACM stages.
 *   `outputs/mode_definitions.csv` — Documents fixed-rate vs ACM mode definitions.
 
 ### Visualizations & Plots

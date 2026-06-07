@@ -3,28 +3,28 @@
 
 \section{Advanced Analysis Models}
 
-All topics discussed in this chapter represent optional advanced extensions developed beyond the core UZB451E term project specifications to model selected impairment cases.
+This chapter defines the optional impairment and diagnostic models added to the clear-sky calculation. Each model can be enabled independently, which also permits the ablation comparison reported in Chapter~5.
 
 \subsection{Adjacent-Satellite Interference (ASI) and IMD}
-In a crowded geostationary orbit (GEO) arc, satellites are spaced closely together, typically separated by only $2.0^\circ$ to $3.0^\circ$ of longitude. Consequently, ground station antenna beams, which have finite beamwidths, inevitably illuminate adjacent satellites, causing co-channel and cross-polar power leakage. This is known as Adjacent-Satellite Interference (ASI). Concurrently, inside the satellite transponder, multiple carrier signals are amplified by a single Traveling-Wave Tube Amplifier (TWTA). When operated near its saturation region, the amplifier's non-linear behavior causes the carriers to mix, generating unwanted Intermodulation Distortion (IMD) products that fall directly within the desired channel bandwidth.
+Finite earth-station beamwidth permits energy from adjacent orbital slots to enter the receive chain and allows an uplink antenna to illuminate neighboring spacecraft. The resulting adjacent-satellite interference (ASI) depends on orbital spacing, antenna pattern, polarization, carrier loading, and relative EIRP. A multicarrier TWTA also generates intermodulation distortion (IMD) when operated close to saturation.
 
-Analyzing ASI and IMD is critical because these interference sources degrade the receiver's operating environment from a standard thermal noise channel to an interference-limited channel. Neglecting these impairments leads to overly optimistic link margins, risking severe service degradation or loss of fixed-rate closure in real-world multi-carrier environments. 
+ASI and IMD are included as additional $C/I$ terms so that the clear-sky result is not treated as purely thermal-noise limited.
 
 The off-axis discrimination angle $\theta_{\text{off}}$ between the target satellite and the adjacent interferer is calculated using their respective ECEF position vectors. The off-axis gain $G_{\text{off}}(\theta_{\text{off}})$ in the direction of the interferer is estimated using a simplified ITU-R-style off-axis antenna envelope approximation:
 \begin{equation}
     G_{\text{off}}(\theta_{\text{off}}) = \min\left( G_{\text{max}} - 3.0,\ 32.0 - 25\log_{10}(\theta_{\text{off}}) \right)
 \end{equation}
-This formula is used for parametric sensitivity analysis rather than regulatory coordination, and is valid for off-axis angles typically in the range $1^\circ$--$48^\circ$. The individual carrier-to-interference ($C/I$) ratios for uplink, downlink, and intermodulation are combined with the thermal carrier-to-noise ($C/N$) ratios using the inverse-linear harmonic summation:
+This envelope is used for sensitivity analysis, not regulatory coordination. The uplink, downlink, and IMD $C/I$ terms are combined with the thermal $C/N$ terms by inverse-linear addition:
 \begin{equation}
     \left( \frac{C}{N+I} \right)_{\text{total}}^{-1} = \left( \frac{C}{N} \right)_{\text{uplink}}^{-1} + \left( \frac{C}{N} \right)_{\text{downlink}}^{-1} + \left( \frac{C}{I_{\text{ASI,up}}} \right)^{-1} + \left( \frac{C}{I_{\text{ASI,down}}} \right)^{-1} + \left( \frac{C}{I_{\text{IMD}}} \right)^{-1}
 \end{equation}
 
 In this project, the ASI/IMD analysis is used as a parametric impairment estimate rather than a regulatory coordination calculation. The adjacent satellites are modeled at $11.0^\circ$E and $15.0^\circ$E, corresponding to a nominal $2.0^\circ$ orbital separation from the target $13.0^\circ$E slot. The adjacent-carrier activity factor is set to $-3.0$~dB, the antenna off-axis rejection follows the simplified envelope above, and the representative transponder IMD term is modeled as $C/I_{\mathrm{IMD}} = 30$~dB. A formal coordination study would require operator-specific carrier plans, measured antenna radiation patterns, polarization reuse information, and transponder loading data.
 
-The combined carrier-to-noise-and-interference ratio $C/(N+I)_{\text{total}}$ acts as the key performance bottleneck, representing the true signal quality at the receiver. In dense satellite arcs with poorly isolated adjacent signals, ASI and IMD can reduce the overall link margin by several dB. In the present baseline scenario, the modeled adjacent satellites at $11.0^\circ$E and $15.0^\circ$E impose a combined interference penalty of approximately $0.46$~dB, reducing the effective margin from $\marginClear$~dB to $\marginASI$~dB. To mitigate these effects, operators must increase ground dish diameters (narrowing the beamwidth $\theta_{\mathrm{HPBW}}$) or operate the satellite TWTA with sufficient back-off to suppress IMD generation.
+For the selected assumptions, ASI and IMD reduce the fixed-rate margin from $\marginClear$~dB to $\marginASI$~dB. The ablation study separates this total into approximately 0.44~dB from ASI and 0.01~dB from the representative IMD term. These values are scenario-specific and should not be used as coordination limits.
 
 \subsection{Hardware Impairments: Non-Linearity and Phase Noise}
-In practice, the satellite transponder is not an ideal linear amplifier. The TWTA exhibits AM/AM compression and AM/PM conversion near saturation, while local oscillator phase noise rotates the received constellation points. These effects are collectively captured by two simplified parameters in our link budget:
+The transponder is not an ideal linear amplifier. TWTA compression, AM/PM conversion, and modem imperfections are represented only through simplified engineering terms:
 \begin{itemize}
     \item \textbf{Output Back-Off (OBO):} A deliberate reduction of the operating point below saturation to suppress non-linear distortion:
     \begin{equation}
@@ -35,23 +35,23 @@ In practice, the satellite transponder is not an ideal linear amplifier. The TWT
         (E_s/N_0)_{\text{usable}} = (E_s/N_0)_{\text{available}} - M_{\text{impl}}
     \end{equation}
 \end{itemize}
-For the present study, an OBO of 2.5~\text{dB} and a DVB-S2 implementation margin of 1.0~\text{dB} are used. The OBO is consistent with typical Ku-band TWTA operating practices \cite{pratt}. Static RF path implementation loss is set to 0~dB to avoid double-counting, while the miscellaneous RF path loss allowance remains at 0.2~dB. The implementation margin is deducted from the available $E_s/N_0$ before MODCOD selection, ensuring it is counted exactly once.
+An OBO value of 2.5~dB is discussed as a representative operating concept \cite{pratt}, but it is not subtracted separately from the published footprint EIRP: the 46~dBW downlink input is treated as the active contour value. Non-linear degradation in the numerical budget is represented by the assumed $C/I_{\mathrm{IMD}}=30$~dB term. A 1.0~dB modem implementation margin is applied only during DVB-S2 MODCOD selection, and the static RF implementation-loss field is set to 0~dB to avoid double counting.
 
 \subsection{Digital Baseband Performance Metrics}
-The satellite link must meet a strict Quality of Service, typically $\text{BER} \le 10^{-7}$ for IP data. For coherent QPSK over AWGN, the uncoded bit error rate is:
+For coherent QPSK over AWGN, the uncoded bit-error probability is:
 \begin{equation}
     P_{b,\text{uncoded}} = \frac{1}{2} \text{erfc}\left( \sqrt{\frac{E_b}{N_0}} \right)
 \end{equation}
-With FEC coding (e.g., DVB-S2 LDPC+BCH), a coding gain $G_{\text{code}} \approx 6$--$8$~\text{dB} shifts the operating point, enabling reliable reception at much lower raw $E_b/N_0$ values and pushing the link efficiency close to the Shannon limit:
+The report's generic digital-metrics layer applies a 3~dB equivalent coding-gain assumption for sensitivity calculations. The separate ACM calculation does not use this shortcut; it compares the available $E_s/N_0$ directly with the selected DVB-S2 threshold table. Shannon capacity is reported as an upper bound:
 \begin{equation}
     C(\text{bps}) = B \log_{2}\left( 1 + SNR \right)
 \end{equation}
 This coding framework is the foundation for the DVB-S2 MODCOD ladder used by the ACM selector in Chapter~4.
 
 \subsection{Dynamic System Noise Temperature}
-In basic clear-sky link calculations, the ground station receiver system noise temperature $T_{\mathrm{sys}}$ is assumed to be a static constant. However, in physical links, $T_{\mathrm{sys}}$ fluctuates dynamically. When the ground antenna points at a low elevation angle $\theta$, the signal must traverse a longer atmospheric path, which increases the absorbed and re-emitted background sky noise. More critically, during rain events, the lossy water molecules in the rain path absorb RF energy and simultaneously emit thermal noise, heating up the receiver's environment.
+The static budget uses a fixed $T_{\mathrm{sys}}$. The dynamic model instead varies the antenna-noise contribution with elevation and with absorptive atmospheric loss. A lossy rain path both attenuates the carrier and increases the apparent sky temperature seen by the receive antenna.
 
-Neglecting the dynamic nature of $T_{\mathrm{sys}}$ during atmospheric fading events leads to a major ``double-penalty'' error in system design. Rain does not only attenuate the incoming carrier power ($C$ drops), but it also simultaneously increases the system thermal noise power ($N_0$ spikes). This dynamic thermal-noise term is therefore useful for estimating the combined carrier attenuation, noise-temperature increase, and resulting carrier-to-noise degradation under rain-fade conditions.
+Separating these effects avoids treating rain solely as a carrier-power loss. Chapter~5 reports the carrier attenuation first and then adds the receiver-noise increase as a separate ablation step.
 
 The dynamic, elevation- and fade-dependent system noise temperature $T_{\mathrm{sys}}$ is modeled at the LNA input as:
 \begin{equation}
@@ -63,13 +63,13 @@ where $T_{\mathrm{sky}}(\theta)$ is the clear-sky noise at elevation angle $\the
 \end{equation}
 where $T_{\mathrm{atm}} = 275$~Kelvin represents the physical atmospheric temperature of the lossy rain medium.
 
-During a heavy Ku-band storm causing an attenuation of $A_{\mathrm{rain}} = 10.0$~\text{dB}, the rain noise contribution $T_{\mathrm{rain}}$ spikes by approximately $247.5$~Kelvin. For a high-performance ground receiver with a clear-sky $T_{\mathrm{sys}} = 150.0$~K, this storm nearly triples the total system noise to $397.5$~K. This dynamic thermal noise increase adds a $4.2$~\text{dB} penalty directly to the link margin on top of the physical $10.0$~\text{dB} signal attenuation, showing why dynamic noise modeling is useful for fade-margin studies.
+For example, 10~dB of absorptive loss gives $T_{\mathrm{rain}}\approx247.5$~K for $T_{\mathrm{atm}}=275$~K. This is the rain-emission contribution only; the total $T_{\mathrm{sys}}$ also depends on the receiver, spillover, and clear-sky terms and is calculated from the full expression above.
 
 \subsection{Apparent GEO Orbit Motion}
-Although geostationary satellites are nominally ``fixed'', gravitational perturbations cause three-axis oscillations within the station-keeping box. The satellite's deviations are modeled as:
+The apparent spacecraft position is allowed to vary within a simplified station-keeping box:
 \begin{align}
     \Delta \lambda(t) &= A_{\text{ew}} \sin\left(\frac{2\pi t}{T_{\text{sidereal}}} + \phi_{\text{ew}}\right) \\
     \Delta \phi(t) &= A_{\text{ns}} \sin\left(\frac{2\pi t}{T_{\text{sidereal}}} + \phi_{\text{ns}}\right) \\
-    \Delta r(t) &= A_{\text{r}} \sin\left(\frac{2\pi t}{T_{\text{sidereal}}/2} + \phi_{\text{r}}\right)
+    \Delta r(t) &= A_{\text{r}} \sin\left(\frac{2\pi t}{T_{\text{sidereal}}} + \phi_{\text{r}}\right)
 \end{align}
-These positional drifts dynamically update the slant range vector $\vec{\rho}(t)$. For the selected Rome--Ankara configuration with the modeled station-keeping amplitudes ($0.06^\circ$ E/W, $0.04^\circ$ N/S), the computed margin variation is only approximately $0.02$~dB peak-to-peak over a 48-hour window. Larger variations (often cited as $\pm 0.2$~dB) may occur for narrower antenna beams, larger pointing offsets, or more aggressive station-keeping excursions. Apparent GEO motion is not the dominant limitation for the selected link, but it provides a useful pointing robustness check. For the large uplink dish ($\gsOneDish$~m, narrow $\theta_{\mathrm{HPBW}}$), even a small drift can warrant step-tracking, whereas the consumer-grade $\gsTwoDish$~m receive dish remains stably locked without tracking.
+These offsets update the slant-range vector $\vec{\rho}(t)$. With the modeled amplitudes ($0.06^\circ$ east--west, $0.04^\circ$ north--south, and 40~km radial), the 48-hour margin variation is about 0.02~dB peak-to-peak. This result indicates that station-keeping motion is negligible in the present power budget; it does not establish a tracking requirement, which would depend on the measured antenna pattern, pointing tolerance, and operator practice.
