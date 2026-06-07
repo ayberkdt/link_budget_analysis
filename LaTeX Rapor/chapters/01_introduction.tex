@@ -13,7 +13,7 @@ The satellite payload modeled in this project is a transparent, classic \textit{
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{bent_pipe_transponder.png}
-    \caption{Functional block diagram of a classic transparent bent-pipe satellite transponder payload architecture.}
+    \caption[Transparent bent-pipe transponder payload block diagram.]{Functional block diagram of a classic transparent bent-pipe satellite transponder payload architecture.}
     \label{fig:transponder_blocks}
 \end{figure} 
 
@@ -45,6 +45,59 @@ To ground the study in a realistic commercial context, we model a one-way transp
     \label{fig:link_architecture}
 \end{figure}
 
+\subsubsection{Satellite Selection Rationale}
+HOTBIRD 13G is not assumed to be universally superior to every alternative GEO spacecraft. It is selected as a clean and defensible baseline for this project because the $13^\circ$E orbital location provides balanced Rome--Ankara geometry, its published Ku-band widebeam footprint supports a report-level EIRP estimate, and the service context is directly aligned with a DVB-S2 broadcast-oriented bent-pipe link \cite{eutelsat}. Applying the same GEO geometry routine used for the baseline calculations gives the comparison in Table~\ref{tab:satellite_selection}.
+
+\begin{table}[H]
+    \centering
+    \caption{Candidate satellite comparison for the Rome--Ankara bent-pipe scenario.}
+    \label{tab:satellite_selection}
+    \vspace{0.15cm}
+    {\scriptsize
+    \setlength{\tabcolsep}{3pt}
+    \renewcommand{\arraystretch}{1.18}
+    \begin{tabular}{
+        >{\raggedright\arraybackslash}p{0.145\textwidth}
+        >{\centering\arraybackslash}p{0.075\textwidth}
+        >{\raggedright\arraybackslash}p{0.14\textwidth}
+        >{\raggedright\arraybackslash}p{0.14\textwidth}
+        >{\raggedright\arraybackslash}p{0.19\textwidth}
+        >{\raggedright\arraybackslash}p{0.22\textwidth}}
+        \toprule
+        \textbf{Candidate / Operator} &
+        \textbf{Orbital Slot} &
+        \textbf{Rome Geometry} &
+        \textbf{Ankara Geometry} &
+        \textbf{Coverage / Service Context} &
+        \textbf{Selection Decision} \\
+        \midrule
+        Eutelsat HOTBIRD 13G &
+        $13^\circ$E &
+        Very favorable: $41.6^\circ$ elevation; Rome is close to the satellite longitude. &
+        Favorable: $39.4^\circ$ elevation, suitable for Ku-band analysis. &
+        European and Mediterranean Ku-band broadcast, DTH, and DVB-S2-oriented distribution. &
+        Selected for balanced geometry, published footprint/EIRP information, and consistency with the broadcast-style bent-pipe scenario. \\
+        \addlinespace
+        Intelsat 39 / Intelsat fleet &
+        $62^\circ$E &
+        Less favorable: $20.8^\circ$ elevation and approximately 39,478~km slant range. &
+        Usable: $34.9^\circ$ elevation, but it does not offset the weaker Rome uplink geometry. &
+        C- and Ku-band broadband, mobility, government, connectivity, and video distribution across Europe, the Middle East, Africa, and Asia. &
+        Not selected as the baseline because the slot is less balanced for the Rome--Ankara pair, especially on the Rome uplink. \\
+        \addlinespace
+        Other Intelsat Ku-band spacecraft &
+        Spacecraft-dependent &
+        Must be evaluated for the selected slot and beam. &
+        Must be evaluated for the selected slot and beam. &
+        Potentially suitable for VSAT/IP connectivity or operator-specific leased capacity. &
+        Not used without a formally selected spacecraft, beam, EIRP contour, polarization, transponder plan, and satellite receive G/T. \\
+        \bottomrule
+    \end{tabular}
+    }
+\end{table}
+
+The name ``Intelsat'' identifies a fleet rather than a unique satellite design point, so a fair alternative requires a specific spacecraft, orbital slot, beam, EIRP contour, polarization, transponder plan, and uplink receive G/T. Intelsat 39 at $62^\circ$E provides relevant regional Ku-band capacity \cite{intelsat39,ses_fleet_map}, but its Rome elevation is about $20.8^\circ$, compared with $41.6^\circ$ for HOTBIRD 13G. This lower elevation increases the slant-path length and atmospheric path through the troposphere, making clear-sky gaseous loss and Ku-band rain attenuation more critical on the uplink side. HOTBIRD 13G is therefore retained as the baseline because it combines more balanced Rome--Ankara geometry with published footprint data and a service context consistent with the selected DVB-S2 bent-pipe broadcast scenario.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.75\textwidth]{hotbird_satellite.png}
@@ -61,7 +114,7 @@ To ground the study in a realistic commercial context, we model a one-way transp
 
 \begin{itemize}
     \item \textbf{Ground Station 1 (GS1 Rome):} Located in Rome, Italy ($41.9028^\circ$ N, $12.4964^\circ$ E). It acts as the broadcasting terminal (uplink station), utilizing a \gsOneDish-meter parabolic dish antenna (datasheet-supported aperture \cite{skyware_24m}) with a datasheet-supported commercial Ku-band BUC/HPA power class. The transmitter output power is represented by the Norsat ATOMBKU020 Ku-band BUC/SSPA, whose datasheet lists a 20~W model with $P_{\mathrm{1dB}} = 43$~dBm minimum and standard transmit frequency coverage of 14.0--14.5~GHz \cite{norsat_atombku}. In the link budget, the corresponding 20.0~W value is used as the nominal GS1 transmit-power case.
-    \item \textbf{GEO Satellite (Hotbird 13G):} Positioned at $13.0^\circ$ E longitude on the geostationary equatorial arc. The satellite downlink EIRP at Ankara is estimated as \satEIRP~dBW from the HOTBIRD published footprint contour \cite{eutelsat, gunter_hotbird}. The wider contour range is approximately 46--53 dBW; \satEIRP~dBW is used as a conservative baseline for the Ankara receiving site. Since public HOTBIRD documentation does not provide the selected transponder uplink receive G/T, a representative satellite receive G/T of \satGT~dB/K is adopted as an engineering assumption for the uplink budget.
+    \item \textbf{GEO Satellite (Hotbird 13G):} Positioned at $13.0^\circ$ E longitude on the geostationary equatorial arc. The satellite downlink EIRP at Ankara is estimated as \satEIRP~dBW from the official HOTBIRD published footprint contour \cite{eutelsat}. The wider contour range is approximately 46--53 dBW; \satEIRP~dBW is used as a conservative baseline for the Ankara receiving site. Since public HOTBIRD documentation does not provide the selected transponder uplink receive G/T, a representative satellite receive G/T of \satGT~dB/K is adopted as an engineering assumption for the uplink budget.
     \item \textbf{Ground Station 2 (GS2 Ankara):} Located in Ankara, Turkey ($39.9334^\circ$ N, $32.8597^\circ$ E). It acts as the receive-only downlink terminal, utilizing a \gsTwoDish-meter parabolic dish (datasheet-supported aperture \cite{triax_td88}) with an assumed consumer-grade system noise temperature ($T_{\mathrm{sys}}$) of 150~K. This value represents a typical outdoor unit (LNB + feed) performance for a Ku-band consumer terminal; no public $T_{\mathrm{sys}}$ measurement for this specific LNB/antenna combination is available.
 \end{itemize}
 

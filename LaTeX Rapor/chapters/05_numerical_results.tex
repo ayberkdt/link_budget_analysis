@@ -16,7 +16,7 @@ Before presenting the numerical outcomes, Table~\ref{tab:assumptions} explicitly
     \caption{Key Parameter Sources and Assumptions.}
     \label{tab:assumptions}
     \vspace{0.15cm}
-    \begin{tabular}{l l}
+    \begin{tabular}{>{\raggedright\arraybackslash}p{0.34\textwidth} >{\raggedright\arraybackslash}p{0.56\textwidth}}
         \toprule
         \textbf{Parameter} & \textbf{Status / Source} \\
         \midrule
@@ -41,6 +41,7 @@ Table~\ref{tab:static_budget} presents the parameter values and intermediate res
     \vspace{0.15cm}
     {\small
     \setlength{\tabcolsep}{5pt}
+    \resizebox{\textwidth}{!}{%
     \begin{tabular}{l l c c c}
         \toprule
         \textbf{Link Segment} & \textbf{Parameter} & \textbf{Uplink} & \textbf{Downlink} & \textbf{Unit} \\
@@ -81,7 +82,8 @@ Table~\ref{tab:static_budget} presents the parameter values and intermediate res
         & Required $E_b/N_0$ & $7.00$ & $7.00$ & dB \\
         & Link Margin & $7.08$ & $7.25$ & dB \\
         \bottomrule
-    \end{tabular}
+    \end{tabular}%
+    }
       }
 \end{table}
 
@@ -124,7 +126,7 @@ To explicitly verify the software's accuracy, Table~\ref{tab:pratt_comparison} c
 \subsubsection{Parametric Sensitivity and 2D Contour Map Analysis}
 The custom Python analyzer generates five distinct contour maps to study static system sensitivities, parameter trade-offs, and design boundaries. Each figure is analyzed below using a structured evaluation.
 
-\subsubsection{Downlink $(C/N_0)$ vs. GS2 Dish Diameter and Frequency}
+\subsubsection[Downlink C/N0 vs. GS2 Dish Diameter and Frequency]{Downlink $(C/N_0)$ vs. GS2 Dish Diameter and Frequency}
 
 \begin{figure}[H]
     \centering
@@ -140,7 +142,7 @@ The custom Python analyzer generates five distinct contour maps to study static 
     \item \textbf{Design Guidelines:} Ground station terminal designers utilize this map to size the minimum dish diameter required for specific satellite transponder bands, ensuring that the receiver $G/T$ remains high enough to close the link without paying for oversized hardware.
 \end{itemize}
 
-\subsubsection{Downlink Margin vs. Satellite EIRP and GS2 $T_{\mathrm{sys}}$}
+\subsubsection[Downlink Margin vs. Satellite EIRP and GS2 Tsys]{Downlink Margin vs. Satellite EIRP and GS2 $T_{\mathrm{sys}}$}
 
 \begin{figure}[H]
     \centering
@@ -172,7 +174,7 @@ The custom Python analyzer generates five distinct contour maps to study static 
     \item \textbf{Design Guidelines:} HPA hardware costs scale steeply with output power. Ground terminal designers use this trade-off to minimize capital costs by choosing larger dish antennas, which also narrows the beamwidth and reduces sidelobe interference to adjacent satellites.
 \end{itemize}
 
-\subsubsection{Combined $(E_b/N_0)$ vs. Information Bit Rate and Bandwidth}
+\subsubsection[Combined Eb/N0 vs. Information Bit Rate and Bandwidth]{Combined $(E_b/N_0)$ vs. Information Bit Rate and Bandwidth}
 
 \begin{figure}[H]
     \centering
