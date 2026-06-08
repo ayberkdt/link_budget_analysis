@@ -176,7 +176,7 @@ class InterferenceConfig:
     off-axis discrimination at the angular separation between GEO satellites.
 
     If a project has actual coordination data, replace the relative EIRP and C/I
-    values with the specified numbers. The default values are teaching examples.
+    values with the specified numbers. The defaults are screening assumptions.
     """
 
     enabled: bool = True
@@ -212,9 +212,9 @@ class DynamicNoiseConfig:
 class RainOutageConfig:
     """Simplified stochastic rain-fade model for availability/outage studies.
 
-    This is not an official ITU-R P.618 implementation. It is an educational
-    Monte-Carlo-style weather generator that can demonstrate availability,
-    outage hours, rain attenuation, and sky-noise increase.
+    This is not an official ITU-R P.618 implementation. It is a
+    Monte-Carlo-style screening model for availability, outage hours, rain
+    attenuation, and sky-noise increase.
     """
 
     enabled: bool = True
@@ -236,8 +236,8 @@ class RainOutageConfig:
 class ITUPropagationConfig:
     """ITU-R-informed slant-path attenuation inputs.
 
-    Unlike :class:`RainOutageConfig`, which is an educational Monte-Carlo
-    weather generator, this configuration drives the deterministic ITU-R
+    Unlike :class:`RainOutageConfig`, which uses sampled rain states, this
+    configuration drives the deterministic ITU-R
     Recommendations implemented in ``itu_propagation.py``:
 
     * ITU-R P.618-13 rain attenuation A(p),

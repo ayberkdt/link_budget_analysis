@@ -1,51 +1,53 @@
-# Python cache files
+# Python cache and local environments
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
 .ipynb_checkpoints/
 
-# Project outputs
-outputs/*
+# Generated analysis outputs
+outputs/**
+!outputs/
 !outputs/.gitkeep
-!outputs/parameter_sources.csv
-!outputs/mode_definitions.csv
-!outputs/geometry_static.csv
-!outputs/link_budget_static.csv
-!outputs/scenario_summary_static.csv
-!outputs/digital_metrics_static.csv
-!outputs/interference_summary.csv
-!outputs/ablation_summary.csv
-
-outputs/plots/*
+!outputs/plots/
 !outputs/plots/.gitkeep
 
-# Editor/OS settings
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+LaTeX Rapor/main.pdf
+
+# Local report deliverables and archives
+/*.pdf
+/*.zip
+*.tar.gz
+*.rar
+
+# Retired local summary sheets; use the primary source PDFs instead
+sources/prodelin_1244_datasheet.*
+sources/triax_td88_datasheet.*
+
+# Editor and OS files
 .vscode/
 .idea/
 .vs/
 Thumbs.db
 Desktop.ini
-
-# Zip files / backups
-*.zip
-*.tar.gz
-*.rar
-
-# LaTeX build artifacts
-LaTeX Rapor/*.aux
-LaTeX Rapor/*.log
-LaTeX Rapor/*.out
-LaTeX Rapor/*.toc
-LaTeX Rapor/*.lof
-LaTeX Rapor/*.lot
-LaTeX Rapor/*.bbl
-LaTeX Rapor/*.blg
-LaTeX Rapor/*.fls
-LaTeX Rapor/*.fdb_latexmk
-LaTeX Rapor/*.synctex.gz
-LaTeX Rapor/*.pdf
-
-# Project report PDF and ZIP archives
-UZB451E Proje.pdf
-UZB451E Proje.zip

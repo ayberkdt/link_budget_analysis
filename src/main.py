@@ -172,7 +172,7 @@ def build_scenario_from_inputs() -> ScenarioConfig:
     * Uplink and downlink are calculated separately.
     * The clear-sky static baseline applies no rain/atmospheric fade.
     * Interference, dynamic Tsys, apparent motion, Monte-Carlo rain, ITU-R
-      propagation, and DVB-S2 ACM are optional advanced extensions, each gated
+      propagation, and DVB-S2 ACM are optional modules, each gated
       by its own ``enabled`` flag in ``scenario_inputs.py``.
     """
 
@@ -804,7 +804,7 @@ def main(argv: list[str] | None = None) -> None:
         print("Apparent GEO motion disabled; skipping time-varying simulation.")
 
     # ---------------------------------------------------------------
-    # Educational Monte-Carlo rain outage (advanced).
+    # Monte-Carlo rain outage.
     # ---------------------------------------------------------------
     monte_carlo_samples = []
     if scenario.rain_outage.enabled:

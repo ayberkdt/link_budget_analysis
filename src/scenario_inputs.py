@@ -139,7 +139,7 @@ RAIN_OUTAGE = {
     "moderate_rain_probability": 0.006,
     "heavy_rain_probability": 0.001,
     # Rome and Ankara are widely separated, so independent weather draws are
-    # the more defensible default for this illustrative generator.
+    # the default for this screening model.
     "correlate_uplink_downlink_weather": False,
 }
 

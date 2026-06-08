@@ -6,6 +6,8 @@ Audit date: 2026-06-08
 
 Second pass: 2026-06-08. The bibliography links were opened again during the final text pass. No new broken link was found.
 
+Third pass: 2026-06-08. Online bibliography entries were opened again, then reformatted with explicit `url` and `urldate` fields. Legacy locally prepared datasheet summaries were removed from `sources/`.
+
 ## Reference-by-reference audit table
 
 | Reference Number | Source Title | URL Status | Correct Target? | Supports Cited Claim? | Issue Found | Recommended Action |
@@ -79,12 +81,13 @@ Second pass: 2026-06-08. The bibliography links were opened again during the fin
 
 The following entries were updated directly in `LaTeX Rapor/references.bib`:
 
-- `itu618`, `itu837`, `itu838`, `itu839`, `itu676`, `itu840`, `itu453`: switched to exact direct ITU PDF URLs and clarified reproducibility/version-lock status.
-- `dvbs2`: corrected the ETSI title and clarified that Table 13 ideal QEF AWGN `Es/N0` values are used before model implementation margin.
-- `eutelsat`: added stable fleet-page backup.
+- `itu618`, `itu837`, `itu838`, `itu839`, `itu676`, `itu840`, `itu453`: retained exact direct ITU PDF URLs, added `urldate = {2026-06-08}`, and kept reproducibility/version-lock notes.
+- `dvbs2`: retained the corrected ETSI title, added `urldate = {2026-06-08}`, and clarified that Table 13 ideal QEF AWGN `Es/N0` values are used before model implementation margin.
+- `eutelsat`: added `url`/`urldate` fields and retained the stable fleet-page backup.
 - `ses_fleet_map`: clarified A1P/IS-39 abbreviation and limited use to orbital-slot cross-checking.
 - `skyware_24m`: clarified third-party hosted manufacturer datasheet.
 - `norsat_atombku`: clarified product page plus linked PDF/local source-file relationship.
+- `ses_astra1p`, `intelsat39`, and `triax_td88`: added `url`/`urldate` fields and retained concise source-quality notes.
 
 ## Local source-file check
 
@@ -97,6 +100,11 @@ All required local source files exist:
 - `sources/ATOMBKU016-020-Spec-Sheet.pdf`
 - `sources/triax_td88_official_product_sheet.pdf`
 
+Removed non-primary local summaries:
+
+- `sources/prodelin_1244_datasheet.*`
+- `sources/triax_td88_datasheet.*`
+
 ## Submission summary
 
-The bibliography is acceptable for final submission after the applied edits. The remaining non-official hosted sources are clearly labeled, local copies exist, and source-to-claim mapping is now conservative.
+The bibliography is acceptable for final submission after the applied edits. The remaining non-official hosted sources are clearly labelled, local copies exist, online entries have `urldate = {2026-06-08}`, and source-to-claim mapping is conservative.

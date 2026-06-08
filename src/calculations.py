@@ -174,7 +174,7 @@ def off_axis_gain_dbi(
 
     The function combines a smooth main-lobe approximation near boresight with a
     conservative side-lobe envelope for larger angles. It is appropriate for a
-    teaching-level ASI sensitivity study, not for regulatory coordination.
+    first-pass ASI sensitivity study, not for regulatory coordination.
     """
 
     main_gain = resolve_antenna_gain_dbi(antenna, frequency_hz)
@@ -195,8 +195,8 @@ def off_axis_gain_dbi(
     if theta <= max(hpbw, minimum_angle_deg):
         return main_gain - 12.0 * (theta / max(hpbw, minimum_angle_deg)) ** 2
 
-    # Educational side-lobe envelope. The value is intentionally not presented as
-    # an official mask. It gives realistic discrimination trends for contour work.
+    # Screening side-lobe envelope. This is not an official antenna mask; it is
+    # used only to show discrimination trends in the contour plots.
     side_lobe_gain = SIDELOBE_ENVELOPE_CONSTANT_A - SIDELOBE_ENVELOPE_CONSTANT_B * log10(theta)
     return min(main_gain - 3.0, side_lobe_gain)
 
@@ -384,8 +384,8 @@ def calculate_dynamic_system_noise_temperature_k(
     effective_el = max(elevation_deg, config.minimum_elevation_deg)
     sin_el = max(sin(radians(effective_el)), 0.03)
 
-    # Low-elevation atmosphere term. It rises as elevation decreases but is
-    # bounded enough to remain a teaching model rather than a propagation code.
+    # Low-elevation atmosphere term. It rises as elevation decreases and remains
+    # bounded so it does not substitute for a propagation standard.
     clear_sky = (
         COSMIC_BACKGROUND_TEMPERATURE_K
         + config.clear_sky_base_noise_k
@@ -930,9 +930,9 @@ def simulate_time_varying_scenario(scenario: ScenarioConfig) -> list[TimeVarying
 
 
 def simulate_monte_carlo_rain_outage(scenario: ScenarioConfig) -> list[TimeVaryingSample]:
-    """Run the educational stochastic Monte-Carlo one-year rain-outage simulation.
+    """Run the stochastic Monte-Carlo one-year rain-outage simulation.
 
-    This is a teaching weather generator, not a propagation standard. For the
+    This is a sampled weather-state model, not a propagation standard. For the
     deterministic standards-based fade analysis use the ITU-R pipeline
     (:func:`calculate_scenario_with_itu`) instead.
     """

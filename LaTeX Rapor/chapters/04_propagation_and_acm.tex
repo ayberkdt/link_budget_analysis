@@ -5,7 +5,7 @@
 
 \vspace{0.3cm}
 
-This chapter describes the atmospheric attenuation, illustrative outage, and DVB-S2 ACM calculations used after the clear-sky budget.
+This chapter describes the atmospheric attenuation, sampled outage, and DVB-S2 ACM calculations used after the clear-sky budget.
 
 \textit{Model scope: the software is version-locked to the recommendation editions cited in this report, including P.618-13. It implements the published analytical procedures but uses representative meteorological inputs and a self-contained rain-height fallback rather than extracting every site value from ITU digital maps. The results are engineering sensitivity points, not an operational availability guarantee.}
 
@@ -83,13 +83,13 @@ At the per-path $p=0.1\%$ point, the model gives \upRainAtten~dB total uplink at
 \subsection[Monte-Carlo Rain Outage Simulation]{Monte-Carlo Rain Outage Simulation}
 
 \subsubsection{Weather-State Model}
-The ITU-R design point gives attenuation exceeded for a specified percentage of an average year; it does not provide a chronological weather sequence. A separate Monte Carlo model is therefore used to generate an illustrative distribution of hourly margins.
+The ITU-R design point gives attenuation exceeded for a specified percentage of an average year; it does not provide a chronological weather sequence. A separate Monte Carlo model is therefore used to generate a sampled distribution of hourly margins.
 
 \subsubsection{Availability Estimation Rationale}
 This stochastic model is a sensitivity exercise based on assumed state probabilities and fade ranges. It is not fitted to measured precipitation records.
 
 \subsubsection{Mathematical Formulation}
-The simulation executes $N=8760$ one-hour samples. At each $t_i$, Rome and Ankara draw separate weather states from the same illustrative probability mass function; a configuration switch can instead force correlated states for a deliberate double-hit stress experiment.
+The simulation executes $N=8760$ one-hour samples. At each $t_i$, Rome and Ankara draw separate weather states from the same assumed probability mass function; a configuration switch can instead force correlated states for a deliberate double-hit stress experiment.
 \begin{itemize}
     \item \textbf{$S_{\mathrm{clear}}$:} A small residual excess attenuation uniformly sampled between 0 and 0.15~dB.
     \item \textbf{$S_{\mathrm{light}}$ and $S_{\mathrm{moderate}}$:} Small to medium fade depths drawn from uniform attenuation ranges.
@@ -127,9 +127,9 @@ The corresponding link availability is then estimated as:
 \end{equation}
 
 \subsubsection{Operational Impact and Results}
-The output is a distribution of link margin under the assumed states and random seed. Successive samples are independent, so the model does not reproduce storm duration or temporal correlation; its reported availability is illustrative.
+The output is a distribution of link margin under the assumed states and random seed. Successive samples are independent, so the model does not reproduce storm duration or temporal correlation; its reported availability is scenario-specific.
 
-\textbf{Note:} This Monte Carlo model is an illustrative stochastic availability simulation based on assumed weather-state probabilities (light rain: 2.0\%, moderate rain: 0.6\%, heavy rain: 0.1\%), not a site-calibrated meteorological time-series model derived from measured annual precipitation data. Results should therefore be interpreted as \textit{estimated availability under the assumed stochastic weather-state model}, not as a prediction of actual annual availability.
+\textbf{Note:} This Monte Carlo model is a stochastic availability simulation based on assumed weather-state probabilities (light rain: 2.0\%, moderate rain: 0.6\%, heavy rain: 0.1\%), not a site-calibrated meteorological time-series model derived from measured annual precipitation data. Results should therefore be interpreted as \textit{estimated availability under the assumed stochastic weather-state model}, not as a prediction of actual annual availability.
 
 \begin{figure}[H]
     \centering

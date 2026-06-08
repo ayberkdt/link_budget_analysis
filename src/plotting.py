@@ -526,7 +526,7 @@ def plot_downlink_asi_ci_vs_spacing_and_dish(scenario: ScenarioConfig, output_di
         baseline=(baseline_dish, baseline_spacing),
         baseline_annotation=ann,
         threshold_levels=[20.0],
-        threshold_label="20 dB C/I (illustrative objective)",
+        threshold_label="20 dB C/I reference objective",
     )
 
 
@@ -693,12 +693,12 @@ def generate_availability_plots(samples: list[TimeVaryingSample], output_dir: Pa
     paths: list[Path] = []
     n_window = min(len(samples), 240)  # First 240 h keeps the dynamics readable.
 
-    # 14 - illustrative independent-site weather samples.
+    # 14 - independent-site Monte Carlo weather samples.
     paths.append(
         _line_plot(
             t[:n_window],
             [(margin[:n_window], "combined margin"), (rain[:n_window], "downlink rain attenuation")],
-            "Illustrative Weather Samples: Downlink Attenuation and Margin",
+            "Monte Carlo Weather Samples: Downlink Attenuation and Margin",
             "Time [h]",
             "Level [dB]",
             output_dir / "14_rain_double_hit_margin_timeseries.png",

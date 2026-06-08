@@ -97,7 +97,7 @@ PAGES = [
             {
                 "id": "RAIN_OUTAGE",
                 "title": "Rain Outage (Stochastic)",
-                "desc": "An illustrative annual Monte Carlo generator with configurable clear, light, moderate, and heavy attenuation states.",
+                "desc": "Annual Monte Carlo state model with configurable clear, light, moderate, and heavy attenuation states.",
                 "params": [
                     {"key": "enabled", "type": "bool", "label": "Enable Module", "help": "Toggle Monte Carlo state simulations"},
                     {"key": "light_rain_probability", "type": "float", "label": "Light Rain Prob.", "help": "Probability of light rain occurrence", "min": 0, "max": 1},

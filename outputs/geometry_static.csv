@@ -1,3 +1,0 @@
-link,ground_station,satellite,satellite_longitude_deg,satellite_latitude_deg,satellite_radius_km,slant_range_km,elevation_deg,azimuth_deg,central_angle_deg
-uplink,GS1 Rome,Eutelsat Hotbird 13G at 13E,13.0,0.0,42164.0,37658.78992289017,41.59952992966065,179.24598394398458,41.90526632369629
-downlink,GS2 Ankara,Eutelsat Hotbird 13G at 13E,13.0,0.0,42164.0,37822.525205787,39.44310549852194,209.36675051512375,43.8473518446301

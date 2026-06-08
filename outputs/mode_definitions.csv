@@ -1,3 +1,0 @@
-mode,bit_rate_Mbps,bandwidth_MHz,metric,threshold_basis,note
-fixed_rate,10,36,Eb/N0,required Eb/N0 = 7 dB,Fixed-rate closure mode
-DVB-S2 ACM,variable,36,Es/N0,DVB-S2 MODCOD table + implementation margin,Variable-throughput carrier mode; separate from fixed 10 Mbps closure
