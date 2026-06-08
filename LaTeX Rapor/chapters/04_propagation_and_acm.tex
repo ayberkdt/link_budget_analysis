@@ -68,21 +68,16 @@ At the per-path $p=0.1\%$ point, the model gives \upRainAtten~dB total uplink at
 
 \begin{figure}[H]
     \centering
-    \begin{subfigure}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{23_itu_attenuation_vs_availability.png}
-        \caption{Slant-path attenuation vs. per-path exceedance percentage.}
-        \label{fig:itu_attenuation_curve}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{25_itu_attenuation_breakdown_bar.png}
-        \caption{Attenuation breakdown at per-path $p=0.1\%$.}
-        \label{fig:itu_breakdown_bar}
-    \end{subfigure}
-    \caption{ITU-R P.618 slant-path propagation impairments and specific contribution analysis for the Rome-Ankara link.}
-    \label{fig:itu_propagation_metrics}
+    \includegraphics[width=0.86\textwidth]{23_itu_attenuation_vs_availability.png}
+    \caption{ITU-R slant-path attenuation versus per-path exceedance percentage for the Rome uplink and Ankara downlink.}
+    \label{fig:itu_attenuation_curve}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.78\textwidth]{25_itu_attenuation_breakdown_bar.png}
+    \caption{Atmospheric attenuation contribution breakdown at the per-path $p=0.1\%$ design point.}
+    \label{fig:itu_breakdown_bar}
 \end{figure}
 
 \subsection[Monte-Carlo Rain Outage Simulation]{Monte-Carlo Rain Outage Simulation}
@@ -139,7 +134,7 @@ The output is a distribution of link margin under the assumed states and random 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.96\textwidth]{16_availability_margin_histogram.png}
-    \caption{Monte Carlo annual margin distribution and outage-tail summary over $8{,}760$ simulated hourly samples.}
+    \caption{Monte Carlo annual margin distribution and outage-tail summary over $8{,}760$ simulated hourly samples. The left panel shows the log-scale probability density of the combined margin, including the outage threshold, median, and first-percentile markers. The right panel shows the lower-tail empirical CDF, with the shaded region indicating negative-margin samples.}
     \label{fig:mc_availability_histogram}
 \end{figure}
 
