@@ -86,12 +86,10 @@ Run the model first so `LaTeX Rapor/parameters.tex`, `outputs/*.csv`, and
 ```bash
 cd "LaTeX Rapor"
 pdflatex main
-bibtex main
-pdflatex main
 pdflatex main
 ```
 
-or:
+or, if `latexmk` is available:
 
 ```bash
 cd "LaTeX Rapor"
