@@ -185,23 +185,32 @@ Table~\ref{tab:acm_consistency} lists the available and required $E_s/N_0$ value
 
 \begin{table}[H]
     \centering
-    \renewcommand{\arraystretch}{1.2}
+    \renewcommand{\arraystretch}{1.34}
     \caption{DVB-S2 ACM Consistency and Operating Point Verification}
     \label{tab:acm_consistency}
-    \vspace{0.1cm}
-    \resizebox{\textwidth}{!}{
-      \begin{tabular}{l c c c c c}
+    \vspace{0.14cm}
+    {\footnotesize
+    \setlength{\tabcolsep}{5pt}
+    \begin{tabularx}{\textwidth}{@{}
+        >{\raggedright\arraybackslash}p{0.22\textwidth}
+        >{\centering\arraybackslash}p{0.15\textwidth}
+        >{\centering\arraybackslash}p{0.16\textwidth}
+        >{\centering\arraybackslash}p{0.15\textwidth}
+        >{\centering\arraybackslash}p{0.13\textwidth}
+        >{\centering\arraybackslash}X@{}}
         \toprule
-        \textbf{Case} & \textbf{Avail. $E_s/N_0$} & \textbf{Selected MODCOD} & \textbf{Req. $E_s/N_0$} & \textbf{Efficiency ($\eta$)} & \textbf{Net Throughput ($\eta R_{\mathrm{s}}$)} \\
+        \textbf{Case} & \textbf{Available $E_s/N_0$} & \textbf{Selected MODCOD} & \textbf{Required $E_s/N_0$} & \textbf{Efficiency $\eta$} & \textbf{Net throughput} \\
         \midrule
         \textbf{Clear-Sky (Thermal)} & $\approx 6.38$ dB & QPSK 3/4 & 4.03 dB & 1.487 & $\approx 44.61$ Mbps \\
+        \addlinespace[3pt]
         \textbf{With ASI \& IMD} & $\approx 5.92$ dB & QPSK 3/4 & 4.03 dB & 1.487 & $\approx 44.61$ Mbps \\
+        \addlinespace[3pt]
         \textbf{Dual-Site $p=0.1\%$ Stress} & $\approx 2.68$ dB & QPSK 1/2 & 1.00 dB & 0.989 & $\approx 29.67$ Mbps \\
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
     }
-    \vspace{0.1cm}
-    \small\textit{Note: All points assume 1.0 dB implementation margin. Throughput is computed using $R_{\mathrm{s}} = 30$ Msps.}\normalsize
+    \vspace{0.22cm}
+    {\footnotesize\textit{Note: all points include a 1.0~dB implementation margin. Throughput is computed with $R_{\mathrm{s}}=30$~Msps.}}
 \end{table}
 
 \begin{figure}[H]

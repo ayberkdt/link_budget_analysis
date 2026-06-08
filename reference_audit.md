@@ -4,6 +4,8 @@ Report: Geostationary Bent-Pipe Satellite Link Budget Analysis & Atmospheric Pro
 
 Audit date: 2026-06-08
 
+Second pass: 2026-06-08. The bibliography links were opened again during the final text pass. No new broken link was found.
+
 ## Reference-by-reference audit table
 
 | Reference Number | Source Title | URL Status | Correct Target? | Supports Cited Claim? | Issue Found | Recommended Action |
@@ -62,6 +64,16 @@ Audit date: 2026-06-08
 - SES Fleet Map should not support Intelsat 39 payload claims. The report now cites the Intelsat fact sheet for payload/service claims and uses SES Fleet Map only for orbital-slot cross-checking.
 - DVB-S2 thresholds are supported by ETSI EN 302 307-1 Table 13 as ideal QEF AWGN values. The report now states that the model applies a separate 1.0 dB implementation margin.
 - The ASI/off-axis envelope is now described as a simplified internal sensitivity model, not an ITU-R regulatory mask.
+
+## Second-pass source-to-claim check
+
+- Eutelsat HOTBIRD source: supports HOTBIRD 13F/13G, 13 degrees East, Ku-band widebeam downlink, Europe/Middle East/North Africa service context, and 40--53 dBW contour values. The 46 dBW Ankara value remains a conservative map-reading assumption, not a guaranteed transponder value.
+- SES ASTRA 1P source: supports ASTRA 1P, 19.2 degrees East, European broadcast/content delivery context, and 80 transponders.
+- Intelsat 39 source: supports Intelsat 39 at 62 degrees East, C/Ku-band capabilities, and service coverage across Africa, Asia-Pacific, Europe, and the Middle East.
+- SES Fleet Map source: supports A1P at 19.2 degrees East and IS-39 at 62 degrees East. It is not used for Intelsat payload or service claims.
+- Andrew Type 243 source: supports the 2.4 m Ku-band antenna, 48.9 dBi gain at 14.3 GHz, 13.75--14.50 GHz Tx range, and 30 dB on-axis cross-polarization statement.
+- Norsat ATOMBKU020 source: supports the ATOM 20 W Ku-band product page and 14.0--14.5 GHz standard option. The local PDF is retained for the detailed `P_{1dB}` rating used in the model.
+- Triax TD88 mirror: supports the TD88 product sheet claim but remains a mirror, so the report should not describe it as a live official Triax page.
 
 ## Updated bibliography entries
 

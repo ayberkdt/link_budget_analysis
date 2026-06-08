@@ -57,10 +57,10 @@ else:
 # ========================================================================
 # 1.                       CENTRALIZED PLOT STYLE
 # ========================================================================
-FIGURE_DPI = 600          # Export resolution for high-quality publication raster figures.
+FIGURE_DPI = 600          # Export resolution for report raster figures.
 EXPORT_PDF = True         # Also save a vector PDF with the same basename.
 
-# Typography (points) - Optimized for IEEE/Academic papers
+# Typography (points) - sized for report figures
 TITLE_FONTSIZE = 14
 LABEL_FONTSIZE = 12
 TICK_FONTSIZE = 10.5
@@ -73,7 +73,7 @@ COLORBAR_LABEL_SIZE = 12
 LINE_WIDTH = 2.0
 THIN_LINE_WIDTH = 1.2
 MARKER_SIZE = 5.0
-GRID_ALPHA = 0.60
+GRID_ALPHA = 0.45
 
 # Default figure sizes (inches) - Golden ratio inspired where applicable.
 FIGSIZE_CONTOUR = (10.0, 7.0)
@@ -83,11 +83,18 @@ FIGSIZE_SQUARE = (6.0, 6.0)
 FIGSIZE_WIDE = (9.0, 3.5)
 
 # Colormaps and key colors.
-SEQUENTIAL_CMAP = "viridis"       # Premium perceptually uniform map.
-DIVERGING_CMAP = "RdBu_r"       # Classic academic diverging.
-BASELINE_COLOR = "#c0392b"      # Premium deeper red for operating point.
+SEQUENTIAL_CMAP = "viridis"
+DIVERGING_CMAP = "RdBu_r"
+BASELINE_COLOR = "#c0392b"
 THRESHOLD_COLOR = "#2c3e50"     # Dark slate for thresholds.
-WARNING_COLOR = "#e67e22"       # Elegant orange for limits.
+WARNING_COLOR = "#b45f06"
+CONTOUR_LINE_COLOR = "#111111"
+CONTOUR_LABEL_BOX = {
+    "boxstyle": "round,pad=0.14",
+    "facecolor": "white",
+    "edgecolor": "none",
+    "alpha": 0.78,
+}
 
 _RC_PARAMS = {
     "figure.facecolor": "white",
@@ -120,7 +127,7 @@ _RC_PARAMS = {
     "axes.spines.top": False,
     "axes.spines.right": False,
     "legend.fontsize": LEGEND_FONTSIZE,
-    "legend.framealpha": 0.95,
+    "legend.framealpha": 0.96,
     "legend.edgecolor": "#dddddd",
     "legend.fancybox": False,
     "lines.linewidth": LINE_WIDTH,
@@ -206,21 +213,31 @@ def _filled_contour(
     if diverging_zero and z_min < 0.0 < z_max:
         norm = TwoSlopeNorm(vmin=z_min, vcenter=0.0, vmax=z_max)
         filled = ax.contourf(x, y, z, levels=np.linspace(z_min, z_max, 26), cmap=DIVERGING_CMAP, norm=norm)
-        zero = ax.contour(x, y, z, levels=[0.0], colors=THRESHOLD_COLOR, linewidths=2.2)
-        ax.clabel(zero, inline=True, fontsize=CONTOUR_LABEL_SIZE, fmt="0 dB")
-        legend_handles.append(Line2D([0], [0], color=THRESHOLD_COLOR, lw=2.2, label="0 dB closure"))
+        zero = ax.contour(x, y, z, levels=[0.0], colors=THRESHOLD_COLOR, linewidths=3.0)
+        labels = ax.clabel(zero, inline=True, fontsize=CONTOUR_LABEL_SIZE + 1, fmt="0 dB")
+        for label in labels:
+            label.set_bbox(CONTOUR_LABEL_BOX)
+            label.set_clip_on(False)
+        legend_handles.append(Line2D([0], [0], color=THRESHOLD_COLOR, lw=3.0, label="0 dB closure"))
     else:
         filled = ax.contourf(x, y, z, levels=24, cmap=SEQUENTIAL_CMAP)
-        lines = ax.contour(x, y, z, levels=np.linspace(z_min, z_max, 8), colors="white", linewidths=0.5, alpha=0.85)
-        ax.clabel(lines, inline=True, fontsize=CONTOUR_LABEL_SIZE, fmt="%.1f")
+        line_levels = np.linspace(z_min, z_max, 9)
+        lines = ax.contour(x, y, z, levels=line_levels, colors=CONTOUR_LINE_COLOR, linewidths=1.05, alpha=0.86)
+        labels = ax.clabel(lines, inline=True, fontsize=CONTOUR_LABEL_SIZE + 1, fmt="%.1f")
+        for label in labels:
+            label.set_bbox(CONTOUR_LABEL_BOX)
+            label.set_clip_on(False)
 
     if threshold_levels:
         usable = [lv for lv in threshold_levels if z_min < lv < z_max]
         if usable:
-            extra = ax.contour(x, y, z, levels=usable, colors=threshold_color, linewidths=1.6, linestyles="--")
-            ax.clabel(extra, inline=True, fontsize=CONTOUR_LABEL_SIZE, fmt="%.0f")
+            extra = ax.contour(x, y, z, levels=usable, colors=threshold_color, linewidths=2.4, linestyles="--")
+            labels = ax.clabel(extra, inline=True, fontsize=CONTOUR_LABEL_SIZE + 1, fmt="%.0f")
+            for label in labels:
+                label.set_bbox(CONTOUR_LABEL_BOX)
+                label.set_clip_on(False)
             if threshold_label:
-                legend_handles.append(Line2D([0], [0], color=threshold_color, lw=1.6, ls="--", label=threshold_label))
+                legend_handles.append(Line2D([0], [0], color=threshold_color, lw=2.4, ls="--", label=threshold_label))
 
     cbar = fig.colorbar(filled, ax=ax, fraction=0.046, pad=0.04)
     cbar.set_label(cbar_label, fontsize=COLORBAR_LABEL_SIZE)
