@@ -17,7 +17,7 @@ The payload is modeled as a transparent \textit{bent-pipe} transponder. It filte
     \label{fig:transponder_blocks}
 \end{figure} 
 
-Because the uplink waveform is not regenerated, uplink noise and interference are relayed with the wanted carrier. The uplink and downlink contributions must therefore be combined to obtain the end-to-end $\left(\frac{C}{N_0}\right)_{\mathrm{total}}$.
+Because the uplink waveform is not regenerated, uplink noise and interference are relayed with the wanted carrier. The uplink and downlink contributions must therefore be combined to obtain the end-to-end $(C/N_0)_{\mathrm{total}}$.
 
 The selected frequencies are 14.0~GHz for the uplink and 12.0~GHz for the downlink. A vertical linear-polarization case is used in the rain model, so ITU-R P.838-3 is evaluated with $\tau = 90^\circ$; a horizontal assignment would require $\tau = 0^\circ$. Ku-band permits useful antenna gain with relatively small apertures, but rain scattering and absorption are significant enough to require an explicit availability analysis.
 
@@ -83,14 +83,14 @@ HOTBIRD 13G was selected for this Rome--Ankara broadcast case, not as a general 
         \textbf{Intelsat 39}\\Intelsat, $62^\circ$E &
         Rome: $20.77^\circ$, 39,478~km\\
         Ankara: $34.92^\circ$, 38,187~km &
-        C/Ku-band broadband, mobility, government, and video capacity across Europe, the Middle East, Africa, and Asia \cite{intelsat39,ses_fleet_map}. &
+        C/Ku-band broadband, mobility, government, and video capacity across Europe, the Middle East, Africa, and Asia \cite{intelsat39}. &
         \textbf{Not retained.} The substantially lower Rome elevation lengthens the uplink path and increases Ku-band atmospheric sensitivity. \\
         \bottomrule
     \end{tabularx}
     }
 \end{table}
 
-ASTRA 1P demonstrates that geometry alone does not uniquely determine the baseline: at $19.2^\circ$E it is also well balanced for Rome and Ankara. HOTBIRD 13G is retained because its operator brochure supplies a directly usable widebeam EIRP contour and its service context matches the modeled broadcast link. Conversely, ``Intelsat'' denotes a fleet rather than one design point. Any Intelsat alternative would still require a named spacecraft, beam, polarization, EIRP contour, transponder plan, and receive $(G/T)$ before a fair end-to-end comparison could be made.
+ASTRA 1P demonstrates that geometry alone does not uniquely determine the baseline: at $19.2^\circ$E it is also well balanced for Rome and Ankara. HOTBIRD 13G is retained because its operator brochure supplies a directly usable widebeam EIRP contour and its service context matches the modeled broadcast link. The SES fleet map is retained only as an orbital-slot cross-check for A1P at $19.2^\circ$E and IS-39 at $62^\circ$E, not as the technical source for payload or service claims \cite{ses_fleet_map}. Conversely, ``Intelsat'' denotes a fleet rather than one design point. Any Intelsat alternative would still require a named spacecraft, beam, polarization, EIRP contour, transponder plan, and receive $(G/T)$ before a fair end-to-end comparison could be made.
 
 \begin{figure}[H]
     \centering

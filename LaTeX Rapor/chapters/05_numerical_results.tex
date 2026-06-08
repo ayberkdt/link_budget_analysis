@@ -12,17 +12,17 @@ Table~\ref{tab:assumptions} distinguishes published hardware or operator values 
 
 \begin{table}[H]
     \centering
-    \renewcommand{\arraystretch}{1.18}
+    \renewcommand{\arraystretch}{1.28}
     \caption{Hardware and operator data traceability.}
     \label{tab:assumptions}
     \vspace{0.15cm}
-    {\scriptsize
-    \setlength{\tabcolsep}{4pt}
-    \begin{tabularx}{\textwidth}{
-        >{\raggedright\arraybackslash}p{0.18\textwidth}
-        >{\raggedright\arraybackslash}p{0.25\textwidth}
+    {\footnotesize
+    \setlength{\tabcolsep}{5pt}
+    \begin{tabularx}{\textwidth}{@{}
         >{\raggedright\arraybackslash}p{0.17\textwidth}
-        >{\raggedright\arraybackslash}X}
+        >{\raggedright\arraybackslash}p{0.27\textwidth}
+        >{\raggedright\arraybackslash}p{0.19\textwidth}
+        >{\raggedright\arraybackslash}X@{}}
         \toprule
         \textbf{Item} & \textbf{Published value} & \textbf{Model value} & \textbf{Treatment} \\
         \midrule
@@ -30,37 +30,45 @@ Table~\ref{tab:assumptions} distinguishes published hardware or operator values 
         2.4~m aperture; 48.9~dBi at 14.3~GHz; 13.75--14.50~GHz Tx &
         2.4~m, $\eta=0.62$ &
         Computed gain is 48.86~dBi at 14.0~GHz, consistent with the datasheet. \\
+        \addlinespace[2pt]
         Norsat ATOMBKU020 \cite{norsat_atombku} &
         $P_{1\mathrm{dB}}\ge43$~dBm; 14.0--14.5~GHz standard band &
         20~W-class rated boundary point &
         Model is based on the minimum $P_{1\mathrm{dB}}$ rating; no additional linear-output back-off is credited. \\
+        \addlinespace[2pt]
         GS1 transmit feeder loss &
         Model assumption &
         $L_{\mathrm{tx,feeder}}=1.0$~dB &
         Subtracted from the 20~W-class BUC output and antenna gain when computing uplink EIRP. \\
+        \addlinespace[2pt]
         HOTBIRD 13F/13G widebeam \cite{eutelsat} &
         $13^\circ$E; official 40--53~dBW contour map &
         46~dBW at Ankara &
         Conservative map reading; not a transponder-specific guaranteed value. \\
+        \addlinespace[2pt]
         Satellite receive $(G/T)$ &
         Not published for the selected HOTBIRD transponder &
         3~dB/K &
         Explicit engineering assumption. \\
+        \addlinespace[2pt]
         Triax TD88 \cite{triax_td88} &
         95~cm $\times$ 85~cm; 38.8~dBi at 11.7~GHz &
         0.9~m equivalent circular aperture &
         $\sqrt{0.95\times0.85}=0.899$~m; computed gain is approximately 39.0~dBi at 12~GHz. \\
+        \addlinespace[2pt]
         GS2 receive feeder loss &
         Model assumption &
         $L_{\mathrm{rx,feeder}}=0.5$~dB &
         Subtracted from receive antenna gain in the downlink $(G/T)$ calculation. \\
+        \addlinespace[2pt]
         GS2 receiver noise &
         LNB-specific combined $T_{\mathrm{sys}}$ unavailable &
         150~K static baseline &
         Explicit assumption; dynamic model is evaluated separately. \\
+        \addlinespace[2pt]
         Fixed-rate threshold &
         Scenario design requirement &
-        Required $\frac{E_b}{N_0}=7$~dB &
+        Required $E_b/N_0=7$~dB &
         Used only for the 10~Mbps fixed-rate closure test. \\
         \bottomrule
     \end{tabularx}
@@ -71,58 +79,60 @@ Table~\ref{tab:static_budget} gives the intermediate values from the software im
 
 \begin{table}[H]
     \centering
-    \renewcommand{\arraystretch}{1.2}
+    \renewcommand{\arraystretch}{1.24}
     \caption{Static Clear-Sky Link Budget Results (Rome - Ankara).}
     \label{tab:static_budget}
     \vspace{0.15cm}
-    {\small
-    \setlength{\tabcolsep}{5pt}
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{l l c c c}
+    {\footnotesize
+    \setlength{\tabcolsep}{4.5pt}
+    \begin{tabularx}{\textwidth}{@{}
+        >{\raggedright\arraybackslash}X
+        >{\centering\arraybackslash}p{0.22\textwidth}
+        >{\centering\arraybackslash}p{0.22\textwidth}
+        >{\centering\arraybackslash}p{0.10\textwidth}@{}}
         \toprule
-        \textbf{Link Segment} & \textbf{Parameter} & \textbf{Uplink} & \textbf{Downlink} & \textbf{Unit} \\
+        \textbf{Parameter} & \textbf{Uplink} & \textbf{Downlink} & \textbf{Unit} \\
         \midrule
-        \multirow{6}{*}{\textbf{Geometry}} 
-        & Coordinates & $41.90^\circ$N, $12.50^\circ$E & $39.93^\circ$N, $32.86^\circ$E & -- \\
-        & Satellite Longitude & $13.00^\circ$E & $13.00^\circ$E & -- \\
-        & Slant Range ($d$) & $\upSlantRange$ & $\downSlantRange$ & km \\
-        & Elevation Angle ($\theta$) & $41.60$ & $39.44$ & deg \\
-        & Azimuth Angle ($Az$) & $179.25$ & $209.37$ & deg \\
-        & Central Angle & $41.91$ & $43.85$ & deg \\
+        \multicolumn{4}{@{}l}{\textbf{Geometry}} \\
+        Coordinates & $41.90^\circ$N, $12.50^\circ$E & $39.93^\circ$N, $32.86^\circ$E & -- \\
+        Satellite longitude & $13.00^\circ$E & $13.00^\circ$E & -- \\
+        Slant range ($d$) & $\upSlantRange$ & $\downSlantRange$ & km \\
+        Elevation angle ($\theta$) & $41.60$ & $39.44$ & deg \\
+        Azimuth angle ($Az$) & $179.25$ & $209.37$ & deg \\
+        Central angle & $41.91$ & $43.85$ & deg \\
         \midrule
-        \multirow{6}{*}{\textbf{Transmitter}} 
-        & Frequency ($f$) & $14.00$ & $12.00$ & GHz \\
-        & Antenna Diameter & $2.40$ & -- & m \\
-        & Antenna Gain & $48.86$ & -- & dBi \\
-        & Transmitter Power & $13.01$ ($20.0$ W) & -- & dBW \\
-        & Tx Feeder Loss ($L_{\mathrm{tx,feeder}}$) & $1.00$ & -- & dB \\
-        & EIRP & $60.87$ & $46.00$ (Override) & dBW \\
+        \multicolumn{4}{@{}l}{\textbf{Transmitter}} \\
+        Frequency ($f$) & $14.00$ & $12.00$ & GHz \\
+        Antenna diameter & $2.40$ & -- & m \\
+        Antenna gain & $48.86$ & -- & dBi \\
+        Transmitter power & $13.01$ ($20.0$ W) & -- & dBW \\
+        Tx feeder loss ($L_{\mathrm{tx,feeder}}$) & $1.00$ & -- & dB \\
+        EIRP & $60.87$ & $46.00$ (Override) & dBW \\
         \midrule
-        \multirow{6}{*}{\textbf{Path Losses}} 
-        & Free Space Path Loss (FSPL) & $206.89$ & $205.59$ & dB \\
-        & Pointing Loss & $0.50$ & $0.50$ & dB \\
-        & Polarization Loss & $0.30$ & $0.30$ & dB \\
-        & Clear-Sky Atmospheric Loss & $0.50$ & $0.50$ & dB \\
-        & Misc Loss & $0.20$ & $0.20$ & dB \\
-        & Total Link Loss ($L_{\mathrm{total}}$) & $208.39$ & $207.09$ & dB \\
+        \multicolumn{4}{@{}l}{\textbf{Path losses}} \\
+        Free-space path loss (FSPL) & $206.89$ & $205.59$ & dB \\
+        Pointing loss & $0.50$ & $0.50$ & dB \\
+        Polarization loss & $0.30$ & $0.30$ & dB \\
+        Clear-sky atmospheric loss & $0.50$ & $0.50$ & dB \\
+        Misc. loss & $0.20$ & $0.20$ & dB \\
+        Total link loss ($L_{\mathrm{total}}$) & $208.39$ & $207.09$ & dB \\
         \midrule
-        \multirow{5}{*}{\textbf{Receiver}} 
-        & Antenna Diameter & -- & $0.90$ & m \\
-        & Antenna Gain & -- & $39.00$ & dBi \\
-        & Rx Feeder Loss ($L_{\mathrm{rx,feeder}}$) & -- & $0.50$ & dB \\
-        & Noise Temperature ($T_{\mathrm{sys}}$) & -- & $150.00$ & K \\
-        & Quality Factor ($G/T$) & $3.00$ (Override) & $16.74$ & dB/K \\
+        \multicolumn{4}{@{}l}{\textbf{Receiver}} \\
+        Antenna diameter & -- & $0.90$ & m \\
+        Antenna gain & -- & $39.00$ & dBi \\
+        Rx feeder loss ($L_{\mathrm{rx,feeder}}$) & -- & $0.50$ & dB \\
+        Noise temperature ($T_{\mathrm{sys}}$) & -- & $150.00$ & K \\
+        Quality factor ($G/T$) & $3.00$ (Override) & $16.74$ & dB/K \\
         \midrule
-        \multirow{5}{*}{\textbf{Performance}} 
-        & Carrier-to-Noise Density ($\frac{C}{N_0}$) & $84.08$ & $84.25$ & dBHz \\
-        & Carrier-to-Noise Ratio ($\frac{C}{N}$) & $8.51$ & $8.69$ & dB \\
-        & Bit-Energy Ratio ($\frac{E_b}{N_0}$) & $14.08$ & $14.25$ & dB \\
-        & Required $\frac{E_b}{N_0}$ & $7.00$ & $7.00$ & dB \\
-        & Link Margin & $7.08$ & $7.25$ & dB \\
+        \multicolumn{4}{@{}l}{\textbf{Performance}} \\
+        Carrier-to-noise density ($C/N_0$) & $84.08$ & $84.25$ & dBHz \\
+        Carrier-to-noise ratio ($C/N$) & $8.51$ & $8.69$ & dB \\
+        Bit-energy ratio ($E_b/N_0$) & $14.08$ & $14.25$ & dB \\
+        Required $E_b/N_0$ & $7.00$ & $7.00$ & dB \\
+        Link margin & $7.08$ & $7.25$ & dB \\
         \bottomrule
-    \end{tabular}%
+    \end{tabularx}
     }
-      }
 \end{table}
 
 The end-to-end combined carrier-to-noise density ratio is computed using inverse-linear addition:
@@ -140,7 +150,7 @@ The end-to-end combined carrier-to-noise density ratio is computed using inverse
     =
     \cnTotal\,\mathrm{dBHz}
 \end{equation}
-This gives $\frac{E_b}{N_0}=\ebnoTotal$~dB and a 10~Mbps fixed-rate margin of \textbf{\marginClear~dB} against the 7~dB requirement.
+This gives $E_b/N_0=\ebnoTotal$~dB and a 10~Mbps fixed-rate margin of \textbf{\marginClear~dB} against the 7~dB requirement.
 
 Table~\ref{tab:pratt_comparison} checks the implementation against an independent substitution of the same link-budget equations.
 
@@ -158,12 +168,12 @@ Table~\ref{tab:pratt_comparison} checks the implementation against an independen
         Downlink FSPL & $205.59$ dB & $205.59$ dB & $0.00$ dB \\
         Uplink EIRP & $60.87$ dBW & $60.87$ dBW & $0.00$ dB \\
         Downlink $G/T$ & $16.74$ dB/K & $16.74$ dB/K & $0.00$ dB \\
-        Uplink $\frac{C}{N_0}$ & $84.08$ dBHz & $84.08$ dBHz & $0.00$ dB \\
-        Downlink $\frac{C}{N_0}$ & $84.25$ dBHz & $84.25$ dBHz & $0.00$ dB \\
-        Uplink $\frac{C}{N}$ & $8.51$ dB & $8.51$ dB & $0.00$ dB \\
-        Downlink $\frac{C}{N}$ & $8.69$ dB & $8.69$ dB & $0.00$ dB \\
-        Combined $\frac{C}{N_0}$ & $81.15$ dBHz & $81.15$ dBHz & $0.00$ dB \\
-        Combined $\frac{E_b}{N_0}$ & $11.15$ dB & $11.15$ dB & $0.00$ dB \\
+        Uplink $C/N_0$ & $84.08$ dBHz & $84.08$ dBHz & $0.00$ dB \\
+        Downlink $C/N_0$ & $84.25$ dBHz & $84.25$ dBHz & $0.00$ dB \\
+        Uplink $C/N$ & $8.51$ dB & $8.51$ dB & $0.00$ dB \\
+        Downlink $C/N$ & $8.69$ dB & $8.69$ dB & $0.00$ dB \\
+        Combined $C/N_0$ & $81.15$ dBHz & $81.15$ dBHz & $0.00$ dB \\
+        Combined $E_b/N_0$ & $11.15$ dB & $11.15$ dB & $0.00$ dB \\
         Combined margin & $4.15$ dB & $4.15$ dB & $0.00$ dB \\
         \bottomrule
     \end{tabular}
@@ -172,20 +182,20 @@ Table~\ref{tab:pratt_comparison} checks the implementation against an independen
 \subsubsection{Parametric Sensitivity and 2D Contour Map Analysis}
 Five contour plots show the principal static sensitivities and link-closure boundaries.
 
-\subsubsection[Downlink carrier-to-noise density vs. GS2 dish diameter and frequency]{Downlink \texorpdfstring{$\frac{C}{N_0}$}{C/N0} vs. GS2 Dish Diameter and Frequency}
+\subsubsection[Downlink carrier-to-noise density vs. GS2 dish diameter and frequency]{Downlink \texorpdfstring{$C/N_0$}{C/N0} vs. GS2 Dish Diameter and Frequency}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{01_downlink_cn0_dish_vs_frequency.png}
-    \caption[Downlink $\frac{C}{N_0}$ vs. GS2 dish diameter and frequency.]{Downlink $\frac{C}{N_0}$ vs. GS2 dish diameter and frequency.}
+    \caption[Downlink $C/N_0$ vs. GS2 dish diameter and frequency.]{Downlink $C/N_0$ vs. GS2 dish diameter and frequency.}
     \label{fig:contour01}
 \end{figure}
 
 \begin{itemize}
-    \item \textbf{Purpose:} Evaluate downlink $\frac{C}{N_0}$ over receive-dish diameters of 0.5--2.4~m and frequencies of 10.7--12.75~GHz.
-    \item \textbf{Result:} $\frac{C}{N_0}$ ranges from approximately 81.5 to 91.5~dBHz over the plotted domain. The nearly vertical contours show that aperture is the dominant variable.
+    \item \textbf{Purpose:} Evaluate downlink $C/N_0$ over receive-dish diameters of 0.5--2.4~m and frequencies of 10.7--12.75~GHz.
+    \item \textbf{Result:} $C/N_0$ ranges from approximately 81.5 to 91.5~dBHz over the plotted domain. The nearly vertical contours show that aperture is the dominant variable.
     \item \textbf{Interpretation:} For fixed physical aperture and EIRP, receive gain and FSPL both contain an $f^2$ dependence, so their frequency terms largely cancel. Frequency becomes important when atmospheric loss, efficiency, or footprint EIRP also varies with band.
-    \item \textbf{Design use:} The plot gives the minimum receive aperture needed for a specified $\frac{C}{N_0}$ under the fixed assumptions.
+    \item \textbf{Design use:} The plot gives the minimum receive aperture needed for a specified $C/N_0$ under the fixed assumptions.
 \end{itemize}
 
 \subsubsection[Downlink Margin vs. Satellite EIRP and GS2 System Noise]{Downlink Margin vs. Satellite EIRP and GS2 $T_{\mathrm{sys}}$}
@@ -204,12 +214,12 @@ Five contour plots show the principal static sensitivities and link-closure boun
     \item \textbf{Design use:} The map quantifies the trade between leased downlink EIRP and receive-terminal $(G/T)$.
 \end{itemize}
 
-\subsubsection[Uplink carrier-to-noise ratio vs. HPA power and GS1 dish diameter]{Uplink \texorpdfstring{$\frac{C}{N}$}{C/N} vs. HPA Power and GS1 Dish Diameter}
+\subsubsection[Uplink carrier-to-noise ratio vs. HPA power and GS1 dish diameter]{Uplink \texorpdfstring{$C/N$}{C/N} vs. HPA Power and GS1 Dish Diameter}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{03_uplink_cn_power_vs_dish.png}
-    \caption[Uplink $\frac{C}{N}$ vs. HPA power and GS1 dish diameter.]{Uplink $\frac{C}{N}$ vs. HPA power and GS1 dish diameter.}
+    \caption[Uplink $C/N$ vs. HPA power and GS1 dish diameter.]{Uplink $C/N$ vs. HPA power and GS1 dish diameter.}
     \label{fig:contour03}
 \end{figure}
 
@@ -220,19 +230,19 @@ Five contour plots show the principal static sensitivities and link-closure boun
     \item \textbf{Design use:} The plot supports a cost and packaging trade between antenna size, amplifier rating, and off-axis discrimination.
 \end{itemize}
 
-\subsubsection[Combined bit-energy ratio vs. information bit rate and bandwidth]{Combined \texorpdfstring{$\frac{E_b}{N_0}$}{Eb/N0} vs. Information Bit Rate and Bandwidth}
+\subsubsection[Combined bit-energy ratio vs. information bit rate and bandwidth]{Combined \texorpdfstring{$E_b/N_0$}{Eb/N0} vs. Information Bit Rate and Bandwidth}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{04_total_ebn0_bitrate_vs_bandwidth.png}
-    \caption[Effective end-to-end $\frac{E_b}{N_0+I_0}$ vs. information bit rate and bandwidth.]{Effective end-to-end $\frac{E_b}{N_0+I_0}$ vs. information bit rate and bandwidth.}
+    \caption[Effective end-to-end $E_b/(N_0+I_0)$ vs. information bit rate and bandwidth.]{Effective end-to-end $E_b/(N_0+I_0)$ vs. information bit rate and bandwidth.}
     \label{fig:contour04}
 \end{figure}
 
 \begin{itemize}
-    \item \textbf{Purpose:} Evaluate effective end-to-end $\frac{E_b}{N_0}$ over 2--60~Mbps and 6--72~MHz.
-    \item \textbf{Result:} With $\frac{C}{N_0}\approx81.15$~dBHz, the noise-only $\frac{E_b}{N_0}$ falls from about 18.1~dB at 2~Mbps to 4.2~dB at 50~Mbps. At 10~Mbps it is 11.15~dB, or 10.69~dB with ASI and IMD.
-    \item \textbf{Interpretation:} At fixed $\frac{C}{N_0}$, $\frac{E_b}{N_0}$ depends on bit rate, not directly on allocated bandwidth. Bandwidth instead limits symbol rate, occupied spectrum, and feasible MODCODs.
+    \item \textbf{Purpose:} Evaluate effective end-to-end $E_b/N_0$ over 2--60~Mbps and 6--72~MHz.
+    \item \textbf{Result:} With $C/N_0\approx81.15$~dBHz, the noise-only $E_b/N_0$ falls from about 18.1~dB at 2~Mbps to 4.2~dB at 50~Mbps. At 10~Mbps it is 11.15~dB, or 10.69~dB with ASI and IMD.
+    \item \textbf{Interpretation:} At fixed $C/N_0$, $E_b/N_0$ depends on bit rate, not directly on allocated bandwidth. Bandwidth instead limits symbol rate, occupied spectrum, and feasible MODCODs.
     \item \textbf{Design use:} The plot identifies the fixed-rate closure boundary for the stated 7~dB requirement.
 \end{itemize}
 
@@ -261,7 +271,7 @@ The modeled neighbors at $11^\circ$E and $15^\circ$E reduce the fixed-rate margi
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{06_downlink_asi_ci_spacing_vs_dish.png}
-    \caption[Downlink ASI $\frac{C}{I}$ as a function of orbital spacing and receive-dish diameter.]{Downlink ASI $\frac{C}{I}$ as a function of orbital spacing and receive-dish diameter.}
+    \caption[Downlink ASI $C/I$ as a function of orbital spacing and receive-dish diameter.]{Downlink ASI $C/I$ as a function of orbital spacing and receive-dish diameter.}
     \label{fig:downlink_asi}
 \end{figure}
 
@@ -296,7 +306,7 @@ At $p=0.1\%$, the modeled totals are \upRainAtten~dB on the uplink and \downRain
         \rowcolor{tableHeader}
         \color{white}\textbf{Case} &
         \color{white}\textbf{UL/DL Loss} &
-        \color{white}\textbf{10 Mbps $\frac{E_b}{N_0+I_0}$} &
+        \color{white}\textbf{10 Mbps $E_b/(N_0+I_0)$} &
         \color{white}\textbf{Margin} &
         \color{white}\textbf{ACM Mode} &
         \color{white}\textbf{Interpretation} \\
@@ -320,7 +330,7 @@ At $p=0.1\%$, the modeled totals are \upRainAtten~dB on the uplink and \downRain
     arc=1.5pt
 ]
 \small
-The 10~Mbps closure test uses $\frac{E_b}{N_0}=\frac{C}{N_0}-10\log_{10}R_b$ and a 7~dB requirement. ACM instead uses $\frac{E_s}{N_0}=\frac{C}{N_0}-10\log_{10}R_s$ with $R_s=B/(1+\alpha)$, then selects a MODCOD-specific threshold plus 1~dB implementation margin. ACM throughput is therefore a separate variable-rate service view; it does not add physical RF margin.
+The 10~Mbps closure test uses $E_b/N_0=C/N_0-10\log_{10}R_b$ and a 7~dB requirement. ACM instead uses $E_s/N_0=C/N_0-10\log_{10}R_s$ with $R_s=B/(1+\alpha)$, then selects a MODCOD-specific threshold plus 1~dB implementation margin. ACM throughput is therefore a separate variable-rate service view; it does not add physical RF margin.
 \end{tcolorbox}
 
 The independent-site Monte Carlo generator gives an illustrative annual closure fraction under assumed weather-state probabilities. Figure~\ref{fig:rain_weather_samples} shows the first 240 hours; it is not a measured or temporally correlated storm record.
@@ -389,7 +399,7 @@ The ablation chain in Tables~\ref{tab:ablation_summary} and \ref{tab:ablation_in
         \color{white}\textbf{Engineering Finding} \\
         A0 & Baseline fixed-rate link closes. \\
         A1 & ASI is the principal clear-sky interference term. \\
-        A2 & IMD is minor for the selected 30~dB $\frac{C}{I}$. \\
+        A2 & IMD is minor for the selected 30~dB $C/I$. \\
         A3 & The modeled non-rain totals are slightly smaller than the static allowances. \\
         A4 & Rain-induced carrier loss is the dominant penalty. \\
         A5 & This isolates the receiver-temperature baseline change. \\

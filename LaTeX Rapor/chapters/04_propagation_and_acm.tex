@@ -149,12 +149,12 @@ The output is a distribution of link margin under the assumed states and random 
 A fixed MODCOD must be selected to meet its target availability with adequate margin. When channel conditions improve, that fixed operating point may leave capacity unused.
 
 \subsubsection{Fixed-Rate and ACM Metrics}
-The fixed-rate link margin and the ACM throughput analysis are treated as separate performance views. The former evaluates closure against a prescribed $\frac{E_b}{N_0}$ threshold, whereas the latter maps the available $\frac{E_s}{N_0}$ to DVB-S2 MODCOD thresholds and net throughput for a specified carrier bandwidth and roll-off factor. The two metrics should not be interpreted as the same quantity.
+The fixed-rate link margin and the ACM throughput analysis are treated as separate performance views. The former evaluates closure against a prescribed $E_b/N_0$ threshold, whereas the latter maps the available $E_s/N_0$ to DVB-S2 MODCOD thresholds and net throughput for a specified carrier bandwidth and roll-off factor. The two metrics should not be interpreted as the same quantity.
 
-ACM maps the measured $\frac{E_s}{N_0}$ to a modulation and code rate. Higher-efficiency modes are selected when margin is available; more robust modes are selected during fades.
+ACM maps the measured $E_s/N_0$ to a modulation and code rate. Higher-efficiency modes are selected when margin is available; more robust modes are selected during fades.
 
 \subsubsection{Mathematical Formulation}
-The receiver continuously monitors $\left(\frac{E_s}{N_0}\right)_{\mathrm{available}}$ and dynamically selects the highest spectral efficiency $\eta$ (in bits/symbol) from the DVB-S2 \cite{dvbs2} MODCOD ladder that satisfies:
+The receiver continuously monitors $(E_s/N_0)_{\mathrm{available}}$ and dynamically selects the highest spectral efficiency $\eta$ (in bits/symbol) from the DVB-S2 MODCOD ladder and its ideal QEF AWGN $E_s/N_0$ table \cite{dvbs2} that satisfies:
 \begin{equation}
     \left(\frac{E_s}{N_0}\right)_{\mathrm{available}}
     \ge
@@ -179,9 +179,9 @@ Using the usable symbol rate $R_{\mathrm{s}} = B / (1 + \alpha_{\mathrm{rolloff}
 \end{equation}
 
 \subsubsection{Operational Impact and Results}
-For a 36~MHz carrier with $\alpha=0.20$, the symbol rate is 30~Msps. The implemented threshold table selects QPSK 3/4 for the clear-sky thermal and interference cases and QPSK 1/2 for the coincident dual-site $p=0.1\%$ stress point.
+For a 36~MHz carrier with $\alpha=0.20$, the symbol rate is 30~Msps. The implemented threshold table uses the ETSI normal-FECFRAME ideal values plus the 1.0~dB implementation margin in the selection rule. It selects QPSK 3/4 for the clear-sky thermal and interference cases and QPSK 1/2 for the coincident dual-site $p=0.1\%$ stress point.
 
-Table~\ref{tab:acm_consistency} lists the available and required $\frac{E_s}{N_0}$ values used by the selector.
+Table~\ref{tab:acm_consistency} lists the available and required $E_s/N_0$ values used by the selector.
 
 \begin{table}[H]
     \centering
@@ -192,7 +192,7 @@ Table~\ref{tab:acm_consistency} lists the available and required $\frac{E_s}{N_0
     \resizebox{\textwidth}{!}{
       \begin{tabular}{l c c c c c}
         \toprule
-        \textbf{Case} & \textbf{Avail. $\frac{E_s}{N_0}$} & \textbf{Selected MODCOD} & \textbf{Req. $\frac{E_s}{N_0}$} & \textbf{Efficiency ($\eta$)} & \textbf{Net Throughput ($\eta R_{\mathrm{s}}$)} \\
+        \textbf{Case} & \textbf{Avail. $E_s/N_0$} & \textbf{Selected MODCOD} & \textbf{Req. $E_s/N_0$} & \textbf{Efficiency ($\eta$)} & \textbf{Net Throughput ($\eta R_{\mathrm{s}}$)} \\
         \midrule
         \textbf{Clear-Sky (Thermal)} & $\approx 6.38$ dB & QPSK 3/4 & 4.03 dB & 1.487 & $\approx 44.61$ Mbps \\
         \textbf{With ASI \& IMD} & $\approx 5.92$ dB & QPSK 3/4 & 4.03 dB & 1.487 & $\approx 44.61$ Mbps \\
@@ -220,6 +220,5 @@ Uplink power control is discussed as a mitigation option but is not implemented 
     P_{\mathrm{tx,nominal}}
     +
     A_{\mathrm{rain,up}}
-    \qquad [\mathrm{dBW}]
 \end{equation}
-subject to $P_{\mathrm{tx,dynamic}} \le P_{\mathrm{tx,max}}$. Available HPA headroom, EIRP limits, ASI constraints, transponder loading, and control-loop delay limit the recoverable fade. No ULPC gain is credited in the reported margins.
+Here $P_{\mathrm{tx,dynamic}}$ and $P_{\mathrm{tx,nominal}}$ are in dBW, while $A_{\mathrm{rain,up}}$ is the uplink rain attenuation in dB. The command is subject to $P_{\mathrm{tx,dynamic}} \le P_{\mathrm{tx,max}}$. Available HPA headroom, EIRP limits, ASI constraints, transponder loading, and control-loop delay limit the recoverable fade. No ULPC gain is credited in the reported margins.

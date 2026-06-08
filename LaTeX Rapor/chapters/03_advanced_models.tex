@@ -8,9 +8,9 @@ This chapter defines the optional impairment and diagnostic models added to the 
 \subsection{Adjacent-Satellite Interference (ASI) and IMD}
 Finite earth-station beamwidth permits energy from adjacent orbital slots to enter the receive chain and allows an uplink antenna to illuminate neighboring spacecraft. The resulting adjacent-satellite interference (ASI) depends on orbital spacing, antenna pattern, polarization, carrier loading, and relative EIRP. A multicarrier TWTA also generates intermodulation distortion (IMD) when operated close to saturation.
 
-ASI and IMD are included as additional $\frac{C}{I}$ terms so that the clear-sky result is not treated as purely thermal-noise limited.
+ASI and IMD are included as additional $C/I$ terms so that the clear-sky result is not treated as purely thermal-noise limited.
 
-The off-axis discrimination angle $\theta_{\mathrm{off}}$ between the target satellite and the adjacent interferer is calculated using their respective ECEF position vectors. The off-axis gain $G_{\mathrm{off}}(\theta_{\mathrm{off}})$ in the direction of the interferer is estimated using a simplified ITU-R-style off-axis antenna envelope approximation:
+The off-axis discrimination angle $\theta_{\mathrm{off}}$ between the target satellite and the adjacent interferer is calculated using their respective ECEF position vectors. The off-axis gain $G_{\mathrm{off}}(\theta_{\mathrm{off}})$ in the direction of the interferer is estimated using a simplified internal off-axis antenna-envelope approximation:
 \begin{equation}
     G_{\mathrm{off}}(\theta_{\mathrm{off}})
     =
@@ -19,7 +19,7 @@ The off-axis discrimination angle $\theta_{\mathrm{off}}$ between the target sat
     32.0 - 25\log_{10}(\theta_{\mathrm{off}})
     \right]
 \end{equation}
-This envelope is used for sensitivity analysis, not regulatory coordination. The uplink, downlink, and IMD $\frac{C}{I}$ terms are combined with the thermal $\frac{C}{N}$ terms by inverse-linear addition:
+This envelope is used for sensitivity analysis, not as an ITU-R regulatory mask or a coordination radiation pattern. The uplink, downlink, and IMD $C/I$ terms are combined with the thermal $C/N$ terms by inverse-linear addition:
 \begin{equation}
     \left(\frac{C}{N+I}\right)_{\mathrm{total}}^{-1}
     =
@@ -59,7 +59,7 @@ The transponder is not an ideal linear amplifier. TWTA compression, AM/PM conver
         M_{\mathrm{impl}}
     \end{equation}
 \end{itemize}
-An OBO value of 2.5~dB is discussed as a representative operating concept \cite{pratt}, but it is not subtracted separately from the published footprint EIRP: the 46~dBW downlink input is treated as the active contour value. Non-linear degradation in the numerical budget is represented by the assumed $\frac{C}{I_{\mathrm{IMD}}}=30$~dB term. A 1.0~dB modem implementation margin is applied only during DVB-S2 MODCOD selection, and the static RF implementation-loss field is set to 0~dB to avoid double counting.
+An OBO value of 2.5~dB is discussed as a representative operating concept \cite{pratt}, but it is not subtracted separately from the published footprint EIRP: the 46~dBW downlink input is treated as the active contour value. Non-linear degradation in the numerical budget is represented by the assumed $C/I_{\mathrm{IMD}}=30$~dB term. A 1.0~dB modem implementation margin is applied only during DVB-S2 MODCOD selection, and the static RF implementation-loss field is set to 0~dB to avoid double counting.
 
 \subsection{Digital Baseband Performance Metrics}
 For coherent QPSK over AWGN, the uncoded bit-error probability is:
@@ -68,7 +68,7 @@ For coherent QPSK over AWGN, the uncoded bit-error probability is:
     =
     \frac{1}{2}\operatorname{erfc}\left(\sqrt{\frac{E_b}{N_0}}\right)
 \end{equation}
-The report's generic digital-metrics layer applies a 3~dB equivalent coding-gain assumption for sensitivity calculations. The separate ACM calculation does not use this shortcut; it compares the available $\frac{E_s}{N_0}$ directly with the selected DVB-S2 threshold table. Shannon capacity is reported as an upper bound:
+The report's generic digital-metrics layer applies a 3~dB equivalent coding-gain assumption for sensitivity calculations. The separate ACM calculation does not use this shortcut; it compares the available $E_s/N_0$ directly with the selected DVB-S2 threshold table. Shannon capacity is reported as an upper bound:
 \begin{equation}
     C
     =

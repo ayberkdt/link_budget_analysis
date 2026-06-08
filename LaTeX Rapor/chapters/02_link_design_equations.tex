@@ -120,7 +120,7 @@ For each link segment, EIRP combines transmitter output power, antenna gain, and
 \end{equation}
 where $P_{\mathrm{tx}}$ is expressed in dBW, $G_{\mathrm{tx}}$ in dBi, and $L_{\mathrm{tx,feeder}}$ in dB.
 
-Receiver performance is represented by $\frac{G}{T}$:
+Receiver performance is represented by $G/T$:
 \begin{equation}
     \left(\frac{G}{T}\right)
     =
@@ -161,7 +161,7 @@ For a fixed information bit rate $R_b$:
     10\log_{10}(R_b)
     \qquad [\mathrm{dB}]
 \end{equation}
-The fixed-rate margin is the difference between the available and required $\frac{E_b}{N_0}$:
+The fixed-rate margin is the difference between the available and required $E_b/N_0$:
 \begin{equation}
     M
     =
@@ -174,8 +174,8 @@ The fixed-rate margin is the difference between the available and required $\fra
 \subsection{Uplink-Downlink Coupling in Bent-Pipe Transponders}
 A transparent transponder does not regenerate the baseband signal. Uplink noise and interference therefore remain part of the retransmitted waveform.
 
-The end-to-end $\left(\frac{C}{N_0}\right)_{\mathrm{total}}$ is obtained by inverse-linear addition of the uplink and downlink terms:
+The end-to-end $(C/N_0)_{\mathrm{total}}$ is obtained by inverse-linear addition of the uplink and downlink terms:
 \begin{equation}
     \left( \frac{C}{N_0} \right)_{\mathrm{total}}^{-1} = \left( \frac{C}{N_0} \right)_{\mathrm{uplink}}^{-1} + \left( \frac{C}{N_0} \right)_{\mathrm{downlink}}^{-1}
 \end{equation}
-The combined $\frac{C}{N_0}$ is lower than either individual contribution. When one segment is much weaker than the other, the end-to-end result approaches the weaker segment and that path becomes the effective bottleneck.
+The combined $C/N_0$ is lower than either individual contribution. When one segment is much weaker than the other, the end-to-end result approaches the weaker segment and that path becomes the effective bottleneck.

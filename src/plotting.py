@@ -732,7 +732,7 @@ def generate_availability_plots(samples: list[TimeVaryingSample], output_dir: Pa
     ax_hist.axvline(median_margin, linestyle="-", color="#2c3e50", linewidth=1.4, label="median margin")
     ax_hist.axvline(p01, linestyle=":", color=WARNING_COLOR, linewidth=1.8, label="1st percentile")
     ax_hist.set_title("Margin Probability Density")
-    ax_hist.set_xlabel(r"Combined $\frac{E_b}{N_0}$ margin [dB]")
+    ax_hist.set_xlabel(r"Combined $E_b/N_0$ margin [dB]")
     ax_hist.set_ylabel("Probability density [1/dB], log scale")
     ax_hist.grid(True, axis="both", alpha=GRID_ALPHA)
     ax_hist.legend(loc="upper left")
@@ -748,7 +748,7 @@ def generate_availability_plots(samples: list[TimeVaryingSample], output_dir: Pa
     ax_cdf.set_title("Empirical Outage Tail")
     ax_cdf.set_xlim(x_min, x_max)
     ax_cdf.set_ylim(0.0, 8.0)
-    ax_cdf.set_xlabel(r"Combined $\frac{E_b}{N_0}$ margin [dB]")
+    ax_cdf.set_xlabel(r"Combined $E_b/N_0$ margin [dB]")
     ax_cdf.set_ylabel("Lower-tail empirical CDF [%]")
     ax_cdf.grid(True, axis="both", alpha=GRID_ALPHA)
     ax_cdf.text(
