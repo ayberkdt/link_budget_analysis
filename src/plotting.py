@@ -1,11 +1,5 @@
 # plotting.py
-"""Grafik ve görselleştirme fonksiyonları (Matplotlib).
-
-Bu modül, proje raporunda kullanılacak yüksek kaliteli 2B kontur haritalarını
-ve ileri düzey (Monte-Carlo, yörünge hareketi vb.) simülasyon grafiklerini çizer.
-Çizimlerin raporlarda uyumlu durması için tek bir ortak format (font, renk vb.) 
-kullanılmıştır. Kapalı olan (enabled=False) analizlerin grafikleri çizilmez.
-"""
+"""Matplotlib plotting utilities for the report figures."""
 
 # ========================================================================
 # 0.                             IMPORTS

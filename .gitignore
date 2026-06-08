@@ -13,11 +13,13 @@ env/
 .ipynb_checkpoints/
 
 # Generated analysis outputs
-outputs/**
-!outputs/
+outputs/*
 !outputs/.gitkeep
+!outputs/*.csv
 !outputs/plots/
+outputs/plots/*
 !outputs/plots/.gitkeep
+!outputs/plots/*.png
 
 # LaTeX build artifacts
 *.aux
@@ -41,7 +43,7 @@ LaTeX Rapor/main.pdf
 *.tar.gz
 *.rar
 
-# Retired local summary sheets; use the primary source PDFs instead
+# Local summary sheet names superseded by primary source PDFs
 sources/prodelin_1244_datasheet.*
 sources/triax_td88_datasheet.*
 
